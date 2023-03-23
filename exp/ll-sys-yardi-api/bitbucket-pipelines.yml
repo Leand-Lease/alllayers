@@ -1,0 +1,64 @@
+# This is a sample build configuration for Java (Maven).
+# Check our guides at https://confluence.atlassian.com/x/zd-5Mw for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+#image: maven:3.6.3-jdk-8
+image: maven:3.6-jdk-8-alpine 
+
+pipelines:
+  default:
+    - step:
+        caches:
+          - maven
+        script: # Modify the commands below to build your repository.
+          #- mvn -B verify # -B batch mode makes Maven less verbose
+          - echo "Default pipeline - no action taken"
+  branches:
+    master:
+      - step:
+          name: Test and Deploy
+          caches:
+            - maven
+            - node
+          size: 2x # Double resources available for this step.
+          script: # Modify the commands below to build your repository.           
+            - echo "Mulesoft DEPLOY to Production"   
+            - bash config-maven.sh      
+            - mvn clean deploy -DmuleDeploy -Denc.key=$ENC_KEY_PROD -Dmule.env=$MULE_ENV_PROD -Dcloudhub.application.name=$CH_APP_NAME_PROD -Dapimanager.discovery.id=$CH_API_ID_PROD -Dcloudhub.worker.size=$CH_WORKER_SIZE_PROD -Dcloudhub.worker.count=$CH_WORKER_COUNT_PROD -Dcloudhub.region=$CH_REGION_PROD -Danypoint.username=$CH_DEPLOY_USER -Danypoint.password=$CH_DEPLOY_PASS -Dcloudhub.bg="${CH_BG_NAME}" -Dcloudhub.environment=$CH_ENV_PROD  -Danypoint.api.id=$CH_API_ID_PROD -Danypoint.platform.client.id=$AP_CLIENT_ID_PROD -Danypoint.platform.client.secret=$AP_CLIENT_SECRET_PROD -Dsalesforce.token.endpoint=$SF_TOKEN_ENDPOINT_PROD -Dsalesforce.username=$SF_USER_PROD -Dsalesforce.password=$SF_PASS_PROD -Dsalesforce.consumer.key=$SF_CONSUMER_KEY_PROD -Dsalesforce.consumer.secret=$SF_CONSUMER_SECRET_PROD -Dsalesforce.security.token=$SF_SECURITY_TOKEN_PROD
+
+    st:
+      - step:
+          name: Test and Deploy
+          caches:
+            - maven
+            - node
+          size: 2x # Double resources available for this step.
+          script: # Modify the commands below to build your repository.
+            - echo "Mulesoft DEPLOY to ST"
+            - bash config-maven.sh
+            - mvn clean deploy -DmuleDeploy -Denc.key=$ENC_KEY_ST -Dmule.env=$MULE_ENV_ST -Dcloudhub.application.name=$CH_APP_NAME_ST -Dapimanager.discovery.id=$CH_API_ID_ST -Dcloudhub.worker.size=$CH_WORKER_SIZE_ST -Dcloudhub.worker.count=$CH_WORKER_COUNT_ST -Dcloudhub.region=$CH_REGION_ST -Danypoint.username=$CH_DEPLOY_USER -Danypoint.password=$CH_DEPLOY_PASS -Dcloudhub.bg="${CH_BG_NAME}" -Dcloudhub.environment=$CH_ENV_ST  -Danypoint.api.id=$CH_API_ID_ST -Danypoint.platform.client.id=$AP_CLIENT_ID_ST -Danypoint.platform.client.secret=$AP_CLIENT_SECRET_ST
+
+    sit:
+      - step:
+          name: Test and Deploy
+          caches:
+            - maven
+            - node
+          size: 2x # Double resources available for this step.
+          script: # Modify the commands below to build your repository.
+            - echo "Mulesoft DEPLOY to SIT"
+            - bash config-maven.sh
+            - mvn clean deploy -DmuleDeploy -Denc.key=$ENC_KEY_SIT -Dmule.env=$MULE_ENV_SIT -Dcloudhub.application.name=$CH_APP_NAME_SIT -Dapimanager.discovery.id=$CH_API_ID_SIT -Dcloudhub.worker.size=$CH_WORKER_SIZE_SIT -Dcloudhub.worker.count=$CH_WORKER_COUNT_SIT -Dcloudhub.region=$CH_REGION_SIT -Danypoint.username=$CH_DEPLOY_USER -Danypoint.password=$CH_DEPLOY_PASS -Dcloudhub.bg="${CH_BG_NAME}" -Dcloudhub.environment=$CH_ENV_SIT  -Danypoint.api.id=$CH_API_ID_SIT -Danypoint.platform.client.id=$AP_CLIENT_ID_SIT -Danypoint.platform.client.secret=$AP_CLIENT_SECRET_SIT -Dsalesforce.token.endpoint=$SF_TOKEN_ENDPOINT_SIT -Dsalesforce.username=$SF_USER_SIT -Dsalesforce.password=$SF_PASS_SIT -Dsalesforce.consumer.key=$SF_CONSUMER_KEY_SIT -Dsalesforce.consumer.secret=$SF_CONSUMER_SECRET_SIT -Dsalesforce.security.token=$SF_SECURITY_TOKEN_SIT
+
+    uat:
+      - step:
+          name: Test and Deploy
+          caches:
+            - maven
+            - node
+          size: 2x # Double resources available for this step.
+          script: # Modify the commands below to build your repository.
+            - echo "Mulesoft DEPLOY to UAT"   
+            - bash config-maven.sh         
+            - mvn clean deploy -DmuleDeploy -Denc.key=$ENC_KEY_UAT -Dmule.env=$MULE_ENV_UAT -Dcloudhub.application.name=$CH_APP_NAME_UAT -Dapimanager.discovery.id=$CH_API_ID_UAT -Dcloudhub.worker.size=$CH_WORKER_SIZE_UAT -Dcloudhub.worker.count=$CH_WORKER_COUNT_UAT -Dcloudhub.region=$CH_REGION_UAT -Danypoint.username=$CH_DEPLOY_USER -Danypoint.password=$CH_DEPLOY_PASS -Dcloudhub.bg="${CH_BG_NAME}" -Dcloudhub.environment=$CH_ENV_UAT  -Danypoint.api.id=$CH_API_ID_UAT -Danypoint.platform.client.id=$AP_CLIENT_ID_UAT -Danypoint.platform.client.secret=$AP_CLIENT_SECRET_UAT -Dsalesforce.token.endpoint=$SF_TOKEN_ENDPOINT_UAT -Dsalesforce.username=$SF_USER_UAT -Dsalesforce.password=$SF_PASS_UAT -Dsalesforce.consumer.key=$SF_CONSUMER_KEY_UAT -Dsalesforce.consumer.secret=$SF_CONSUMER_SECRET_UAT -Dsalesforce.security.token=$SF_SECURITY_TOKEN_UAT

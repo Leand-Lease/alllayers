@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd">
+
+<!-- 	Global and secure properties -->
+	<global-property doc:name="Global Property" doc:id="12c52d85-1db9-4315-91e8-d268187868ad" name="mule.env" value="dev" />
+	<!-- <secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="1699ef9f-c667-4398-ac60-6cb065a5609a" file="secure-properties/secure-${mule.env}.yaml" key="${enc.key}" /> --> 
+	<configuration-properties doc:name="Configuration properties" doc:id="d7168ee8-9ed7-492d-85fe-0b743dac975a" file="properties/${mule.env}.yaml" />
+
+<!-- 	HTTP Configuration -->
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d61cc257-1211-4305-97a3-05a774217637" >
+		<http:listener-connection host="${https.host}" port="${https.port}" protocol="HTTP">
+			<!-- <tls:context >
+				<tls:key-store type="jks" path="keystore/keystore-${mule.env}.jks" alias="${https.key.alias}" keyPassword="${secure::https.key.password}" password="${secure::https.keystore.password}" />
+			</tls:context> -->
+		</http:listener-connection>
+	</http:listener-config>
+	
+<!-- 	Salesforce Connector Configuration -->
+	<!-- <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="28763844-dca8-41ed-8167-c217dfed6670" >
+		<salesforce:cached-oauth-user-pass-connection consumerKey="3MVG9e2mBbZnmM6kAwiWpvN5lAeZd.Wm.dzruEHCyV4d09QfiIr6.nek1MkCzBQ4n0BGSJPtkxa5eAMmfbDfN" consumerSecret="218A6517F2520513577B3B74BD8621930F6323DA71B492D6FDE32618CADF1D03" username="msapi@lendlease.com.imst" password="Mule$ofT2021" securityToken="b1WzWdJZFAl5Q4luZa6iaTVcR" tokenEndpoint="https://test.salesforce.com/services/oauth2/token" disableSessionInvalidation="true" apiVersion="${salesforce.api.version}">
+			<reconnection >
+				<reconnect frequency="5000" count="10" />
+			
+</reconnection>
+			<salesforce:advanced-reconnection-params />
+		
+</salesforce:cached-oauth-user-pass-connection>
+	</salesforce:sfdc-config> -->
+	<!-- <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="5f8b8829-8fe7-49ef-8da5-31ee4bb5ef75" >
+		<salesforce:cached-oauth-user-pass-connection consumerKey="${salesforce.consumer.key}" consumerSecret="${salesforce.consumer.secret}" username="${salesforce.username}" password="${salesforce.password}" securityToken="${salesforce.security.token}" tokenEndpoint="${salesforce.token.endpoint}" disableSessionInvalidation="true" apiVersion="${salesforce.api.version}">
+			<reconnection >
+				<reconnect frequency="5000" count="10" />
+			
+</reconnection>
+		</salesforce:cached-oauth-user-pass-connection>
+	</salesforce:sfdc-config> -->
+	<!-- <api-gateway:autodiscovery apiId="${anypoint.api.id}" doc:name="API Autodiscovery" doc:id="e8b5a249-1f45-4d98-bcaf-c717392042de" flowRef="sys-global-sfdc-main" /> -->
+	<global-property doc:name="Global Property" doc:id="ba4074c0-638c-4888-8fe7-b3550d3334d0" name="enc.key" value="1234567890123456" />
+	<json-logger:config name="JSON_Logger_Config" doc:name="JSON Logger Config" doc:id="e4fd9b0e-f229-4f85-ade6-e6adc774bc95" />
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="ba989543-e3b3-4f7b-9111-f57b8c7ede63" />
+		 <anypoint-mq:config name="Anypoint_MQ_Config" doc:name="Anypoint MQ Config" doc:id="90c3f2f0-2768-4511-a4ca-179e4cf07461" >
+		<anypoint-mq:connection clientId="96a1d4e517e740a48cbbf610dd040ec7" clientSecret="489BFf39FdF14Db390c2f900De7bFFBb" url="${anypoint.mq.url}"/>
+	</anypoint-mq:config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="50b97afd-bc8c-42c7-a3a4-08318458a4b5" >
+		<salesforce:oauth-user-pass-connection consumerKey="3MVG9e2mBbZnmM6kAwiWpvN5lAeZd.Wm.dzruEHCyV4d09QfiIr6.nek1MkCzBQ4n0BGSJPtkxa5eAMmfbDfN" consumerSecret="218A6517F2520513577B3B74BD8621930F6323DA71B492D6FDE32618CADF1D03" username="msapi@lendlease.com.imst" password="Mule$ofT2021" securityToken="b1WzWdJZFAl5Q4luZa6iaTVcR" tokenEndpoint="https://test.salesforce.com/services/oauth2/token" apiVersion="${salesforce.api.version}"/>
+	</salesforce:sfdc-config>
+	<sftp:config name="sftp">
+	  <sftp:connection username="${sftp.username}" password="OwVgYZLT"
+	    host="${sftp.host}" port="${sftp.port}"/>
+	</sftp:config>
+</mule>

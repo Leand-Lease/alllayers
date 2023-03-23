@@ -1,0 +1,4 @@
+{
+  "minMuleVersion": "4.2.2",
+  "secureProperties": ["enc.key","salesforce.consumer.key","salesforce.security.token","salesforce.password","salesforce.consumer.secret"]
+}

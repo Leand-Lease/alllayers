@@ -1,0 +1,69 @@
+{
+    "projects": [
+        {
+            "projectId": "a0dN000000CpwEMIAZ",
+            "phProjectId": "",
+            "listingClientId": "",
+            "name": "",
+            "description": "",
+            "status": "",
+            "yearBuild": 0,
+            "noOfStreetParking": 0,
+            "energyEfficiencyRating": 0,
+            "newConstruction": false,
+            "url": "",
+            "showAddress": "",
+            "address": {
+                "postcode": "",
+                "state": "",
+                "unitNumber": "",
+                "longitude": "",
+                "suburb": "",
+                "streetName": "",
+                "streetNumber": "",
+                "country": "",
+                "latitude": ""
+            },
+            "vitualTourURL": "",
+            "videoURL": "",
+            "externalLink1": "",
+            "externalLink2": "",
+            "upcomingAuction": "",
+            "auction": {
+                "auctionDate": "",
+                "auctionPlace": "",
+                "auctionTime": ""
+            },
+            "email": "",
+            "phone": "",
+            "salesAuthority": "",
+            "methodOfSales": "",
+            "publishTo": "",
+            "publishToForAudit": "",
+            "listingAgentId": "",
+            "listingLastSyncStatus": "",
+            "listingLastSyncDateTime": "",
+            "agents": [
+                {
+                    "phAgentId": "",
+                    "phProjectId": "",
+                    "agentType": "",
+                    "firstName?": "",
+                    "lastName": "",
+                    "email": "",
+                    "phoneNumber": "",
+                    "mobileNumber": "",
+                    "faxNumber": "",
+                    "username": "",
+                    "level": "",
+                    "description": "",
+                    "position": "",
+                    "suburb": "",
+                    "role": "",
+                    "fullName": ""
+                }
+            ],
+            "propertyCode": "p0193213"
+        }
+    ]
+}

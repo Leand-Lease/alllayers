@@ -1,0 +1,39 @@
+{
+  "phProjectId": "21932",
+  "listingClientId": "15483",
+  "name": "Mani Test Project",
+  "yearBuild": 8.0,
+  "noOfStreetParking": "33.0",
+  "energyEfficiencyRating": "0.0",
+  "newConstruction": false,
+  "url": "http://facebook.com/test",
+  "address": {
+    "postcode": "2060",
+    "state": "NSW",
+    "longitude": "11.4587",
+    "suburb": "North Sydney",
+    "streetNumber": "110",
+    "streetName": "walker street",
+    "country": "Australia",
+    "latitude": "10.1452"
+  },
+  "vitualTourURL": "http://facebook.com/test",
+  "videoURL": "http://facebook.com/test",
+  "externalLink1": "http://facebook.com/testing",
+  "externalLink2": "http://facebook.com/test",
+  "upcomingAuction": "Yes",
+  "auction": {
+    "auctionDate": "2020-01-31"
+  },
+
+    "email": "mani.hosseini@mulesoft.com",
+    "phone": "0406948793",
+  
+  "salesAuthority": "For Lease",
+  "methodOfSales": "Exclusive",
+  "publishTo": "REA (realestate.com.au);Domain (domain.com.au);Sitecore",
+  "publishToForAudit": "Yes",
+  "listingAgentId": "308762",
+  "listingLastSyncStatus": "Succeeded",
+  "listingLastSyncDateTime": "2020-01-31T00:22:20.000Z"
+}

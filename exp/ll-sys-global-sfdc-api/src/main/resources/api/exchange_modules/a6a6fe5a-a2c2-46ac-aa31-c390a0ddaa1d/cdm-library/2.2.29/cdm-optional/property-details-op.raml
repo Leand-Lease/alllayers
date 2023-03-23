@@ -1,0 +1,16 @@
+#%RAML 1.0 DataType
+description: Property with all its dependencies including features, media, listing and inspectionTime
+
+type: !include property-op.raml
+
+properties:
+  media?: !include media-op.raml
+  listings?: 
+    type: array
+    required: false
+    items: !include listing-op.raml
+  features?: !include feature-op.raml
+  inspectionTimes?: 
+    type: array 
+    required: false
+    items: !include inspection-time-op.raml

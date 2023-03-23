@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+    <http:listener-config name="sys-global-sfdc-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="sys-global-sfdc-config" api="api\sys-global-sfdc.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <!-- <anypoint-mq:config name="Anypoint_MQ_Config" doc:name="Anypoint MQ Config" doc:id="42c7672a-fd64-4183-b3b7-474062f3f356" >
+		<anypoint-mq:connection clientId="${secure::anypoint.mq.client.id}" clientSecret="${secure::anypoint.mq.client.secret}" url="${anypoint.mq.url}"/>
+	</anypoint-mq:config> -->
+	<flow name="sys-global-sfdc-main">
+        <http:listener config-ref="sys-global-sfdc-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="sys-global-sfdc-config" />
+    </flow>
+    <flow name="sys-global-sfdc-console">
+        <http:listener config-ref="sys-global-sfdc-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="sys-global-sfdc-config" />
+    </flow>
+    <flow name="get:\products\(productId)\features:sys-global-sfdc-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="productId">attributes.uriParams.'productId'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="get-product-features-by-id" doc:id="07190974-779c-487b-a521-59207a897741" name="main-products:\get-product-features-by-id"/>
+		<logger level="INFO" message="get:\products\(productId)\features:application\json:sys-global-sfdc-config" />
+		<error-handler ref="sync-error-handler"/>
+    </flow>
+    <flow name="put:\products\(productId)\inspection-times:application\json:sys-global-sfdc-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="e42054e6-a73c-4c29-9266-37beb85c145c">
+            <ee:variables>
+                <ee:set-variable variableName="productId"><![CDATA[attributes.uriParams.'productId']]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Put ptoduct inspection times" doc:id="46073aa8-0b91-4d4f-871c-e4fa1da801fa" name="main-products:\put-product-inspection-times"/>
+		<logger level="INFO" message="put:\products\(productId)\inspection-times:application\json:sys-global-sfdc-config" />
+        <error-handler ref="sync-error-handler"/>
+    </flow>
+    <flow name="put:\products\(productId)\media:application\json:sys-global-sfdc-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="ba1e1497-d8a1-46d9-8ebd-c3772e5bde7e">
+            <ee:variables>
+                <ee:set-variable variableName="productId"><![CDATA[attributes.uriParams.'productId']]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Put product media" doc:id="218d0da0-780d-4f04-9a31-31715ca9c277" name="main-products:\put-product-media"/>
+		<logger level="INFO" message="put:\products\(productId)\media:application\json:sys-global-sfdc-config" />
+        <error-handler ref="sync-error-handler"/>
+    </flow>
+    <flow name="patch:\products\(productId)\listings:application\json:sys-global-sfdc-config">
+        <set-variable value="#[%dw 2.0
+output application/json
+---
+if(attributes.uriParams.'productId' != null) attributes.uriParams.'productId' else payload.productId]" doc:name="productId" doc:id="5e626856-1782-4201-be24-2c5df6ab63ce" variableName="productId"/>
+        <flow-ref doc:name="main-listings:\\patch-product-listings" doc:id="6c44d6cd-c3cf-4609-a6d2-f4f9459940b9" name="main-listings:\\patch-product-listings"/>
+		<error-handler ref="sync-error-handler"/>
+    </flow>
+    <flow name="patch:\products\(productId):application\json:sys-global-sfdc-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="c6620a91-8bfc-4e1e-ac8b-e55518cc8483">
+            <ee:variables>
+                <ee:set-variable variableName="productId"><![CDATA[attributes.uriParams.'productId']]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Patch product by Id" doc:id="459ac14c-cc81-4cc9-a5a8-af56b351941e" name="main-products:\patch-product-by-id"/>
+		<logger level="INFO" message="patch:\products\(productId):application\json:sys-global-sfdc-config" />
+		<error-handler ref="sync-error-handler"/>
+    </flow>
+    <flow name="patch:\projects\(projectId):application\json:sys-global-sfdc-config">
+        <set-variable value="#[attributes.uriParams.'projectId']" doc:name="projectId" doc:id="387ae382-18a9-4fd7-933a-4b7e5cc08c4b" variableName="projectId"/>
+        <flow-ref doc:name="main-projects:\patch-project-by-id" doc:id="ea25b991-a39c-4820-9d3f-9cc09307373e" name="main-projects:\patch-project-by-id"/>
+		<error-handler ref="sync-error-handler"/>
+    </flow>
+    <flow name="get:\projects\(projectId)\units:sys-global-sfdc-config">
+        <set-variable value="#[attributes.uriParams.'projectId']" doc:name="unitProjectId" doc:id="4ea18ed6-6ca9-48ad-93d0-f485fe3d799d" variableName="unitProjectId"/>
+		<flow-ref doc:name="main-projects:\get-units-by-project-id" doc:id="549473f9-6021-4cf9-9e22-58647a0a7321" name="main-projects:\get-units-by-project-id"/>
+		<error-handler ref="sync-error-handler" />
+    </flow>
+    <flow name="get:\products\(productId)\inspection-times:sys-global-sfdc-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="de7c65d6-5f6b-424c-8a45-073bc94cc5e7">
+            <ee:variables>
+                <ee:set-variable variableName="productId"><![CDATA[attributes.uriParams.'productId']]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Get product inspection time" doc:id="873f30aa-5ba9-4e1a-82be-d2dc7906276b" name="main-products:\get-product-inspection-times-by-id"/>
+		<logger level="INFO" message="get:\products\(productId)\open-times:application\json:sys-global-sfdc-config" />
+		<error-handler ref="sync-error-handler"/>
+    </flow>
+    <flow name="get:\products\(productId)\listings:sys-global-sfdc-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="ec7f068f-e003-4600-aa93-ddaba2cc5dde">
+            <ee:variables>
+                <ee:set-variable variableName="productId"><![CDATA[attributes.uriParams.'productId']]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Get product listings by id" doc:id="226f36bd-015d-4d72-97b4-cdada6fbcb8d" name="main-products:\get-product-listings-by-id"/>
+		<logger level="INFO" message="get:\products\(productId)\listings:application\json:sys-global-sfdc-config" />
+		<error-handler ref="sync-error-handler"/>
+    </flow>
+    <flow name="get:\products\(productId)\media:sys-global-sfdc-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="de10d69b-d76c-4776-9232-77e1e5e00e4c">
+            <ee:variables>
+                <ee:set-variable variableName="productId"><![CDATA[attributes.uriParams.'productId']]></ee:set-variable>
+				<ee:set-variable variableName="projectId" ><![CDATA[attributes.queryParams.projectId default null]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Get product media by id" doc:id="0a6cfc32-1eab-4847-bda3-5b18c5687654" name="main-products:\get-product-media-by-id"/>
+		<logger level="INFO" message="get:\products\(productId)\media:application\json:sys-global-sfdc-config" />
+		<error-handler ref="sync-error-handler"/>
+    </flow>
+    <flow name="get:\projects:sys-global-sfdc-config">
+        <flow-ref doc:name="main-projects:\get-projects" doc:id="20398904-068c-42aa-ba85-954a87020627" name="upsert-units-in-sf"/>
+		<error-handler ref="sync-error-handler" />
+    </flow>
+    <flow name="get:\products\(productId):sys-global-sfdc-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="a7ee7aa3-de2e-4ca5-b886-ad2dad42a3a6">
+            <ee:variables>
+                <ee:set-variable variableName="productId"><![CDATA[attributes.uriParams.'productId']]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Get product by Id" doc:id="96377dee-10e4-4ba5-ae7b-60f628b7cfc2" name="main-products:\get-product-by-id"/>
+		<logger level="INFO" message="get:\products\(productId):application\json:sys-global-sfdc-config" />
+		<error-handler ref="sync-error-handler"/>
+    </flow>
+    <flow name="get:\projects\(projectId):sys-global-sfdc-config">
+        <set-variable value="#[attributes.uriParams.projectId]" doc:name="projectId" doc:id="fef0a903-a003-467c-b639-aa55dac5acbc" variableName="projectId"/>
+		<flow-ref doc:name="main-projects:\\get-project-by-id" doc:id="80f9b2bc-33f7-4cb5-b2bb-43df86a1f202" name="read-yExplore-from-ftp-folder-sub-flow"/>
+		<error-handler ref="sync-error-handler"/>
+    </flow>
+<!-- 	<flow name="proc-yardi2sf-unit-sync" doc:id="a0f31f97-76f0-453b-82b5-b889e4a11d1b" >
+		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="059a3b7a-7731-4735-95ab-d1ef3ab79210" config-ref="Anypoint_MQ_Config" destination="ll.yardi.unit.upsert.q"/>
+		<logger level="INFO" doc:name="Logger" doc:id="16c18266-cdd7-418d-9500-16aa6e94a663" />
+		<flow-ref doc:name="main-units:\upsert-products" doc:id="06dcb2b4-0c9c-4391-8d65-dbb094681398" name="main-units:\upsert-products"/>
+		<error-handler ref="sync-error-handler" />
+	</flow> 
+	<flow name="proc-yardi2sf-unitsAvailability-sync" doc:id="dd1cc2c5-8a0d-46c9-8042-9604dfcfeb3b" >
+		<anypoint-mq:subscriber doc:name="Subscriber" doc:id="34107247-6401-41b9-988c-14f68c60d5da" config-ref="Anypoint_MQ_Config" destination="${unit.availability.publish.q}"/>
+		<logger level="INFO" doc:name="Logger" doc:id="895a7819-3ce4-49d8-9197-3c50e4da6d71" />
+		<flow-ref doc:name="main-units:\update-products" doc:id="088f2edf-f0d0-42ff-aace-79675562bb82" name="main-units:\update-products"/>
+		<error-handler ref="sync-error-handler" />
+	</flow> -->  
+</mule>

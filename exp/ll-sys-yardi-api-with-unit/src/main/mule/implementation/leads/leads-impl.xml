@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="post-lead-validate-request" doc:id="07032917-af5d-4fb6-91e3-926bd21e1a49" >
+
+		<json-logger:logger doc:name="Payload Request" doc:id="19bd5789-d902-4828-8b05-9386c9d0e6be" message='"correlationId:" ++ correlationId ++ " - start processing  to build rentCafe request"' tracePoint="BEFORE_TRANSFORM">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<ee:transform doc:name="Validate request" doc:id="9cfb800e-1364-4eab-a226-692b4027aa13" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="validate_payload" ><![CDATA[%dw 2.0
+output application/json
+---
+
+	if (payload.property.productCode as String == "" or payload.property.productCode == null)  "Product code is required" 
+	else if (payload.agent.fullName == "" or payload.agent.fullName == null)  "Agent full name is required" 
+	else if (payload.contact.address.streetNumber == "" or payload.contact.address.streetNumber == null) "Contact Street Number is required" 
+	else if (sizeOf(payload.contact.address.streetNumber) > 40 ) "Contact Street Number should be max 40 characters" 
+	else if(payload.contact.address.streetName == "" or payload.contact.address.streetName == null) "Address Street Name is required" 
+	else if(sizeOf(payload.contact.address.streetName) > 40 ) "Contact Street Name should be max 40 characters"
+	else if(payload.contact.address.unitNumber == "" or payload.contact.address.unitNumber == null) "Unit Number is required" 
+	else if(sizeOf(payload.contact.address.unitNumber) > 40 ) "UnitNumber should not max 40 characters" 
+	else if(payload.contact.address.state == "" or payload.contact.address.state == null) "Address State is required" 
+	else if(sizeOf(payload.contact.address.state) > 4 ) "State should be max 4 characters" 
+	else if(payload.contact.address.postcode == "" or payload.contact.address.postcode == null) "Address Zipcode is required" 
+	else if(sizeOf(payload.contact.address.postcode) > 12 ) "Postcode should be max 12 characters"
+	else if(payload.campaign.source == "" or payload.campaign.source == null) "Campaign source is required" 
+	else if(payload.project.propertyCode == "" or payload.project.propertyCode == null) "ProductCode is required" 
+	else "true"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="2c2004d6-ed31-4b9c-bd5b-eac5d5be14e6" >
+			<when expression='#[vars.validate_payload == "true"]'>
+				<flow-ref doc:name="post-lead-build-rentCafe-request" doc:id="5258c57c-0ee5-45d7-adf7-45a1d686e10d" name="post-lead-send-request"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="f3ae0660-cc14-4d2c-80ea-77b0647e3059" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Success: false,
+	CorrelationId: correlationId,
+	ErrorCode: "INVALID_DATA",
+	ErrorMessage: (vars.validate_payload default "")
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+500]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		
+	</sub-flow>
+	<sub-flow name="post-lead-build-rentCafe-request" doc:id="9cb3ef48-a4f3-401b-a588-51ea7e89df13" >
+		<set-variable value='#["#Agent=" ++ (payload.agent.fullName) ++ "# " ++ "#Unit_Code=" ++ payload.property.productCode++ "# " ++ "#Tenant_Type=" ++ payload.lease.tenantType ++ "# " ++ "#Ext_ref_Prospect_id=" ++ payload.extLeadId ++ "# " ++ "#Ext_ref_Tenant_id=" ++ payload.contact.extContactId ++ "# " ++ "#LeaseStart=" ++ payload.lease.startDate ++ "# " ++ "#LeaseEnd=" ++ payload.lease.endDate ++ "#"]' doc:name="Build Message" doc:id="a2cab453-c455-47e9-b860-773be8fa6fa9" variableName="BuildMessage" mimeType="application/json"/>
+		<ee:transform doc:name="Build rentCafe Request" doc:id="0acb21b9-c5c2-460e-9a07-f2c22c2cd84e" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="url_01_other_params" ><![CDATA[import * from dw::core::URL
+output application/java
+---
+"requestType=Lead&message=" ++ (encodeURIComponent(vars.BuildMessage)) ++ "&source=" ++ payload.campaign.source ++ "&propertyCode=" ++ payload.project.propertyCode 
+]]></ee:set-variable>
+				<ee:set-variable variableName="url_02_contact_params" ><![CDATA[import * from dw::core::URL
+output application/java
+---
+"&firstName=" ++ (encodeURIComponent(payload.contact.firstName)) ++ "&lastName=" ++ (encodeURIComponent(payload.contact.lastName)) ++ "&email=" ++ payload.contact.email ++ "&phone=" ++ payload.contact.phone ]]></ee:set-variable>
+				<ee:set-variable variableName="url_03_contact_address_params" ><![CDATA[import * from dw::core::URL
+output application/java
+---
+"&addr1=" ++ encodeURIComponent(payload.contact.address.streetNumber ++ " " ++ payload.contact.address.streetName) ++ "&addr2=" ++ (encodeURIComponent(payload.contact.address.unitNumber)) ++ "&state=" ++ payload.contact.address.state ++ "&zipcode=" ++ payload.contact.address.postcode
+]]></ee:set-variable>
+			
+</ee:variables>
+			
+		</ee:transform>
+		<set-variable value="#[(vars.url_01_other_params) ++ (vars.url_02_contact_params) ++ (vars.url_03_contact_address_params) ++ (&quot;&amp;username=&quot; ++ p('rentCafe.username')) ++ (&quot;&amp;password=&quot; ++ p('secure::rentCafe.password'))]" doc:name="rentCafe Request" doc:id="30b5a53d-6b2b-4692-8d5e-da2408be0c44" variableName="rentCafeRequest" />
+		<json-logger:logger doc:name="Logger" doc:id="dafac02d-2fcf-4574-b3ae-b1b0500e8ff9" tracePoint="AFTER_TRANSFORM" message='"Builded rentCafe request" '>
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	rentCafeRequest: vars.rentCafeRequest
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<!-- <logger level="INFO" doc:name="Logger" doc:id="0127d754-b08f-4704-8409-974dd70c5111" message="#[payload]" /> -->  
+	
+	</sub-flow>
+	<sub-flow name="post-lead-send-request" doc:id="565db518-8691-4217-b4e8-cd43284fcb38" >
+		<flow-ref doc:name="Build rentCafe request" doc:id="b74a2745-c654-4d7d-b7e7-e86b9eb4a445" name="post-lead-build-rentCafe-request"/>
+		<ee:transform doc:name="rentCafe request" doc:id="9589d7bf-4ca2-465f-8c0e-b348680a4a24">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+vars.rentCafeRequest ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="GET" doc:name="rentCafe Request" doc:id="96544cbd-f334-4cc3-a139-9ef12a67760e" config-ref="HTTP_Request_configuration" path="/${rentCafe.basePath}?{requestParams}" outputMimeType="application/json">
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"requestParams" : vars.rentCafeRequest
+}]]]></http:uri-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="add66bd0-3f7e-4623-a5b0-943d5f70b067" message="#[payload]" />
+		<ee:transform doc:name="Transform Message" doc:id="338d529c-bf36-4cc4-a670-5488d9b0e15f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+fun errorMessage(errorCode) = 
+	if(errorCode == 1000) "Invalid Credentials"
+	else if(errorCode == 1010) "Invalid Company"
+	else if(errorCode == 1020) "Invalid Property"
+	else if(errorCode == 1030) "Invalid RequestType"
+	else if(errorCode == 1040) "Invalid User"
+	else if(errorCode == 1050) "No data found for company/property"
+	else if(errorCode == 1060) "No active property found for the property"
+	else if(errorCode == 1070) "Property not configured for API"
+	else if(errorCode == 1100) "Other Error"
+	else if(errorCode == 5000) "Data set too large"
+	else if(errorCode == 9999) "Request is denied"
+	else "Success"	
+	
+var messageKey = (payload[0] pluck($$))[0] as String
+var msg = (if(messageKey == "Error") payload[0].Error as Number else "Success")
+---
+
+	if (msg == "Success") 
+		{ Success: true as Boolean} 
+	else {	
+		Success: false as Boolean,
+		CorrelationId: correlationId as String,
+		ErrorCode: msg as String,    
+		ErrorMessage: errorMessage(msg) as String
+	}		
+	
+	
+]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+---
+500]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</sub-flow>
+	<flow name="leads-ipost-lead-validate-request(createdbyme)" doc:id="769800df-81f1-4c1f-a6b1-cc0ee06355eb" >
+		<logger level="INFO" doc:name="Payload Request" doc:id="d4ac3188-afda-49b8-8fd2-5d958fb55165" message='"correlationId:" ++ correlationId ++ " - start processing  to build rentCafe request"'/>
+	</flow>
+	<flow name="post-lead-build-rentCafe-request(createdbyme)" doc:id="817e6fad-3d17-48ac-9181-a1b15acc3b57" >
+		<logger level="INFO" doc:name="Logger" doc:id="81095616-d63c-455c-9139-535b20a0284d"  message='"Builded rentCafe request" ' />
+	</flow>
+</mule>	

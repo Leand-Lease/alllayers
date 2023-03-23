@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<sub-flow name="get-lease-from-ftp-sub-flow" doc:id="16c53820-a3ea-472e-b7cb-ed52f74c30b5" >
+		<try doc:name="Try" doc:id="a4ab988d-3f63-437d-ad1c-117cb918fb55" >
+			<sftp:list doc:name="moveoutreason FTP folder files list" doc:id="4f0aeb9d-5ac5-4aaa-a575-65f6fb20ed29" config-ref="sftp" directoryPath="${sftp.lease.directory.path}">
+				<sftp:matcher />
+			</sftp:list>
+		</try>
+		<json-logger:logger doc:name="Logger" doc:id="8f1681ad-f1cb-43f1-a51d-3b100e66da6f" message='"roommate files from FTP folder"'/>
+		<ee:transform doc:name="sort lease list of csv files" doc:id="2179485a-1e74-44f9-8460-7233d5987bca">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+(payload filter ($.attributes.fileName contains /moveoutQ_lease_MoveOutReason/) orderBy $.attributes.timestamp)[-1 to 0] ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+		<choice doc:name="Choice" doc:id="71d7c940-3bea-43b8-8664-f3c57af81831" >
+			<when expression="#[!isEmpty(payload)]">
+				<try doc:name="Try" doc:id="4af8bb32-4880-4d36-b6b7-1852eb5c1b45" >
+					<sftp:read doc:name="Read Lease file" doc:id="80771559-e01a-4430-87ce-48fc09ce880a" config-ref="sftp" path="#[p('sftp.lease.directory.path') ++ '/' ++ payload[0].attributes.fileName]" outputMimeType="text/plain" outputEncoding="UTF-16" />
+					<ee:transform doc:name="Write in csv format" doc:id="740fed10-2785-42e6-a36b-02a10b688c93">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/csv
+var csvString = trim((payload as String) replace('Move Out Reasons for Leases on Notice') with(''))
+---
+read(csvString,"application/csv",{"header":true})]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+					</ee:variables>
+				</ee:transform>
+					<json-logger:logger doc:name="Lease formatted csv data" doc:id="61299c7d-3824-4d64-b99a-63919efd6c74" tracePoint="AFTER_TRANSFORM" message='"Lease formatted csv data"' />
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b0b25486-51a6-4315-9a43-6ec9e526d9f6" >
+							<ee:transform doc:name="empty payload" doc:id="6b980572-7068-4a73-96a9-ed9d6fb2ddfa" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[]]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			
+
+</when>
+			<otherwise >
+				<json-logger:logger doc:name="Lease Files not found" doc:id="866ce813-4e2a-4110-be95-ce32c2555d6f" message='#["File not found from /moveoutreason folder"]' tracePoint="AFTER_REQUEST"/>
+				<ee:transform doc:name="empty payload" doc:id="6f85c6d2-82f3-4fbd-9cd6-7404a897f7d5" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</otherwise>
+		</choice>
+		<ee:transform doc:name="csv to json" doc:id="86e3e7ec-21d7-43de-8a1c-80f0cc3df9a3">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+				<ee:set-variable variableName="lease_records" ><![CDATA[%dw 2.0
+output application/json
+---
+if(sizeOf(payload) > 0)
+	payload map (item,index) -> {
+		TenantRoomCode:item.TenantRoomCode,
+		LeadTenantCode:item.LeadTenantCode,
+		TenantType:item.TenantType,
+		UnitCode:item.UnitCode,
+		MoveOut:item.MoveOut,
+		NoticeDate:item.NoticeDate,
+		TenantsExtRef:item.TenantsExtRef,
+		ProspectExtRef:item.ProspectExtRef,
+		MoveOutReason:item.MoveOutReason,
+		MoveOutText:item.MoveOutText,
+		Filename:item.Filename
+	}
+else
+	[]	]]></ee:set-variable>
+				<ee:set-variable variableName="lease_archive_file_path" ><![CDATA[%dw 2.0
+output application/json
+---
+if(sizeOf(payload) > 0)
+	{
+		"sourcePath": p('sftp.lease.directory.path') ++ "/" ++ attributes.fileName as String, 
+		"targetPath": p('sftp.move.file.moveoutreason.path'),
+		"renameTo": (attributes.fileName as String replace (".csv") with "") ++ '_' ++ now() as String {format: "ddMMyyyyhhmmss"} ++ ".csv"
+	}
+else
+	[]]]></ee:set-variable>
+					
+</ee:variables>
+				</ee:transform>
+		<json-logger:logger doc:name="last modified lease file info" doc:id="dfaf6728-6bfa-4a26-9630-184fd2531ae9" message='#["last modified lease file details"]' tracePoint="AFTER_TRANSFORM"/>
+		<flow-ref doc:name="lease-upsert-flow" doc:id="61cd3fc3-fbcd-4827-8def-55e293ef684a" name="lease-upsert-flow"/>
+	
+
+</sub-flow>
+	<flow name="lease-upsert-flow" doc:id="ab4ad447-1381-4df8-9dbe-9f7607eef5e7" >
+		<ee:transform doc:name="Tenant and Lease merge" doc:id="1c9ff0fb-870a-42f5-a8c8-ea9a0df56ad7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+import * from modules::functions
+output application/java
+
+fun formattedDate(dt) = (if(!isEmpty(dt)) (dt as Date{format: 'dd/MM/yyyy'} as Date{format: 'yyyy-MM-dd'}) else null)
+var joinedData = outerJoin(vars.tenant_records filter ($.Tenant_Code != ""), vars.lease_records filter ($.LeadTenantCode != ""), (obj) -> obj.Tenant_Code as String default "", (obj) -> obj.LeadTenantCode as String default "")
+---
+joinedData
+     reduce ((item, lease = []) ->
+     	if((item.l? and item.r?) or (item.l? and not item.r?))
+        	lease ++ [{        		
+        			SYS_ExternalPMSLeaseId__c: item.l.Tenant_Code,	
+        			Name: item.l.Unit_code ++"_"++ item.l.Last_Name, 
+	        		BTR_ExternalContractID__c: item.l.Tenant_Code,
+					BTR_Status__c: leaseStatus(item.l.Status),
+					BTR_Evicted__c: if(item.l.Status == 3) true else false,
+					BTR_Rent__c: item.l.Rent,
+					BTR_MoveInDate__c: formattedDate(item.l.Move_In_Date),
+					BTR_SignedDate__c: formattedDate(item.l.Lease_Sign_Date),
+					(BTR_NoticeDate__c: formattedDate(item.r.Notice_Date)) if(item.r?),
+					BTR_LeaseStartDate__c: formattedDate(item.l.Lease_From_Date),
+					BTR_LeaseEndDate__c: formattedDate(item.l.Lease_To_Date),
+					(BTR_MoveOutDate__c: formattedDate(item.l.Move_Out_Date)) if(item.r?),
+					BTR_RenewDate__c: formattedDate(item.l.Renew_Date),
+					BTR_Children__c: item.l.General_Info_3,
+					BTR_Pets__c: item.l.General_Info_4,
+					BTR_Guarantor__c: item.l.General_Info_5,
+					BTR_Ages__c: item.l.General_Info_10,
+					BTR_Reference__c: item.l.General_Info_11,
+					BTR_MonthToMonth__c: if(item.l.MTM == -1) true else false, 
+					BTR_LeaseTerm__c: item.l.LeaseTerm,
+					(BTR_NoticeType__c: "Notice") if(item.l.NoticeType == 1)
+                }]	
+         else
+			lease ++ []       
+    ) ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="After Merge Lease with Tenant" doc:id="a0c04574-b810-4a18-8778-70719a9aa5ee" tracePoint="AFTER_TRANSFORM" message='"After Merge Lease with Tenant"'/>
+		<batch:job jobName="lease-update-batch-job" doc:id="ec9962bf-53ba-4514-bfef-a42e6f5b56ee" maxFailedRecords="-1">
+			<batch:process-records >
+				<batch:step name="lease-update-batch-step" doc:id="619b07ad-81ad-420f-b809-8875c807905d" >
+					<ee:transform doc:name="update field with null in sf" doc:id="8c606551-bc59-4824-b03c-1006c026e641" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+output application/java
+---
+	payload mapObject ((($$): $) if ($ != null)) ++
+    	"fieldsToNull": valueSet(payload mapObject (( key: $$ ) if(($ == null) or (isEmpty($))) )  )
+]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="638a29bc-8686-4545-8812-bbabb096cd41" size="10">
+						<salesforce:upsert objectType="BTR_Lease__c" externalIdFieldName="SYS_ExternalPMSLeaseId__c" doc:name="Upsert" doc:id="c66c2c38-203b-4781-8871-929043250c2c" config-ref="Salesforce_Config" />
+						<json-logger:logger doc:name="After update the Lease record" doc:id="e078db6a-5cd9-4385-9f63-64315c633e52" tracePoint="AFTER_REQUEST" message='"After update the Lease record"' />
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<flow-ref doc:name="lease-contact-role-flow" doc:id="e24ed1a5-6d83-4b92-ae9b-2a794826ab3d" name="lease-contact-role-flow"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+	<flow name="lease-contact-role-flow" doc:id="0daeb459-b301-48a0-b0e9-96c162179d3e" >
+		<ee:transform doc:name="LeaseContactRole Merge" doc:id="6224476c-bafd-4d91-96c9-3868cd43ab28" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+import * from modules::functions
+output application/java
+
+fun formattedDate(dt) = (if(!isEmpty(dt)) (dt as Date{format: 'dd/MM/yyyy'} as Date{format: 'yyyy-MM-dd'}) else null)
+var joinedData = outerJoin(vars.tenant_records filter ($.Ext_LeaseContactRole_Map != ""), vars.roommate_records filter ($.Tenant_Code != "" and $.Ext_Ref_Tenant_Id != ""), (obj) -> obj.Ext_LeaseContactRole_Map as String default "", (obj) -> (obj.Tenant_Code ++ "_" ++ obj.Ext_Ref_Tenant_Id) as String default "")
+---
+joinedData
+     reduce ((item, lease = []) ->
+     	if(item.l? and item.r?)
+        	lease ++ [{
+        			SYS_ExternalPMSLeaseConRoleId__c: (item.l.Tenant_Code ++ "_"++ item.l.Ext_Ref_Tenant_Id),
+	        		BTR_SubStatus__c: leaseStatus(item.l.Status),
+					BTR_ContactID__c: item.l.Ext_Ref_Tenant_Id,
+					BTR_LeaseID__r: {
+						"type": "Lease__c",
+						SYS_ExternalPMSLeaseId__c: item.l.Tenant_Code
+					},
+					BTR_RCode__c: item.r.Roommate_Code,
+					(BTR_MoveInDate__c: formattedDate(item.r.Roommate_MoveIn)) if(!isEmpty(item.r.Roommate_MoveIn)),
+					(BTR_MoveOutDate__c: formattedDate(item.r.Roommate_MoveOut)) if(!isEmpty(item.r.Roommate_MoveOut)),
+					(BTR_Role__c: contactRole(item.r.Roommate_Relationship)) if(contactRole(item.r.Roommate_Relationship) != "")
+
+                }]	
+         else
+			lease ++ []       
+    ) ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="Lease contact role data" doc:id="019132dc-a978-4ac2-8694-36f5f14a9e5b" tracePoint="AFTER_TRANSFORM" message='"LeaseContactRole record details"'/>
+		<batch:job jobName="leaseContactRole-batch-job" doc:id="2c2e75db-faf2-4f0b-8c6c-28f2f24fe3b0" maxFailedRecords="-1">
+			<batch:process-records >
+				<batch:step name="leaseContactRole-batch-step" doc:id="021831fc-0bfe-4b51-bef9-33d87d7b190a" >
+					<ee:transform doc:name="Transform Message" doc:id="e9da9792-fc8b-4d71-bd7b-870a64f27e67" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+output application/java
+---
+	payload mapObject ((($$): $) if ($ != null)) ++
+    	"fieldsToNull": valueSet(payload mapObject (( key: $$ ) if(($ == null) or (isEmpty($))) )  )
+]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="723e2a64-944e-4341-ac77-a3455661d3b8" size="10">
+						<salesforce:upsert objectType="BTR_LeaseContactRole__c" externalIdFieldName="SYS_ExternalPMSLeaseConRoleId__c" doc:name="Upsert Lease Contact Role" doc:id="67cd36ec-8857-4b6a-a057-a43099993358" config-ref="Salesforce_Config" />
+						<json-logger:logger doc:name="After upsert LeaseContactRole Logger" doc:id="a13b9ef4-5675-4ea6-83a4-d8f4c314c137" tracePoint="AFTER_TRANSFORM" message='"After upsert LeaseContactRole"' />
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<!-- <flow-ref doc:name="file-move-to-archieve-sub-flow" doc:id="28ee4aee-abf9-4d5f-9ae4-69ad0c3e9c86" name="file-move-to-archieve-sub-flow"/> -->
+				<json-logger:logger doc:name="delete the FTP files" doc:id="a628c4bc-df40-43bf-8695-ff8589e78d2a" message='"delete the FTP files"'>
+					<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+				</json-logger:logger>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+</mule>

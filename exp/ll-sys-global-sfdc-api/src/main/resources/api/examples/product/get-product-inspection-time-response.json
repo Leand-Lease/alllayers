@@ -1,0 +1,14 @@
+[
+    {
+      "sfId": "123abc",
+      "phId": "123",
+      "collateralId": "123abc",
+      "collateralAssociation": "product",      
+      "date": "2020-11-01",
+      "startTime": "11:00:00",
+      "endTime": "12:00:00",
+      "projectId": "123",
+      "productId":"456",
+      "markDeleteFlag": true
+    }
+]

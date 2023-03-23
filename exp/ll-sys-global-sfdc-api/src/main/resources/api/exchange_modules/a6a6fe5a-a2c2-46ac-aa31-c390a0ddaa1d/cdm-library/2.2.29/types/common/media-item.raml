@@ -1,0 +1,27 @@
+#%RAML 1.0 DataType
+
+properties:
+  sfId: 
+    type: string 
+    required: false
+    description: salesforce recordId
+  phId:
+    type: string
+    required: false
+    description: ID of the collateral in the external publisher system (Property Hub) 
+  order: integer
+  collateralId?: string
+  collateralAssociation: 
+    description: if it has productId its related to product otherwise its related to project
+    type: !include collateral-association.raml
+  url: string
+  markDeleteFlag?: boolean  
+  projectId:
+    type: string
+    required: true
+    description: "PLM_Project__c | Master-Detail(Project) | The related Project for this Marketing Collateral"
+  productId?:
+    type: string
+    required: false
+    description: "PLM_Product__c | Lookup(Product) | The related Product for this Marketing Collateral"  
+  description?: string

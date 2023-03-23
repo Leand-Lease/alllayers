@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="tenant-sync-test-suite.xml" />
+	  <munit:test name="get-roommates-from-ftp-sub-flowTest" doc:id="09af5d15-5a03-4a5e-a0c6-f6ec175a0d5c" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="roommate files list" doc:id="e95e850a-4bba-4e0b-b178-144eb98f16d1" processor="sftp:list">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="resRoommate FTP folder files list" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/roommates/roommate-file-list-response.json','application/json')]" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="ResRoommate file output" doc:id="c0456754-2da0-4868-a711-5ea4a6b5c379" processor="sftp:read">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Read Roommates file" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/roommates/roommate_file_output','text/plain')]" />
+					<munit-tools:attributes value='#[{
+			"symbolicLink": false,        
+			"regularFile": true,        
+			"directory": false,        
+			"path": "/upload/test/ResTenant/ResTenant.csv",        
+			"size": 589,        
+			"fileName": "ResTenant.csv",        
+			"timestamp": "2020-08-26T17:59:45"      
+		} ] ' />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="roommate-prospect-merge-and-upsert-contact-and-occupant-sub-flow" doc:id="0865cebe-f987-4241-a612-adc7156e2c8c" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="roommate-prospect-merge-and-upsert-contact-and-occupant-sub-flow" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="d7eaeccc-83ec-4371-b67c-7db455fdb4a9" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#["Success"]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get-roommates-from-ftp-sub-flow" doc:id="719cabbd-d294-4c82-ab51-32ef3b0bc0b3" name="get-roommates-from-ftp-sub-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="85641224-a93c-4054-812d-61d35cc75a4f" actual='#["Success"]' expected='#["Success"]'/>
+		</munit:validation>
+	</munit:test> 
+	<munit:test name="roommate-prospect-merge-and-upsert-contact-and-occupant-sub-flowTest" doc:id="5b4b188d-885c-45f6-85e8-78a01ce27161" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="update contact" doc:id="73d46ec9-68e6-49bf-98ab-69a4b9d88017" processor="salesforce:upsert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Upsert" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/roommates/roommate_sfdc_update_response.json','application/json')]" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="hed_relationship-upsert-flow" doc:id="b8eee5c6-09cb-463f-9c46-7e7761a62489" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="hed_relationship-upsert-flow" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#["Sucess"]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<set-variable value="#[readUrl('classpath://examples/tenants/tenant_input_response.json','application/json')]" doc:name="tenat_records" doc:id="36dbb04a-a5e8-4c64-808e-f05c70ca8bb4" variableName="tenant_records" />
+			<set-variable value="#[readUrl('classpath://examples/roommates/roommate_input_response.json','application/json')]" doc:name="roommate_records" doc:id="2df0f4cb-e416-4077-bd96-2d0b868bc27d" variableName="roommate_records" />
+			<set-variable value="#[readUrl('classpath://examples/prospects/prospect_input_response.json','application/json')]" doc:name="prospect_records" doc:id="aa8444fd-60f3-4ecc-8713-92f5ffc017ab" variableName="prospect_records" />
+			<flow-ref doc:name="roommate-prospect-merge-and-upsert-contact-and-occupant-sub-flow" doc:id="7e29a479-c80a-4f6d-a0d5-1cef434f619a" name="roommate-prospect-merge-and-upsert-contact-and-occupant-sub-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="439a51c6-aaca-4344-b425-957acc25e589" actual='#["Success"]' expected='#["Success"]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="roommate-sync-test-suiteTest" doc:id="4cab8ee2-515b-4acb-a802-6987a0ed40c4" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Upsert Relationship" doc:id="69eff9c3-d752-47e7-9b1d-b6587f1cc496" processor="salesforce:upsert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Upsert Relationship" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/roommates/roommate_hed_relationship_upsert_response.json','application/json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="opportunity-update-flow" doc:id="972b7f9d-d3a1-4fa8-8d10-0f74c77b7596" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="opportunity-update-flow" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#["Success"]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<set-variable value="#[readUrl('classpath://examples/roommates/roommate_input_response.json','application/json')]" doc:name="roommate_records" doc:id="d33befa0-644f-4162-8a5e-78f0ac362d94" variableName="roommate_records" />
+			<flow-ref doc:name="hed_relationship-upsert-flow" doc:id="827fb7e8-db08-47b4-b3d2-be25fedc50b3" name="hed_relationship-upsert-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="181175bd-b627-4b4c-b234-4e03856c8db0" actual='#["Success"]' expected='#["Success"]'/>
+		</munit:validation>
+	</munit:test>
+
+
+
+</mule>

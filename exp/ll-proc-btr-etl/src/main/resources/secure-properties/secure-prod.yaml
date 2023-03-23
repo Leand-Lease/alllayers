@@ -1,0 +1,12 @@
+https:
+  key:
+    password: "![v2Zq4L14y5ILUJ7laxwGag==]"
+  keystore:
+    password: "![v2Zq4L14y5ILUJ7laxwGag==]"
+
+anypoint.mq:
+  client.id: "96a1d4e517e740a48cbbf610dd040ec7"
+  client.secret: "489BFf39FdF14Db390c2f900De7bFFBb"
+  
+sftp:
+  password: "OwVgYZLT"  

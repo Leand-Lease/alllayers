@@ -1,0 +1,11 @@
+Tenant_Code,Ext_Ref_Tenant_Id,Roommate_PhoneNumber1,Roommate_PhoneNumber2,Roommate_PhoneNumber3,Roommate_PhoneNumber4,Roommate_UserDefined0,Roommate_UserDefined1,Roommate_UserDefined2,Roommate_UserDefined3,Roommate_UserDefined4,Roommate_UserDefined5,Roommate_UserDefined6,Roommate_UserDefined7,Roommate_UserDefined8,Roommate_UserDefined9,Roommate_SSN,Property_Code,Ref_Property_ID,Unit_Code,Ref_Unit_Id,Ext_Ref_Roommate_Id,Roommate_Salutation,Roommate_LastName,Roommate_FirstName,Roommate_Email,Roommate_ALTEmail,Roommate_MoveIn,Roommate_MoveOut,Occupant_Type,Roommate_Occupant,Roommate_ACHOptOut,Roommate_Relationship,Roommate_Notes,Roommate_Code
+t0000001,,,,,,'','','','','','','','','',,,44400001,,A-0103,,,,Roommate1,TEST,,,,,0,0,0,Roommate,,r0000001
+t0000001,,,,,,'','','','','','','','','',,,44400001,,A-0103,,,,Roommate2,TEST,,,,,0,0,0,Roommate,,r0000010
+t0000002,,123456789,234567891,345678912,456789123,,,,,,,,,,,,rc_test,,RCUNIT05,,,,Marvel,Captain,,,13/06/2020,,0,0,0,Roommate,,r0000002
+t0000003,,123456789,234567891,345678912,456789123,,,,,,,,,,,,rc_test,,RCUNIT01,,,,Bunny,Benjamin,,,20/06/2020,,0,0,0,Roommate,,r0000003
+t0000210,,,,,,,,,,,,,,,,,44400001,,D-2402,,,,Fish,Star,,,22/08/2020,,0,-1,0,Other,,r0000004
+t0000211,,,,,,,,,,,,,,,,,44400001,,A-0701,,,,Musk,Elon,,,21/08/2020,,0,-1,0,Roommate,,r0000005
+t0000212,,,,,,'','','','','','','','','',,,rc_test,,RCUNIT04,,,,TESTG,B1,iamguarantor@gmail.gz,,,,0,-1,0,Guarantor,,r0000006
+t0000213,,,,,,,,,,,,,,,,,44400001,,B-0603,,,,Odinson,Loki,loki@gmail.gz,,03/08/2020,,0,-1,0,Roommate,,r0000007
+t0000214,,,,,(852) 456-9173,,,,,,,,,,,,44400001,,D-2408,,,,Pan,Peter,peterpan@neverland.gz,,03/08/2020,,0,0,0,Roommate,,r0000008
+t0000214,,,,,,,,,,,,,,,,,44400001,,D-2408,,,,Hook,Captain,captainhook@neverland.gz,,03/08/2020,,0,-1,0,Guarantor,,r0000009

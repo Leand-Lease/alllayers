@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<json-logger:config name="JSON_Logger_Config" doc:name="JSON Logger Config" doc:id="6e984904-888e-41ce-b0e3-4f527aa740bd" />
+	<!-- <flow name="pe-exp-global-sfdc:\get-listing-commercial-update-pe" doc:id="617b981a-5a52-42ce-982e-e248565b6f79" >
+		<salesforce:replay-channel doc:name="Listen to LISTING COMMERCIAL UPDATE PE" doc:id="ca70db00-f352-4cc7-b4d1-654dcf72cd37" config-ref="Salesforce_Config" streamingChannel="${pe.listing.commercial.update.channel}" replayOption="FROM_REPLAY_ID" replayId="-1" autoReplay="true"/>
+		<ee:transform doc:name="Transform to JSON" doc:id="592a0daa-75af-411d-92b6-339b7dd1ae21">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+-&#45;&#45;
+{
+    "header": {
+        "correlationId": correlationId,
+        "entity": "listing-commercial-update",
+        "source": "global-org"    
+    },
+    "payload": {
+        "productId": payload.data.payload.PLM_ProductID__c,
+        "phProductId": payload.data.payload.PLM_PublisherID__c,
+        "price": payload.data.payload.PLM_Price__c,
+        "status": payload.data.payload.PLM_Status__c
+    }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="Log: Event trigger" doc:id="13d7baab-9790-4644-87e3-06243659232d" config-ref="JSON_Logger_Config" tracePoint="FLOW" message='#["Publishing Platform Event for Listing Commerical Update with id: " ++ payload.payload.productId]'>
+			<json-logger:content><![CDATA[#[output application/json -&#45;&#45;
+{
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<anypoint-mq:publish doc:name="Publish to AMQ" doc:id="3ef48bda-f31c-4c77-a8a8-405fe63d22d4" config-ref="Anypoint_MQ_Config" destination="${listing.commercial.update.platform.event.q}"/>
+	</flow>
+	
+	<flow name="pe-exp-global-sfdc:\get-listing-publish-pe" doc:id="bb99be56-989d-4f9c-893c-4f7d329feb70" >
+		<salesforce:replay-channel doc:name="Listen to LISTING PUBLISH PE" doc:id="db985e4a-0836-4d7e-81cd-1b76785f9287" config-ref="Salesforce_Config" streamingChannel="${pe.listing.publish.channel}" replayOption="FROM_REPLAY_ID" replayId="-1" autoReplay="true"/>
+		<ee:transform doc:name="Transform to JSON" doc:id="9f7d61c0-5d12-4bbc-b411-64e61664150d">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+-&#45;&#45;
+{
+    "header": {
+        "correlationId": correlationId,
+        "entity": "listing-publish",
+        "source": "global-org"    
+    },
+    "payload": {
+        "productId": payload.data.payload.PLM_ProductID__c
+    }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="Log: Event trigger" doc:id="3d21e291-1d1f-4699-8976-1fd43b59acf1" config-ref="JSON_Logger_Config" tracePoint="FLOW" message='#["Publishing Platform Event for Listing Publish with id: " ++ payload.payload.productId]'>
+			<json-logger:content ><![CDATA[#[output application/json -&#45;&#45;
+{
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<anypoint-mq:publish doc:name="Publish to AMQ" doc:id="af4aa00b-912a-4a80-a890-96edfef163b9" config-ref="Anypoint_MQ_Config" destination="${listing.publish.platform.event.q}"/>
+	</flow>
+	
+	<flow name="pe-exp-global-sfdc:\get-project-publish-pe" doc:id="e4b269b6-b369-4d64-bf35-7c8e66ca87eb" >
+		<salesforce:replay-channel doc:name="Listen to PROJECT PUBLISH PE" doc:id="5345af16-a3ee-4e43-86dd-78c226db68d6" config-ref="Salesforce_Config" streamingChannel="${pe.project.publish.channel}" replayOption="FROM_REPLAY_ID" replayId="-1" autoReplay="true"/>
+		<ee:transform doc:name="Transform to JSON" doc:id="4a681405-4997-42b7-b3d6-b765a5cf0047">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+-&#45;&#45;
+{
+    "header": {
+        "correlationId": correlationId,
+        "entity": "project-publish",
+        "source": "global-org"    
+    },
+    "payload": {
+        "projectId": payload.data.payload.PLM_ProjectID__c
+    }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="Log: Event trigger" doc:id="9efbbf46-34dc-48c5-b989-b2fa7fc5a0e1" config-ref="JSON_Logger_Config" tracePoint="FLOW" message='#["Publishing Platform Event for Listing Publish with id: " ++ payload.payload.projectId]'>
+			<json-logger:content><![CDATA[#[output application/json -&#45;&#45;
+{
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<anypoint-mq:publish doc:name="Publish to AMQ" doc:id="dce8dbd0-6452-4bd8-bf1a-b5400bc4bf4e" config-ref="Anypoint_MQ_Config" destination="${project.publish.platform.event.q}"/>
+	</flow> -->  
+	
+	<flow name="exp-global-sfdc-main">
+        <http:listener config-ref="exp-global-sfdc-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="exp-global-sfdc-config" />
+    </flow>
+    <flow name="exp-global-sfdc-console">
+        <http:listener config-ref="exp-global-sfdc-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="exp-global-sfdc-config" />
+    </flow>
+    <flow name="post:\application:application\json:exp-global-sfdc-config">
+		<flow-ref doc:name="main-applications:\post-application-sub-flow" doc:id="db475638-fe31-4dca-9376-0eca8c67f066" name="main-applications:\post-application-sub-flow"/>
+		<error-handler ref="sync-error-handler" />
+
+    </flow>  
+</mule>

@@ -1,0 +1,21 @@
+#%RAML 1.0 DataType
+description: datatype that represents a lease and its relevant attributes
+
+properties:
+  startDate: 
+    type: date-only
+    required: true
+    displayName: Start Date
+    description: Start Date
+  endDate: 
+    type: date-only
+    required: true
+    displayName: End Date
+    description: End Date
+  tenantType: 
+    enum:
+      - Individual
+      - Business 
+    required: true
+    displayName: Tenant Type
+    description: Tenant Type

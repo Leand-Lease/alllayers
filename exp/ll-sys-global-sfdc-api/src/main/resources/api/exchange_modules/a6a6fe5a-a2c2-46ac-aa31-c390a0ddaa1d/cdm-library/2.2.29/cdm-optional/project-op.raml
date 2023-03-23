@@ -1,0 +1,173 @@
+#%RAML 1.0 DataType
+description: Office with all its dependencies 
+
+properties:
+  projectId: 
+    type: string 
+    required: false
+    description: salesforce recordId
+    displayName:  Project Id
+  phProjectId:
+    type: string
+    required: false
+    description: ID of the collateral in the external publisher system (Property Hub)  - office_id
+    displayName: Property Hub Project Id 
+  listingClientId:
+    type: string
+    required: false
+    displayName: Listing client id
+    description: Reference to the Client ID of the external listing. This refers to the Client ID for Property Hub
+  name: 
+    type: string 
+    required: false
+    description: Project Name
+    displayName:  Project Name
+  description: 
+    type: string
+    required: false
+    displayName: Project Description
+    description: Project/Office description
+  status: 
+    type: string
+    required: false
+    displayName: Project Description
+    description: Project/Office description
+  yearBuild: 
+    type: integer
+    required: false 
+    description: The year the project was built
+    displayName: Year Build
+  noOfStreetParking: 
+    type: integer
+    required: false
+    description: The number of off street parking spaces for listing purposes. Note that this can be overwritten at Product level.
+    displayName: Number of street parking
+  energyEfficiencyRating: 
+    type: integer
+    required: false 
+    description: The Energy Efficiency Rating (EER) of the project for listing purposes. Note that this can be overwritten at Product level.
+    displayName: Energey Efficiency Rating
+  newConstruction: 
+    type: boolean
+    required: false
+    description: Flag to identify whether this project is newly constructed
+    displayName: New Construction
+  url: 
+    type: string
+    required: false
+    description: Optional alternative public facing URL for all products of this project for listing purposes. Note that this can be overwritten at Product level.
+    displayName: Property URL
+  showAddress: 
+    type: !include common/yesNoEnum.raml 
+    required: false
+    description: Flag to identify whether to display the property address in the external listing websites. Note that this can be overwritten at Product level.
+    displayName: Show Address
+  address: 
+    type: !include common/address-op.raml
+    required: false
+    description: Project Address
+    displayName:  Project Address
+  vitualTourURL: 
+    type: string
+    required: false
+    description: URL for a virtual tour for all properties for this Project. Note that this can be overwritten at Product level.
+    displayName: Virtual Tour URL
+  videoURL: 
+    type: string
+    required: false
+    description: URL for video of all properties for this Project. Note that this can be overwritten at Product level.
+    displayName: Video URL
+  externalLink1: 
+    type: string
+    required: false
+    description: Other external link for all properties for this Project. Note that this can be overwritten at Product level.
+    displayName: External Link 1
+  externalLink2: 
+    type: string
+    required: false
+    description: Other external link for all properties for this Project. Note that this can be overwritten at Product level.
+    displayName: External Link 2
+  upcomingAuction:
+    type: !include common/yesNoEnum.raml
+    required: false
+    displayName: Upcoming Auction
+    description: Flag to specific that there is an upcoming auction. This must be set to Yes for Auction Place and Auction Date to be taken into account when sending to external publishing system. Note this can be overwritten at Product level.
+  auction: 
+    type: !include common/auction-op.raml
+    required: false
+    displayName: Auction Details 
+    description: Auction details for the project 
+  email: 
+    type: string
+    required: false
+    displayName: Email
+    description: Email 
+  phone: 
+    type: string
+    required: false
+    displayName:  Phone Number
+    description:  Phone Number  
+  salesAuthority:
+    type: 
+      enum:
+        - For Sale
+        - For Lease
+        - Sale by Negotiation
+        - Tender
+        - Expressions of Interest
+        - Offers to Purchase
+    displayName: Sales Authority 
+    required: false
+    description: The authority of sale for listing purposes. Note that this can be overwritten at Product level.
+  methodOfSales:
+    type:
+      enum:
+        - N/A
+        - Exclusive
+        - Open
+        - Conjunctional
+        - Sole Agency
+    required: false
+    displayName: Method Of Sales
+    description: The method of sale for listing purposes. Note that this can be overwritten at Product level.
+  publishTo: 
+    type: 
+      enum:
+        - REA
+        - Domain
+        - Sitecore
+    required: false
+    displayName: Publish To
+    description: Specifies which listing websites to publish to for all properties in this Project. Note that this can be overwritten at Product level.
+  publishToForAudit: 
+    type: !include common/yesNoEnum.raml
+    required: false
+    displayName: Publish To (For Audit)
+    description: There will be a Process Builder to auto track these changes similar to the Contact Profile Process Builder to auto update the system field based on changes in the multi picklist.
+  listingAgentId: 
+    type: string
+    required: false
+    displayName: Listing Agent Id - Office Id
+    description: Agent will be manually created in Property Hub for the agent. The ID will then be used to determine the Agent for all properties for the specific Project - property hub office id
+  listingLastSyncStatus: 
+    type: string
+    displayName: Listing last sync status 
+    required: false
+    description: This should be automatically set by integration when the project is pushed to PropertyHub
+  listingLastSyncDateTime:
+    type: datetime-only
+    example: 
+        value: 2015-07-04T21:00:00
+        description: no implications about offset like (e.g. rfc3339 format - 2016-02-28T16:41:41.090Z)
+    required: false
+    displayName: Listing last sync (date/time)
+    description: This should be automatically set by integration when the project is pushed to PropertyHub
+  agents: 
+    type: array
+    items: !include agent-op.raml
+    required: false
+    displayName: Agents Details
+    description: The agent details required by property hub
+  
+  
+  

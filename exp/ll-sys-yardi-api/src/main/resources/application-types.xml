@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="errorResponse" format="json">
+      <types:shape format="weave" example="examples/generic-error.json"><![CDATA[%dw 2.0
+
+type errorResponse = {|
+  success: Boolean, 
+  correlationId: String, 
+  errorCode: String, 
+  errorMessage: String
+|} {"example": "{\\\"success\\\":false,\\\"correlationId\\\":\\\"0b23eb60-cb5a-11ea-9237-96b86d6f050e\\\",\\\"errorCode\\\":\\\"1040\\\",\\\"errorMessage\\\":\\\"Invalid User\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#6e3d017e-e5d1-4d96-8111-1976dce1743b"/>
+</types:mule>

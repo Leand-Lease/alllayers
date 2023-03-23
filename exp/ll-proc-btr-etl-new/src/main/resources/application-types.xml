@@ -1,0 +1,177 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="unit_yExportCSV_Metadata" format="csv">
+      <types:shape format="weave" example="examples/Unit_yExport_10072020065313.csv"><![CDATA[%dw 2.0
+
+type unit_yExportCSV_Metadata = Array<{|  unit_hmy: String,   Property_Code: String,   Unit_Code: String,   StartDate: String,   EndDate: String,   sStatus: String,   VacantDate: String,   ReadyDate: String,   Floor_Code: String,   hbldg: String,   Bldg_Code: String,   Address_1: String,   Address_2: String,   Address_3: String,   Address_4: String,   City: String,   Zip_Code: String,   Country: String,   Rent: String,   SQFT: String,   Rent_Ready: String,   Exclude: String,   Unit_Type: String,   Bedrooms: String,   Baths: String,   Attributes_2: String,   Attributes_5: String,   Attributes_6: String,   Attributes_8: String,   Attributes_9: String,   Attributes_10: String,   dtLastModified: String,   sFirstName: String,   sLastName: String,   scode: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="unit_output_payload" format="json">
+      <types:shape format="weave" example="examples/unit_output_payload-3.json"><![CDATA[%dw 2.0
+
+type unit_output_payload = {|
+  Property_Code: String, 
+  Unit_Code: String, 
+  StartDate: String, 
+  EndDate: String, 
+  sStatus: String, 
+  VacantDate: String, 
+  ReadyDate: String, 
+  Floor_Code: String, 
+  Country: String, 
+  Bldg_Code: String, 
+  Street_Number: String, 
+  Street_Name: String, 
+  Address_3: String, 
+  Address_4: String, 
+  City: String, 
+  Zip_Code: String, 
+  Rent: String, 
+  SQFT: Number {"typeId": "int"}, 
+  Rent_Ready: String, 
+  Unit_Type: String, 
+  Bedrooms: Number {"typeId": "int"}, 
+  Baths: Number {"typeId": "int"}, 
+  Attributes_2: String, 
+  Attributes_5: String, 
+  Attributes_6: String, 
+  Attributes_8: String, 
+  Attributes_9: String, 
+  Attributes_10: String
+|} {"example": "{\\\"Property_Code\\\":\\\"\\\",\\\"Unit_Code\\\":\\\"\\\",\\\"StartDate\\\":\\\"2020-10-10\\\",\\\"EndDate\\\":\\\"2020-10-10\\\",\\\"sStatus\\\":\\\"\\\",\\\"VacantDate\\\":\\\"2020-10-10\\\",\\\"ReadyDate\\\":\\\"2020-10-10\\\",\\\"Floor_Code\\\":\\\"\\\",\\\"Country\\\":\\\"\\\",\\\"Bldg_Code\\\":\\\"\\\",\\\"Street_Number\\\":\\\"\\\",\\\"Street_Name\\\":\\\"\\\",\\\"Address_3\\\":\\\"\\\",\\\"Address_4\\\":\\\"\\\",\\\"City\\\":\\\"\\\",\\\"Zip_Code\\\":\\\"\\\",\\\"Rent\\\":\\\"\\\",\\\"SQFT\\\":0,\\\"Rent_Ready\\\":\\\"\\\",\\\"Unit_Type\\\":\\\"\\\",\\\"Bedrooms\\\":0,\\\"Baths\\\":0,\\\"Attributes_2\\\":\\\"\\\",\\\"Attributes_5\\\":\\\"\\\",\\\"Attributes_6\\\":\\\"\\\",\\\"Attributes_8\\\":\\\"\\\",\\\"Attributes_9\\\":\\\"\\\",\\\"Attributes_10\\\":\\\"\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="tenant_output_payload" format="json">
+      <types:shape format="weave" example="examples/tenant_output.json"><![CDATA[%dw 2.0
+
+type tenant_output_payload = {|
+  Id: String, 
+  FirstName: String, 
+  LastName: String, 
+  MiddleName: String, 
+  Salutation: String, 
+  MailingStreet: String, 
+  MailingCity: String, 
+  MailingState: String, 
+  MailingPostalCode: String, 
+  Email: String, 
+  MobilePhone: String
+|} {"example": "{\\\"Id\\\":\\\"1223123\\\",\\\"FirstName\\\":\\\"testF\\\",\\\"LastName\\\":\\\"testL\\\",\\\"MiddleName\\\":\\\"\\\",\\\"Salutation\\\":\\\"Mr.\\\",\\\"MailingStreet\\\":\\\"1232\\\",\\\"MailingCity\\\":\\\"NY\\\",\\\"MailingState\\\":\\\"NY\\\",\\\"MailingPostalCode\\\":\\\"12323\\\",\\\"Email\\\":\\\"test@test.com\\\",\\\"MobilePhone\\\":\\\"231312312\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="tenant_input_csv" format="csv">
+      <types:shape format="weave" example="examples/ResTenants - ResTenants_92.csv"><![CDATA[%dw 2.0
+
+type tenant_input_csv = Array<{|  Property_Code: String,   Ref_Property_ID: String,   Tenant_Code: String,   Ext_Ref_Tenant_Id: String,   Prospect_Code: String,   Ref_Prospect_Id: String,   Unit_Code: String,   First_Name: String,   Last_Name: String,   Social_Security_Number: String,   Move_In_Date: String,   Move_Out_Date: String,   Notice_Date: String,   Lease_From_Date: String,   Lease_To_Date: String,   Lease_Sign_Date: String,   Email: String,   Phone_Number_1: String,   Phone_Number_2: String,   Phone_Number_3: String,   Phone_Number_4: String,   Status: String,   General_Info_1: String,   General_Info_2: String,   General_Info_3: String,   General_Info_4: String,   General_Info_5: String,   General_Info_6: String,   General_Info_7: String,   General_Info_8: String,   General_Info_9: String,   General_Info_10: String,   General_Info_11: String,   General_Info_12: String,   General_Info_13: String,   General_Info_14: String,   Address1: String,   Address2: String,   City: String,   State: String,   Zipcode: String,   Rent: String,   Due_Day: String,   Last_Month_Rent_Deposit: String,   Paid_To_Date: String,   Salutation: String,   Renew_Date: String,   Security_Deposit_0: String,   Security_Deposit_1: String,   Security_Deposit_2: String,   Security_Deposit_3: String,   Security_Deposit_4: String,   Security_Deposit_5: String,   Security_Deposit_6: String,   Security_Deposit_7: String,   Security_Deposit_8: String,   Security_Deposit_9: String,   Non_Sufficient_Fund_Count: String,   Late_Fee_Count: String,   Middle_Name: String,   LateMin: String,   LatePerDay: String,   LateType: String,   LateGrace: String,   LatePercent: String,   LateGrace2: String,   LateAmount2: String,   LatePercent2: String,   LateAmountMax: String,   LatePercentMax: String,   LateDaysMax: String,   LateTypeMax: String,   LateType2: String,   LateMinDueAmount: String,   LeaseGrossSQFT: String,   MovedOut: String,   MaintenanceNotes: String,   LeaseType: String,   BillToCustomer: String,   ExtraAddressLine: String,   Gets1099: String,   Payment_Type: String,   Payable_Type: String,   ACHOptOut: String,   MTM: String,   LeaseTerm: String,   NoticeType: String,   Affordable_Type: String,   Ref_Unit_Id: String,   RGI_Type: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="roommate_input_csv" format="csv">
+      <types:shape format="weave" example="examples/ResRoommate_01092020091500.csv"><![CDATA[%dw 2.0
+
+type roommate_input_csv = Array<{|  Tenant_Code: String,   Ext_Ref_Tenant_Id: String,   Roommate_PhoneNumber1: String,   Roommate_PhoneNumber2: String,   Roommate_PhoneNumber3: String,   Roommate_PhoneNumber4: String,   Roommate_UserDefined0: String,   Roommate_UserDefined1: String,   Roommate_UserDefined2: String,   Roommate_UserDefined3: String,   Roommate_UserDefined4: String,   Roommate_UserDefined5: String,   Roommate_UserDefined6: String,   Roommate_UserDefined7: String,   Roommate_UserDefined8: String,   Roommate_UserDefined9: String,   Roommate_SSN: String,   Property_Code: String,   Ref_Property_ID: String,   Unit_Code: String,   Ref_Unit_Id: String,   Ext_Ref_Roommate_Id: String,   Roommate_Salutation: String,   Roommate_LastName: String,   Roommate_FirstName: String,   Roommate_Email: String,   Roommate_ALTEmail: String,   Roommate_MoveIn: String,   Roommate_MoveOut: String,   Occupant_Type: String,   Roommate_Occupant: String,   Roommate_ACHOptOut: String,   Roommate_Relationship: String,   Roommate_Notes: String,   Roommate_Code: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="prospect_input_csv" format="csv">
+      <types:shape format="weave" example="examples/ResProspect_01092020091400.csv"><![CDATA[%dw 2.0
+
+type prospect_input_csv = Array<{|  Prospect_Code: String,   Ext_Ref_Prospect_Id: String,   Tenant_Code: String,   Ext_Ref_Tenant_Id: String,   FirstName: String,   MiddleName: String,   LastName: String,   Parent_Code: String,   Salutation: String,   Address1: String,   Address2: String,   City: String,   State: String,   ZipCode: String,   HowLong: String,   HomePhone: String,   OfficePhone: String,   CellPhone: String,   Fax: String,   FedId: String,   Email: String,   Date_Of_Birth: String,   Drivers_License: String,   DLState: String,   Income: String,   RelationShip: String,   Occupant: String,   LeaseStep: String,   Status: String,   Preferred_Rent: String,   Preferred_Bedrooms: String,   Preferred_Bath: String,   Preferred_MoveIn: String,   Property_Code: String,   Ref_Property_ID: String,   UnitType_Code: String,   Unit_Code: String,   LeaseFrom: String,   LeaseTo: String,   Source: String,   SecondarySource: String,   Agent: String,   Previous_Address1: String,   Previous_Address2: String,   Previous_City: String,   Previous_State: String,   Previous_ZipCode: String,   Previous_HowLong: String,   Previous2_Address1: String,   Previous2_Address2: String,   Previous2_City: String,   Previous2_State: String,   Previous2_ZipCode: String,   Company: String,   Position: String,   DtStart: String,   Emp_Address1: String,   Emp_Address2: String,   Emp_City: String,   Emp_State: String,   Emp_Zip: String,   "Emp_Phone ": String,   EmergencyCont_Name: String,   EmergencyCont_Relation: String,   EmergencyCont_TelHome: String,   Emergency_Phone: String,   AutoType1: String,   AutoColor1: String,   License1: String,   State1: String,   AutoType2: String,   AutoColor2: String,   License2: String,   State2: String,   First_Contacted_On: String,   Date_Show: String,   Date_Applied: String,   Date_Approved: String,   Date_Canceled: String,   Date_Denied: String,   Payment: String,   Check_Number: String,   Notes: String,   Summary: String,   Subsidized: String,   CardType: String,   "CardNumber ": String,   CardExpiration: String,   LeaseTerm: String,   FirstContactType: String,   Applicant: String,   QuotedRent: String,   Customer: String,   TelAlt: String,   WebLinks: String,   B50059: String,   TaxCredit: String,   Home: String,   RD: String,   FailValidation: String,   Aff_Lease_Step: String,   ShowAgent: String,   Country: String,   Address3: String,   Address4: String,   WebLinksStep: String,   ProspectCopiedTo: String,   ProspectCopiedFrom: String,   Roommate_Code: String,   Roommate_LastName: String,   Roommate_FirstName: String,   Room: String,   Bed: String,   Student: String,   SLeadxRef: String,   InterFaceConfig: String,   Maiden_Name: String,   CurrentAddress_StartDate: String,   CurrentAddress_MonthlyRent: String,   CurrentAddress_ReasonForMoving: String,   PreviousAddress_StartDate: String,   PreviousAddress_MonthlyRent: String,   PreviousAddress_ReasonForMoving: String,   CurrentEmployment_AdditionalIncome: String,   CurrentEmployment_AdditionalIncomeSource: String,   Ref_Unit_Id: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="Lease_moveout_input_csv" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#edd792d1-58db-4ec3-9041-c19f5d44122d">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="unit_yExportCSV_Metadata"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="unit_output_payload"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#7e24446f-737b-4db5-983d-5b72927dda47">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="tenant_input_csv"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="tenant_output_payload"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f93add6a-fe87-4c2b-b3d7-4c2657a51908">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="roommate_input_csv"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#9747d44a-1b67-4bcf-90ab-367524d4ee75">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="prospect_input_csv"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#a2e45605-a28e-4c6c-8994-fa67e86e8ea3"/>
+  <types:enrichment select="#878234ff-192a-4cdf-bbd0-9b60ea17e30d">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="prospect_input_csv"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#693e365c-595e-4428-88fd-94faed8bd6f1"/>
+</types:mule>

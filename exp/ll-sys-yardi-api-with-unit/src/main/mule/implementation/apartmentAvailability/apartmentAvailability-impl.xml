@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="get-apartmentAvailability-request" doc:id="d679d032-e6ad-4529-95c4-c22c5a8fa5c2" >
+		<logger level="INFO" doc:name="propertyCode" doc:id="d883fe08-94ed-4001-82ae-4b7a43aebe8a" message='"Query param"' />
+		<logger level="INFO" doc:name="propertyCode1" doc:id="99bd449d-b35f-499b-8b31-3db2231a8dd6" message="#[output application/json ---&#10;{&#10; 	attributes: attributes.queryParams.propertyCode&#10;}]" />
+		<validation:is-not-blank-string doc:name="propertyCode not blank string" doc:id="b4dcf1f0-61ab-49a5-8340-53808059eef5" value="#[vars.propertyCode]" message="propertyCode not blank string"/>
+		<set-variable value="${apartmentAvailability.apiToken}" doc:name="apiToken" doc:id="4030e8cc-9af9-47d4-add5-92eb6e74edf0" variableName="apiToken"/>
+		<ee:transform doc:name="Request Param" doc:id="f5e13952-6395-4a24-917b-e95355f6e094">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="requestParam"><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::URL
+---
+"requestType=apartmentavailability&apiToken="++ encodeURIComponent(vars.apiToken) ++"&propertyCode=" ++ vars.propertyCode as String]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<http:request method="GET" doc:name="Apartment Availability Request" doc:id="c6cd2518-66a3-4c41-ace5-ccdbc5d86d0e" config-ref="HTTP_Request_configuration" path="/${rentCafe.basePath}?{requestParam}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+    "Host" : "${rentCafe.path}"
+}]]]></http:headers>
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"requestParam" : vars.requestParam
+}]]]></http:uri-params>
+		</http:request>
+		<logger level="INFO" doc:name="request response" doc:id="e6952be7-cacf-40b2-aa26-389cc7d0aa69" message='"response "' />
+		<choice doc:name="Choice" doc:id="90c60ccf-eb62-49fa-a57a-a16053802474" >
+			<when expression='#[payload contains ("Error")]'>
+				<ee:transform doc:name="Error Response" doc:id="16796f4b-313f-4f79-b57b-7c883c3361e2">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var response = payload contains ("Error")
+var otherErrorResponse = payload contains (";")
+---
+{
+	success: false as Boolean,
+	correlationId: correlationId,
+	errorCode: if(otherErrorResponse) ((payload splitBy (';'))[0] splitBy  (":"))[1] else (read(payload,"application/json")[0].Error),
+	errorMessage: if(otherErrorResponse) ((payload splitBy  (';'))[1] replace "</Error>" with "") else "Other Error"
+}
+]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0
+output application/java
+---
+if(payload contains ("Error")) 500 else 201]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Response propeties" doc:id="f76af3dc-be38-41ab-b5a2-3f65330dd477" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+apartments: read(payload,"application/json") default [] map (item, index) -> {
+	"productId": "",
+	"phProductId": "",
+	"caStockId": "",
+	"projectId": "",
+	"phProjectId": "",
+	"status": "",
+  	"type": "",
+  	"propertyType": "Other",
+  	"headline": "",
+  	"description": "",
+  	"address": {
+		"unitNumber": "",
+		"streetNumber": "",
+		"streetName": "",
+		"suburb": "",
+		"postcode": "",
+		"state": "",
+		"country": ""
+  	},
+  	"displayAddress": false,
+  	"price": 0,
+  	"priceLimit": 0,
+  	"priceText": "hundred",
+  	"displayPrice": "None",
+  	"soldDate": "",
+  	"dateAvailable": item.AvailableDate,
+  	"underOffer": true,
+  	"pricePeriod": "Weekly",
+  	"bondDeposit": 0,
+  	"soldPrice": 0,
+  	"showSoldPrice": false,
+  	"firstAgentId": 0,
+  	"builtYear": "",
+  	"carportSpaces": 0,
+  	"garageSpaces": 0,
+  	"offStreetSpaces": 0,
+  	"bedrooms": 0,
+  	"halfBedroom": false,
+  	"bathrooms": 0,
+  	"halfBathroom": false,
+  	"ensuites": 0,
+  	"landArea": 0,
+  	"landAreaMetric": "Square Metres",
+  	"floorArea": 0,
+  	"floorAreaMetric": "Square Metres",
+  	"landFrontage": 0,
+  	"landFrontageMetric": "",
+  	"energyEfficiencyRating": "",
+  	"entranceFloor": "",
+  	"productCode": "",
+  	"numberOfFloors": 0,
+  	"newConstruction": false,
+  	"propertyUrl": "",
+  	"virtualTourUrl": "",
+  	"extLink1": "",
+  	"extLink2": "",
+  	"videoUrl": "",
+  	"auctionPlace": "",
+  	"auctionDate": null,
+  	"auctionTime": "",
+  	"forthcomingAuction": false,
+  	"developmentName": "",
+  	"authority": "",
+  	"methodOfSale": "",
+  	"propertyId": item.PropertyId,
+  	"apartmentId": item.ApartmentId,
+  	"specials": item.Specials
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>	
+	</sub-flow>
+</mule>

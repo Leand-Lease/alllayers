@@ -1,0 +1,27 @@
+{
+  "phProjectId":"21606",
+  "yearBuild": 2020,
+  "noOfStreetParking": 2,
+  "energyEfficiencyRating": 3,
+  "newConstruction": true,
+  "url": "www.project.com",
+  "vitualTourURL": "vitualTourURL",
+  "videoURL": "videoURL",
+  "externalLink1":"externalLink1",
+  "externalLink2":"externalLink2",
+  "auction": {
+    "upcomingAuction":"upcomingAuction",
+    "auctionPlace":"auctionPlace",
+    "auctionTime":"10:30:00",
+    "auctionDate":"2015-07-04"
+  },
+  "salesAuthority" : "For Lease",
+  "methodOfSales" : "Exclusive",
+  "publishTo" : "Domain", 
+  "publishToForAudit" : "Yes", 
+  "listingAgentId" : "308762",
+  "PLM_ListingClientID__c":"12345",
+  "listingLastSyncStatus" : "Success",
+  "listingLastSyncDateTime" : "2015-07-04T21:00:00",
+  "listingLastSyncMessage": "optional sync message"
+}

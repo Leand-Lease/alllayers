@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="main-leads:\post-lead-sub-flow" doc:id="baf1f36f-e3b0-432e-95af-275e8e78bec1" >
+		<logger level="INFO" doc:name="Start Logger" doc:id="b1892c2f-eb9f-4115-a801-6f1c562b4b88" message='"correlationId:" ++ correlationId ++ " - start processing create lead"' />
+		<logger level="INFO" doc:name="Start Logger1" doc:id="932c3b11-4f49-4b59-abdc-208d183cf0ae" message="#[{}]" />
+		<logger level="DEBUG" doc:name="Start Debug Logger" doc:id="887f118c-4245-45d8-bf21-9ad63dc3c384" message='"correlationId:" ++ correlationId ++ " - start processing request to create lead"' />
+		<flow-ref doc:name="post-lead-validate-request-sub-flow" doc:id="9e9e2c1c-0250-4f9f-800f-e348eb090f02" name="post-lead-validate-request-sub-flow"/>
+		<logger level="TRACE" doc:name="Logger" doc:id="d91c114d-8825-40a5-aa05-f8d314805e18" message='#["correlationId:" ++ correlationId ++ " - custom log message"]' category='"BEFORE_TRANSFORM" ' />
+		<logger level="INFO" doc:name="End Debug Logger" doc:id="73240620-7696-4f17-ab8e-c05082c29c43" message='"correlationId:" ++ correlationId ++ " - finish processing request to create lead"' />
+		<logger level="TRACE" doc:name="End Logger" doc:id="f6a900ce-5d97-47d4-9f9b-e4049e7d84c7" message='"correlationId:" ++ correlationId ++ " - finish processing create Lead"' category='"END"' />
+		<logger level="INFO" doc:name="End Logger1" doc:id="d41629af-4a29-4807-8495-0896b9f67c58" message="#[{}]" />		
+	
+</sub-flow>
+</mule>

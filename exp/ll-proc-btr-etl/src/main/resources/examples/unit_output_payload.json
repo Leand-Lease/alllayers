@@ -1,0 +1,9 @@
+[
+	{
+		"Name" : "",
+		"BTR_ActualLeaseStartDate__c": 2020-10-12,
+		"BTR_ActualLeaseEndDate__c": 2020-10-12,
+		"BTR_ApplicationStatus__c" : "test"
+		
+	}
+]

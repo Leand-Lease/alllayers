@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="get-product-media" doc:id="d0b263c2-ceb8-4b78-b267-8f7c99b0f664" >
+		<salesforce:query doc:name="Query Product Media" doc:id="b3b81482-ef02-4714-bdb3-8ef4bdf83db5" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query>SELECT Id, PLM_URL__c, PLM_Order__c,PLM_MediaType__c,PLM_Product__c,PLM_Project__c, PLM_Description__c
+FROM PLM_MarketingCollateral__c 
+WHERE RecordType.name = 'Media' AND PLM_Product__c = ':productId'</salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"productId" : vars.productId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<logger level="INFO" doc:name="SFDC Response" doc:id="831ccda9-7818-46f0-a526-0ac4fc08a13a" message='#["Request to get medias related to productId:" ++ (vars.productId default "") ++ " corelationId:" ++ correlationId]' />
+		<logger level="INFO" doc:name="SFDC Response1" doc:id="d48a39c0-53ec-4147-a4ec-155e4b0287b6" message="#[output application/json&#10;---&#10;{&#10; 	payload: payload&#10;}]" />
+		<ee:transform doc:name="Media CDM" doc:id="359bfdfb-c02a-4ce9-8367-79175f388f9e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere"
+import * from modules::functions
+---
+payload map(item,index) -> {
+	sfId: item.Id,
+	collateralId: item.Id,
+	mediaType: item.PLM_MediaType__c,
+	collateralAssociation: setCollateralAssociation(vars.productId),
+	(order: item.PLM_Order__c as Number) if item.PLM_Order__c != null,
+	url: item.PLM_URL__c,
+	projectId: item.PLM_Project__c,
+	productId: item.PLM_Product__c,
+	(description: item.PLM_Description__c) if (item.PLM_MediaType__c == "Brochure")
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="get-project-media" doc:id="130649aa-2628-471a-ad14-45631fd365f6" >
+		<salesforce:query doc:name="Query project media" doc:id="da1f9505-2049-4264-9e4e-ed541de4728f" config-ref="Salesforce_Config" target="sfdcProjectMediaResp">
+			<salesforce:salesforce-query >SELECT Id, PLM_URL__c, PLM_Order__c, PLM_MediaType__c, PLM_Product__c, PLM_Project__c, PLM_Description__c 
+FROM PLM_MarketingCollateral__c 
+WHERE RecordType.name = 'Media' AND PLM_Project__c = ':projectId' AND PLM_Product__c = null</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"projectId" : vars.projectId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<logger level="TRACE" doc:name="SFDC Response" doc:id="78fd1d55-6880-40da-a9df-07897e1d40c5" message='#["Request to get medias related to projectId:" ++ (vars.projectId default "") ++ " corelationId:" ++ correlationId]' category='"AFTER_REQUEST" ' />
+		<logger level="INFO" doc:name="SFDC Response" doc:id="4ee4a6ba-b7e5-4611-907c-21408f51acdd" message="#[output application/json &#10;---&#10;{&#10; 	payload: payload&#10;}]" />
+		<ee:transform doc:name="Media CDM" doc:id="060bd034-018a-4f0f-bb4a-990fe83f487c">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="sfdcProjectMediaResp"><![CDATA[%dw 2.0
+output application/json
+import * from modules::functions
+---
+vars.sfdcProjectMediaResp map(item,index) -> {
+	sfId: item.sysRefSfId,
+	collateralId:item.Id,
+	mediaType: item.PLM_MediaType__c,
+	collateralAssociation: setCollateralAssociation(""),
+	(order: item.PLM_Order__c as Number) if item.PLM_Order__c != null,
+	url: item.PLM_URL__c,
+	projectId: item.PLM_Project__c,
+	(description: item.PLM_Description__c) if (item.PLM_MediaType__c == "Brochure")
+}
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="b8b1f2ad-26b7-4b84-8655-324fd82f71bd" message="#[vars.sfdcProjectMediaResp]"/>
+	</sub-flow>
+	<sub-flow name="get-product-media-by-id" doc:id="d280c0e1-451a-4ea0-a661-62222e406391" >
+		<choice doc:name="Is projectId provided" doc:id="b844ac7a-542d-4dea-ae30-d9797de137d7" >
+			<when expression='#[vars.projectId != null]'>
+				<flow-ref doc:name="Get product media" doc:id="bc28dc95-4412-4c88-b43e-38508cc3ddb8" name="get-product-media" />
+				<try doc:name="Try" doc:id="b50e694d-9227-4471-bf01-b2697f882132" >
+					<flow-ref doc:name="Get project media" doc:id="3e2c67ce-5afb-486e-ac4c-15d6c8fc09e1" name="get-project-media" />
+				</try>
+				<ee:transform doc:name="Aggregating the product and project media" doc:id="2f41020e-610c-4720-8645-d7ee96ad9557" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+(payload ++ vars.sfdcProjectMediaResp) groupBy $.mediaType]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="Get product media" doc:id="8a8fbf9d-6e52-46af-9ec3-41c53deb8276" name="get-product-media" />
+				<ee:transform doc:name="group by media" doc:id="f4cda663-c4f2-40f9-ac9c-3f4f4d9c3d51" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload groupBy $.mediaType]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Format the Response" doc:id="80ca6f94-b92f-4cb7-8203-d2981543a56d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere"
+---
+{
+	photos:payload."Photo",
+	floorplans:payload."Floorplan",
+	brochures:payload."Brochure"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

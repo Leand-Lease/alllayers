@@ -1,0 +1,11 @@
+#%RAML 1.0 Library
+usage: This is the common API fragment which could be referenced and reused by the different API assets. 
+
+types:
+  genericUpdateSuccessResponse: !include types/generic-update-response.raml
+  genericErrorResponse: !include types/generic-error-response.raml
+
+traits:
+  compliant: !include traits/compliant.raml
+  client-id-auth: !include traits/client-id-required.raml
+  

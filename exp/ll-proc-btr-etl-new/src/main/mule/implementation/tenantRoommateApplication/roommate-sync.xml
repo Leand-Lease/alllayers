@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	
+	<sub-flow name="get-roommates-from-ftp-sub-flow" doc:id="10093f72-d423-47fb-88a6-188914269ada" >
+		<try doc:name="Try" doc:id="1a72bdf5-3f19-443c-8c7d-33e30bf65ecb" >
+			<sftp:list doc:name="resRoommate FTP folder files list" doc:id="909e4489-cefb-4746-a90b-05feeecf38aa" config-ref="sftp" directoryPath="${sftp.roommate.directory.path}">
+				<sftp:matcher />
+			</sftp:list>
+		</try>
+		<json-logger:logger doc:name="Logger" doc:id="0e2b8898-0f37-4e9b-bd00-a29a9a7c65b4" message='"roommate files from FTP folder"'/>
+		<ee:transform doc:name="sort roommate list of csv files" doc:id="86459c76-fbd5-4f53-a09b-312d1c2bbb8b">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+(payload filter ($.attributes.fileName contains /^ResRoommate/) orderBy $.attributes.timestamp)[-1 to 0] ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+		<choice doc:name="Choice" doc:id="dae13611-a753-4e99-82cf-8b2408c43801" >
+			<when expression="#[!isEmpty(payload)]">
+				<sftp:read doc:name="Read Roommates file" doc:id="08b32d2d-9c6f-44d3-a433-a380d2d7e02e" config-ref="sftp" path="#[p('sftp.roommate.directory.path') ++ '/' ++ payload[0].attributes.fileName]" outputMimeType="text/plain" outputEncoding="UTF-16"/>
+				<ee:transform doc:name="Write in csv format" doc:id="ad98c73f-c3bf-406d-b141-16d06d3bd54c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+var csvString = trim((payload as String) replace('ResRoommates') with(''))
+---
+read(csvString,"application/csv",{"header":true})]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+					</ee:variables>
+				</ee:transform>
+				<json-logger:logger doc:name="Roommate formatted csv data" doc:id="42348f61-e03f-400a-9e97-4597b4f5163e" tracePoint="AFTER_TRANSFORM" message='"Roommate formatted csv data"'/>
+			
+
+</when>
+			<otherwise >
+				<json-logger:logger doc:name="Roommate Files not found" doc:id="644314a4-1bee-4bd0-8756-558e8913f23b" message='#["File not found from /resroommates folder"]'/>
+				<ee:transform doc:name="empty payload" doc:id="e435ac31-7cc0-46d6-a8de-9fef9197d122" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</otherwise>
+		</choice>
+		<ee:transform doc:name="csv to json" doc:id="1f62abc8-7d09-4161-a807-020c250c9114">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="roommate_records"><![CDATA[%dw 2.0
+output application/json
+---
+if(sizeOf(payload) > 0)
+	payload map (item,index) -> {
+		Tenant_Code: item.Tenant_Code,
+		Roommate_Code: item.Roommate_Code,
+		Roommate_UserDefined0: item.Roommate_UserDefined0,
+		Ext_Roommate_Prosp_map: (if(isEmpty(item.Roommate_UserDefined0) or item.Roommate_UserDefined0 == "''") (item.Tenant_Code ++ "_" ++ item.Roommate_Code) else item.Roommate_UserDefined0) as String default "",
+		Ext_Ref_Roommate_Id: item.Ext_Ref_Roommate_Id,
+		Ext_Ref_Tenant_Id: item.Ext_Ref_Tenant_Id,
+		Roommate_Email: item.Roommate_Email,
+		Roommate_FirstName: item.Roommate_FirstName,
+		Roommate_LastName: item.Roommate_LastName,
+		Roommate_Salutation : item.Roommate_Salutation,
+		Roommate_PhoneNumber4 : item.Roommate_PhoneNumber4,
+		Roommate_Code: item.Roommate_Code,
+		Roommate_MoveIn: item.Roommate_MoveIn,
+		Roommate_MoveOut: item.Roommate_MoveOut,
+		Roommate_Relationship: item.Roommate_Relationship
+	}
+else
+	[]	]]></ee:set-variable>
+				<ee:set-variable variableName="roommate_archive_file_path" ><![CDATA[%dw 2.0
+output application/json
+---
+if(sizeOf(payload) > 0)
+	{
+		"sourcePath": p('sftp.roommate.directory.path') ++ "/" ++ attributes.fileName as String, 
+		"targetPath": p('sftp.move.file.resroommate.path'),
+		"renameTo": (attributes.fileName as String replace (".csv") with "") ++ '_' ++ now() as String {format: "ddMMyyyyhhmmss"} ++ ".csv"
+	}
+else
+	[]]]></ee:set-variable>
+					
+</ee:variables>
+				</ee:transform>
+		<json-logger:logger doc:name="last modified roommate file info" doc:id="e81b3141-2fdd-44a6-bdae-5b8157dafd48" message='#["last modified roommate file details"]' />
+		<flow-ref doc:name="roommate-prospect-merge-and-upsert-contact-and-occupant-sub-flow" doc:id="d7eaeccc-83ec-4371-b67c-7db455fdb4a9" name="roommate-prospect-merge-and-upsert-contact-and-occupant-sub-flow"/>
+	
+
+</sub-flow>
+	<flow name="roommate-prospect-merge-and-upsert-contact-and-occupant-sub-flow" doc:id="5c4f4a55-20bd-4aa1-9eb9-c0391734813b" >
+		<json-logger:logger doc:name="prospect and tenent info" doc:id="7bb87899-2120-4135-9a78-dab345ebda89" config-ref="JSON_Logger_Config" message='"prospect and tenant info"'>
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	prospect: vars.prospect_records,
+ 	tenant: vars.tenant_records
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<ee:transform doc:name="Merge roommates and prospects" doc:id="7ddb18dc-7ea1-437b-9b0a-f4d59f48b010">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/java
+
+fun formattedDate(dt) = (if(!isEmpty(dt)) (dt as Date{format: 'dd/MM/yyyy'} as Date{format: 'yyyy-MM-dd'}) else null)
+var joinedData = outerJoin(vars.roommate_records filter (($.Ext_Roommate_Prosp_map != "") and ($.Occupant_Type != 2)), vars.prospect_records filter (($.Ext_Roommate_Prosp_map != "") and !isEmpty($.Parent_Code)), (obj) -> obj.Ext_Roommate_Prosp_map as String default "", (obj) -> obj.Ext_Roommate_Prosp_map as String default "")
+---
+joinedData
+     reduce ((item, roommate = []) ->
+     	if((item.l? and item.r?) or (item.l? and not item.r?))
+        	roommate ++ [{
+	        		(Id: item.l.Ext_Ref_Roommate_Id) if(!isEmpty(item.l.Ext_Ref_Roommate_Id)),
+					FirstName: item.l.Roommate_FirstName,
+					(LastName: item.l.Roommate_LastName) if(!isEmpty(item.l.Roommate_LastName)),
+					Salutation: item.l.Roommate_Salutation,
+					(MailingStreet : (item.r.Address1 as String default "" ++ " " ++ item.r.Address2 as String default "")) if(item.r?),
+					(MailingCity : item.r.City) if(item.r?),
+					(MailingState : item.r.State) if(item.r?),
+					(MailingPostalCode : item.r.Zipcode) if(item.r?),
+					(Email : item.l.Roommate_Email) if(!isEmpty(item.l.Roommate_Email)),
+					(SYS_ExternalPMSId__c: item.l.Ext_Roommate_Prosp_map),  //(item.l.Tenant_Code ++ "_" ++ item.l.Roommate_Code)),
+					MobilePhone : item.l.Roommate_PhoneNumber4,
+					(BTR_HowLongAtCurrentAddress__c:item.r.HowLong) if(item.r?),
+					(Birthdate: formattedDate(item.r.Date_Of_Birth)) if(item.r?),
+					(BTR_PreviousAddress__c: (item.r.Previous_Address1 ++ ' '++ item.r.Previous_Address2)) if(item.r?),
+					(BTR_PreviousCity__c: item.r.Previous_City) if(item.r?),
+					(BTR_PreviousPostalCode__c: item.r.Previous_ZipCode) if(item.r?),
+					(BTR_PreviousHowLong__c: item.r.Previous_HowLong) if(item.r?),
+					(BTR_Previous2Address__c: (item.r.Previous2_Address1 ++ ' ' ++	item.r.Previous2_Address2)) if(item.r?),
+					(BTR_Previous2City__c: item.r.Previous2_City) if(item.r?),
+					(BTR_PreviousPostalCode2__c: item.r.Previous2_ZipCode) if(item.r?)	
+                }]	
+         else
+			roommate ++ []     
+    ) ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="After Merge" doc:id="bf1689d4-c18f-4013-832d-a4383deda316" tracePoint="AFTER_TRANSFORM" message='"After Merge roommate and prospect files"'>
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<batch:job jobName="roommate-upsert-batch-job" doc:id="c6e64d33-4875-4ac1-8fd1-a709f97d10f7" maxFailedRecords="-1">
+			<batch:process-records >
+				<batch:step name="roommate-upsert-batch-step" doc:id="0d3f8e97-29b3-4157-8e6a-0c3b94ef7f14" >
+					<ee:transform doc:name="contact record" doc:id="75c4af5c-a396-4521-95c5-1255c21270b7" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+output application/java
+---
+[
+	payload mapObject ((($$): $) if ($ != null)) ++
+    	"fieldsToNull": valueSet(payload mapObject (( key: $$ ) if(($ == null) or (isEmpty($))) )  )
+]]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<choice doc:name="Choice" doc:id="bc233570-14b0-470d-a77b-07c332fbb892" >
+						<when expression="#[isEmpty(payload.Id)]">
+							<salesforce:upsert doc:name="Upsert" doc:id="d2c49c2a-7e1f-422d-aad8-4b5408cf1963" config-ref="Salesforce_Config" objectType="Contact" externalIdFieldName="SYS_ExternalPMSId__c" target="roommate_contact" />
+							<json-logger:logger doc:name="Upsert Contact Logger" doc:id="51c9be55-05cd-49ae-b0b2-7c15bbd7678d" tracePoint="AFTER_REQUEST" message='"Upsert Contact"'>
+						<json-logger:content><![CDATA[#[output application/json ---
+{
+ 	payload: vars.roommate_contact,
+ 	attributes: attributes
+}]]]></json-logger:content>
+					</json-logger:logger>
+						</when>
+						<when expression="#[!isEmpty(payload.Id)]">
+							<salesforce:update doc:name="Update" doc:id="decdf079-0bb5-45e6-b886-7d485c329ee9" config-ref="Salesforce_Config" type="Contact"/>
+							<json-logger:logger doc:name="Update Contact Logger" doc:id="6256a315-46ea-4ede-9a89-b6a6d7cccd69" message='"Updated Roommate records"'/>
+						</when>
+						<otherwise >
+							<json-logger:logger doc:name="Default Logger" doc:id="611effb9-d172-43f4-b396-29e1cc12a963" message='"Default choice on roommate create"'/>
+						</otherwise>
+					</choice>
+					<!-- <ee:transform doc:name="Transform Message" doc:id="0f5f8a2d-db33-4ff5-b09e-e4c9d8ceb9f3" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/json
+-&#45;&#45;
+
+vars.prospect_records map ((sfPayload,index) -> 
+    
+     if(sfPayload.Ext_Roommate_Prosp_map == payload[0].SYS_ExternalPMSId__c) (sfPayload - "Notes" ++ {"Notes":vars.roommate_contact.items[0].Id}) else sfPayload
+
+) ]]></ee:set-payload>
+						</ee:message>
+					</ee:transform> -->
+					
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<flow-ref doc:name="hed_relationship-upsert-flow" doc:id="73def0de-e9eb-438c-9f16-efc1b7a12ab6" name="hed_relationship-upsert-flow"/>
+			</batch:on-complete>
+		</batch:job> 
+	
+</flow>
+	<flow name="hed_relationship-upsert-flow" doc:id="f16fd678-03fd-4b4d-b0d1-8f0308412656" >
+		<ee:transform doc:name="hed_relationship data" doc:id="569f4090-7aa2-43d4-bfc3-a7d693af5c30" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+
+var hed_relationship = ["Spouse/Partner", "Father", "Mother", "Son", "Daughter"]
+ 
+---
+vars.roommate_records filter ((!isEmpty($.Ext_Ref_Roommate_Id) and !isEmpty($.Ext_Ref_Tenant_Id)) and (hed_relationship contains $.Roommate_Relationship)) map (item, index) -> {
+	SYS_ExternalPMSRelationshipId__c: (item.Ext_Ref_Tenant_Id ++ "_" ++ item.Tenant_Code ++ "_" ++ item.Roommate_Code),
+	(hed__RelatedContact__c: item.Roommate_UserDefined0) if(!isEmpty(item.Roommate_UserDefined0)),
+	(hed__RelatedContact__r: {
+				"type": "Contact",
+				SYS_ExternalPMSId__c: (item.Tenant_Code ++ "_" ++ item.Roommate_Code)
+				}) if(isEmpty(item.Roommate_UserDefined0)),
+	Role: contactRole(item.RelationShip),
+	hed__Contact__c: item.Ext_Ref_Tenant_Id,	
+	hed_Type__c: hedRelationship(item.Roommate_Relationship)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="relationship Logger" doc:id="16f6f19f-6c92-4d27-8c08-c52c9fd9cf08" tracePoint="AFTER_TRANSFORM" message='"Relationship record details"'/>
+		<batch:job jobName="hed_relationship-batch-job" doc:id="363c246f-fb3a-4944-ad7f-e7b0ebec1320" maxFailedRecords="-1">
+			<batch:process-records >
+				<batch:step name="hed_relationship-batch-step" doc:id="2f64ac69-188c-4eac-916b-1d365067a842" >
+					<ee:transform doc:name="Transform Message" doc:id="90db7239-8d2d-4659-8ca2-753734c3ee92" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+output application/java
+---
+
+	payload mapObject ((($$): $) if ($ != null)) ++
+    	"fieldsToNull": valueSet(payload mapObject (( key: $$ ) if(($ == null) or (isEmpty($))) )  )	
+]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="44073642-a4c5-4ba9-870a-8af458e95494" size="100">
+						<salesforce:upsert objectType="hed__Relationship__c" externalIdFieldName="SYS_ExternalPMSRelationshipId__c" doc:name="Upsert Relationship" doc:id="b5467b46-82f3-4c47-8062-a3ae4668beee" config-ref="Salesforce_Config" />
+						<json-logger:logger doc:name="Upserted Relationship Logger" doc:id="dcf6d8df-9111-42e7-8fc6-5e745412b5cd" tracePoint="AFTER_REQUEST" message='"After upserted Relationship id"' />
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<flow-ref doc:name="opportunity-update-flow" doc:id="819f9ad7-293f-48b9-ba81-fce49c428bf3" name="opportunity-update-flow"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+
+</mule>

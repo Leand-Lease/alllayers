@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<sub-flow name="get-tenants-from-ftp-sub-flow" doc:id="8d4cf79b-fe9b-4d5c-adc1-319cd497c145" >
+		<try doc:name="Try" doc:id="6b7f378a-b7fb-4e1b-abb6-d5ccce378b0d" >
+			<sftp:list doc:name="resTenant FTP Folder files list" doc:id="0cd50425-8601-43c2-bc0e-021936243c0a" config-ref="sftp" directoryPath="${sftp.tenant.directory.path}">
+				<sftp:matcher />
+			</sftp:list>
+		</try>
+		<json-logger:logger doc:name="Logger" doc:id="112cc497-a786-4899-b39d-de49f48bbf1a" message='"Tenant files from FTP folder"'/>
+		<choice doc:name="Choice" doc:id="d4533b6c-df6f-4d46-8ab1-e92f73ed2a2b" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="sort tenant list of csv files" doc:id="a335b676-3a32-495d-91c5-72784b0052d8">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+(payload orderBy $.attributes.timestamp)[-1 to 0] ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<sftp:read doc:name="Read Tenants file" doc:id="80c00c74-d0de-4e17-a187-e1008d17c621" config-ref="sftp" path="#[p('sftp.tenant.directory.path') ++ '/' ++ payload[0].attributes.fileName]" outputMimeType="text/plain" outputEncoding="UTF-16"/>
+				<ee:transform doc:name="Write in csv format" doc:id="c6b3562c-40a8-4a8a-8e8b-9bdd6d95b8e2" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+var csvString = trim((payload as String) replace('ResTenants') with(''))
+---
+read(csvString,"application/csv",{"header":true})]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+					</ee:variables>
+				</ee:transform>
+				<json-logger:logger doc:name="Logger" doc:id="7620471b-8167-4117-9286-3f3cb79dc3b3" message='"read file"'/>
+				<ee:transform doc:name="csv to json" doc:id="7e24446f-737b-4db5-983d-5b72927dda47">
+					<ee:message>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="tenant_records" ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (item,index) -> {
+	Ext_Ref_Tenant_Id: item.Ext_Ref_Tenant_Id,
+	First_Name: item.First_Name,
+	Last_Name: item.Last_Name,
+	Middle_Name: item.Middle_Name,
+	Salutation: item.Salutation,
+	Address1 : item.Address1,
+	Address2: item.Address2,
+	City : item.City,
+	State : item.State,
+	Zipcode : item.Zipcode,
+	Email : item.Email,
+	Phone_Number_4 : item.Phone_Number_4,
+	General_Info_11:item."General_Info_11",
+	Status:item.Status	
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<json-logger:logger doc:name="last modified tenant file info" doc:id="ca55d71a-df82-4e43-9c93-f97e0d641493" message='#["last modified tenant file details"]'/>
+			</when>
+			<otherwise >
+				<json-logger:logger doc:name="Tenant Files not found" doc:id="1b378c30-1c61-4969-ac08-898ffbbedc9f" message='#["File not found from /restenant folder"]'/>
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="get-prospects-from-ftp-sub-flow" doc:id="93a986e7-0800-43cc-8a3f-e6628d99bd94" name="get-prospects-from-ftp-sub-flow"/>
+	</sub-flow>
+	
+	<sub-flow name="get-prospects-from-ftp-sub-flow" doc:id="1468d6de-dc23-4f84-b2a6-aa5518de8a8d" >
+		<try doc:name="Try" doc:id="a599e91c-83eb-4715-9d8a-642fc5e59945" >
+			<sftp:list doc:name="resProspect FTP folder files list" doc:id="4e0ca81b-d260-4055-b2e5-2ede188de5d5" config-ref="sftp" directoryPath="${sftp.prospect.directory.path}">
+				<sftp:matcher />
+			</sftp:list>
+		</try>
+		<json-logger:logger doc:name="Logger" doc:id="477b9654-4ce1-4838-bb2f-cd05251eb6f5" message='"Prospect files from FTP folder"'/>
+		<choice doc:name="Choice" doc:id="f11b6f55-11be-4b09-9f1b-59a6fa3506e7" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="sort prospect list of csv files" doc:id="2d3fe1cb-87d3-421e-868d-64db6739f876">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+(payload orderBy $.attributes.timestamp)[-1 to 0] ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<sftp:read doc:name="Read Prospects file" doc:id="6ca65c08-614b-45d7-a50f-f8f260cbc728" config-ref="sftp" path="#[p('sftp.prospect.directory.path') ++ '/' ++ payload[0].attributes.fileName]" outputMimeType="text/plain" outputEncoding="UTF-16"/>
+				<ee:transform doc:name="Write in csv format" doc:id="a31b7328-870b-47ac-a25f-c9c9ee129f4f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+var csvString = trim((payload as String) replace('ResProspects') with(''))
+---
+read(csvString,"application/csv",{"header":true})]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+					</ee:variables>
+				</ee:transform>
+				<ee:transform doc:name="csv to json" doc:id="9747d44a-1b67-4bcf-90ab-367524d4ee75">
+					<ee:message>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="prospect_records" ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (item,index) -> {
+	Ext_Ref_Tenant_Id: item.Ext_Ref_Tenant_Id,
+	Ext_Ref_Roommate_Id: item.Ext_Ref_Roommate_Id,
+	Ext_Ref_Prospect_Id: item.Ext_Ref_Prospect_Id,
+	Prospect_Code: item.Prospect_Code,
+	Status: item.Status,
+	FirstName: item.FirstName,
+	LastName: item.LastName,
+	First_Contacted_On : item.First_Contacted_On,
+	Agent: item.Agent,
+	Tenant_Code : item.Tenant_Code,
+	Salutation : item.Salutation,
+	Address1 : item.Address1,
+	City : item.City,
+	State : item.State,
+	ZipCode : item.ZipCode,
+	HowLong : item.HowLong,
+	CellPhone : item.CellPhone,
+	Email : item.Email,
+	Date_Of_Birth : item.Date_Of_Birth,
+	Income : item.Income,							
+	Property_Code : item.Property_Code,							
+	Unit_Code : item.Unit_Code,							
+	LeaseFrom : item.LeaseFrom,							
+	LeaseTo : item.LeaseTo,							
+	SecondarySource : item.SecondarySource,							
+	Previous_Address1 : item.Previous_Address1,							
+	Previous_Address2 : item.Previous_Address2,							
+	Previous_City : item.Previous_City,
+	Previous_ZipCode : item.Previous_ZipCode,
+	Previous_HowLong : item.Previous_HowLong,
+	Previous2_Address1 : item.Previous2_Address1,
+	Previous2_Address2 : item.Previous2_Address2,
+	Previous2_City : item.Previous2_City,
+	Previous2_ZipCode : item.Previous2_ZipCode,
+	Company : item.Company,
+	Position : item.Position,
+	Date_Applied : item.Date_Applied,
+	Date_Approved : item.Date_Approved,
+	Date_Canceled : item.Date_Canceled,
+	Date_Denied : item.Date_Denied,
+	LeaseTerm : item.LeaseTerm,
+	QuotedRent : item.QuotedRent,
+	Roommate_Code : item.Roommate_Code,
+	Roommate_LastName : item.Roommate_LastName,
+	Roommate_FirstName : item.Roommate_FirstName,
+	CurrentAddress_StartDate : item.CurrentAddress_StartDate,
+	CurrentAddress_MonthlyRent : item.CurrentAddress_MonthlyRent,
+	CurrentAddress_ReasonForMoving : item.CurrentAddress_ReasonForMoving,
+	PreviousAddress_StartDate : item.PreviousAddress_StartDate,
+	PreviousAddress_MonthlyRent : item.PreviousAddress_MonthlyRent,
+	PreviousAddress_ReasonForMoving : item.PreviousAddress_ReasonForMoving,
+	CurrentEmployment_AdditionalIncome : item.CurrentEmployment_AdditionalIncome,
+	CurrentEmployment_AdditionalIncomeSource : item.CurrentEmployment_AdditionalIncomeSource
+								
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<json-logger:logger doc:name="last modified tenant file info" doc:id="05013f59-03fa-4aa2-9c80-a139fbaed888" message='#["last modified prospect file details"]'/>
+			
+</when>
+			<otherwise >
+				<json-logger:logger doc:name="Prospect Files not found" doc:id="c46e758b-001d-4dc2-8cf6-fd6b48e5ad8c" message='#["File not found from /resprospect folder"]'/>
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="tenant-prospect-merge-and-update-contact-flow" doc:id="6e23c0dc-21c6-465e-885b-9aeaa98d0f05" name="tenant-prospect-merge-and-update-contact-flow"/>		
+	</sub-flow>
+	<flow name="tenant-prospect-merge-and-update-contact-flow" doc:id="7267f877-8af8-4994-8763-3f6fcdf2704d" >
+		<ee:transform doc:name="tenant prospect merge" doc:id="47cd54c7-f478-4fe5-a1f7-fe7c9450f136">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/java
+
+fun formattedDate(dt) = (if(!isEmpty(dt)) (dt as Date{format: 'dd/MM/yyyy'} as Date{format: 'yyyy-MM-dd'}) else null)
+var joinedData = outerJoin(vars.tenant_records filter ($.Ext_Ref_Tenant_Id != ""), vars.prospect_records filter ($.Ext_Ref_Tenant_Id != "" and isEmpty($.Parent_Code)), (obj) -> obj.Ext_Ref_Tenant_Id as String default "", (obj) -> obj.Ext_Ref_Tenant_Id as String default "")
+---
+joinedData
+     reduce ((item, cont = []) ->        
+        if((item.l? and item.r?) or (item.l? and not item.r?))
+            cont ++ [{
+	        		Id: item.l.Ext_Ref_Tenant_Id,
+					FirstName: item.l.First_Name,
+					(LastName: item.l.Last_Name) if(!isEmpty(item.l.Last_Name)),
+					MiddleName: item.l.Middle_Name,
+					Salutation: item.l.Salutation,
+					MailingStreet : (item.l.Address1 as String default "" ++ " " ++ item.l.Address2 as String default ""),
+					MailingCity : item.l.City,
+					MailingState : item.l.State,
+					MailingPostalCode : item.l.Zipcode,
+					(Email : item.l.Email) if(!isEmpty(item.l.Email)),
+					MobilePhone : item.l.Phone_Number_4,
+					//General:item.l."General_Info_11"
+					(BTR_HowLongAtCurrentAddress__c:item.r.HowLong) if(item.r?),
+					(Birthdate: formattedDate(item.r.Date_Of_Birth)) if(item.r?),
+					(BTR_PreviousAddress__c: (item.r.Previous_Address1 ++ ' '++ item.r.Previous_Address2)) if(item.r?),
+					(BTR_PreviousCity__c: item.r.Previous_City) if(item.r?),
+					(BTR_PreviousPostalCode__c: item.r.Previous_ZipCode) if(item.r?),
+					(BTR_PreviousHowLong__c: item.r.Previous_HowLong) if(item.r?),
+					(BTR_Previous2Address__c: (item.r.Previous2_Address1 ++ ' ' ++	item.r.Previous2_Address2)) if(item.r?),
+					(BTR_Previous2City__c: item.r.Previous2_City) if(item.r?),
+					(BTR_PreviousPostalCode2__c: item.r.Previous2_ZipCode) if(item.r?)
+                }]	
+		else
+			cont ++ [{
+	        		Id: item.r.Ext_Ref_Tenant_Id,
+					FirstName: item.r.FirstName,
+					(LastName: item.r.LastName)  if(!isEmpty(item.r.LastName)),
+					Salutation: item.r.Salutation,
+					MailingStreet : (item.r.Address1 as String default "" ++ " " ++ item.r.Address2 as String default ""),
+					MailingCity : item.r.City,
+					MailingState : item.r.State,
+					MailingPostalCode : item.r.Zipcode,
+					BTR_HowLongAtCurrentAddress__c:item.r.HowLong,
+					(Email : item.r.Email) if(!isEmpty(item.r.Email)),
+					MobilePhone : item.r.CellPhone,
+					Birthdate: formattedDate(item.r.Date_Of_Birth),
+					BTR_PreviousAddress__c: (item.r.Previous_Address1 ++ ' '++ item.r.Previous_Address2),
+					BTR_PreviousCity__c: item.r.Previous_City,
+					BTR_PreviousPostalCode__c: item.r.Previous_ZipCode,
+					BTR_PreviousHowLong__c: item.r.Previous_HowLong,
+					BTR_Previous2Address__c: (item.r.Previous2_Address1 ++ ' ' ++	item.r.Previous2_Address2),
+					BTR_Previous2City__c: item.r.Previous2_City,
+					BTR_PreviousPostalCode2__c: item.r.Previous2_ZipCode
+                }]	
+    ) ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="After tenant merge" doc:id="ff142478-417d-4e47-a1da-fed69e7425f7" message='"After Tenant and Prospect contact data merge"' tracePoint="AFTER_TRANSFORM">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<batch:job jobName="tenant-update-batch_job" doc:id="5b36a680-cf06-4967-bf32-0b054bd2deec" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="fb4a1451-9fa5-47ac-840a-57760cf3bc2a" >
+					<ee:transform doc:name="update contact" doc:id="bb10406d-30ab-49ed-abfb-1df153a02322" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+output application/java
+---
+[
+	payload mapObject ((($$): $) if ($ != null)) ++
+    	"fieldsToNull": valueSet(payload mapObject (( key: $$ ) if(($ == null) or (isEmpty($))) )  )	
+]]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<json-logger:logger doc:name="Logger" doc:id="c63245e4-ae51-4884-8166-27114a994fb7" priority="DEBUG" message='"contact update record"'/>
+					<salesforce:update type="Contact" doc:name="Update" doc:id="5c6c1374-1f83-418d-b8c0-506c2289a9a5" config-ref="Salesforce_Config" />
+					<json-logger:logger doc:name="After tenant records update" doc:id="e148029c-188f-4ad6-ba8c-c946b6493c55" message='"Tenant records updated"' />
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<flow-ref doc:name="get-roommates-from-ftp-sub-flow" doc:id="9b7ae6dc-90f4-4843-a7b2-e0b0f7c1f10d" name="get-roommates-from-ftp-sub-flow"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+</mule>

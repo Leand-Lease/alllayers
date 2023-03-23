@@ -1,0 +1,23 @@
+#%RAML 1.0 DataType
+description: datatype that represents a Lead and its relevant attributes(contact, campaign, project, property, lease)
+
+type: object
+properties:
+  extLeadId: 
+    type: string
+    maxLength: 18
+    required: true
+    displayName: External Lead Id
+    description: External Lead Id
+  contact:
+    type: !include contact.raml
+  campaign:
+    type: !include campaign.raml
+  project:
+    type: !include project.raml
+  agent:
+    type: !include agent.raml
+  property: 
+    type: !include property.raml  
+  lease:
+    type: !include lease.raml

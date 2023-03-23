@@ -1,0 +1,19 @@
+{
+  "unitCode": "UNIT-109",
+  "agentFullName": "OwnerName",
+  "tenantType": "Individual",
+  "contactFirstName": "first",
+  "contactLastName": "LastName",
+  "contactEmail": "test@test.com",
+  "contactMobilePhone": "123344543",
+  "contactAddress1": "25 th Ave",
+  "contactAddress2": "U-001",
+  "contactAddressState": "CA",
+  "contactZipcode": "12345",
+  "campaignSource": "campaign",
+  "projectPropertyCode": "p0193213",
+  "leaseStartDate": "2020-07-14",
+  "leaseEndDate": "2020-08-13",
+  "SFOpportunityId": "123123123123123123",
+  "SFContactId": "321123131231221"
+}

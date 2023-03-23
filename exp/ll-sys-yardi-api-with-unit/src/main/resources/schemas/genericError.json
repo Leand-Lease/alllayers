@@ -1,0 +1,16 @@
+{
+  "properties": {
+  	"Success": {
+      "type": "boolean"
+    },
+    "correlationId": {
+      "type": "string"
+    },
+    "ErrorCode": {
+      "type": "string"
+    },
+    "ErrorMessage": {
+      "type": "string"
+    }
+  }
+}

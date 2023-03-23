@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="main-applicationss:\post-application" doc:id="baf1f36f-e3b0-432e-95af-275e8e78bec1" >
+		<json-logger:logger doc:name="Start Logger" doc:id="aa0dcbd1-8c3d-47f3-8c40-2648d12de14e" config-ref="JSON_Logger_Config" message='"correlationId:" ++ correlationId ++ " - start processing create lead"'>
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="Start Debug Logger" doc:id="e9f4284e-5c8b-43e8-b384-eb52bb95aa14" priority="DEBUG" message='"correlationId:" ++ correlationId ++ " - start processing request to create lead"' config-ref="JSON_Logger_Config"/>
+		<flow-ref doc:name="post-application-create-lead" doc:id="9e9e2c1c-0250-4f9f-800f-e348eb090f02" name="post-application-create-lead"/>
+		<json-logger:logger doc:name="Logger" doc:id="2794cd3d-bfdb-4bbc-851b-a171a1b76b4b" message='#["correlationId:" ++ correlationId ++ " - custom log message"]' tracePoint="BEFORE_TRANSFORM" config-ref="JSON_Logger_Config" priority="WARN"/>
+		<json-logger:logger doc:name="End Debug Logger" doc:id="24811baf-36c0-4d17-93d5-2c97ddd76391" priority="DEBUG" tracePoint="END" message='"correlationId:" ++ correlationId ++ " - finish processing request to create lead"' config-ref="JSON_Logger_Config"/>
+		<json-logger:logger doc:name="End Logger" doc:id="dbd54b2c-a591-4cc9-b818-9a157d32cd66" tracePoint="END" message='"correlationId:" ++ correlationId ++ " - finish processing create Lead"' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>		
+	
+</sub-flow>
+</mule>

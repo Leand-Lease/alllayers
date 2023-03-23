@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="main-projects:\get-project-by-id" doc:id="32166a64-98dd-4133-83e6-268ffe520be6" >
+		<json-logger:logger doc:name="Start" doc:id="787c83f3-5d32-4a60-b580-1f25eda6cf9c" config-ref="JSON_Logger_Config" message='#["Request to get project details for projectId:" ++ (vars.projectId default "")]' >
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebugging" doc:id="10a86374-0fc4-4388-854a-a2e1e9e4af80" priority="DEBUG" message='#["Request to get project details for projectId:" ++ (vars.projectId default "")]'>
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<salesforce:query doc:name="Query Project Details" doc:id="eb5c4425-9c86-4702-89b9-2b383e160331" config-ref="Salesforce_Config" targetValue="#[output application/json --- payload]" >
+			<salesforce:salesforce-query >select id, Name, PLM_PublisherID__c, PLM_YearBuilt__c, PLM_NoOfOffStreetParking__c, PLM_EnergyEfficiencyRating__c, 
+PLM_NewConstruction__c , PLM_PropertyURL__c, PLM_VirtualTourURL__c, PLM_VideoURL__c, PLM_ExternalLink1__c, 
+PLM_ExternalLink2__c, PLM_UpcomingAuction__c, PLM_AuctionPlace__c , PLM_AuctionDate__c , PLM_AuctionTime__c , 
+PLM_SaleAuthority__c, PLM_MethodOfSale__c, PLM_PublishTo__c, PLM_SYS_PublishTo__c, PLM_ListingAgentID__c, 
+PLM_ListingClientID__c, PLM_SYS_ListingLastSyncStatus__c, PLM_SYS_ListingLastSyncDateTime__c, CitySuburb__c, 
+PostalCode__c, State__c, Country__c, StreetAddress__c, PLM_AddressGeolocation__Longitude__s, PLM_AddressGeolocation__Latitude__s, OfficePhone__c, CustomerServiceEmail__c 
+from Project__c 
+where id = ':projectId'</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"projectId" : vars.projectId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<json-logger:logger doc:name="SFDC Response" doc:id="bfecd2ae-af09-4ae4-986f-4fe3c6abd021" config-ref="JSON_Logger_Config" priority="DEBUG" tracePoint="AFTER_REQUEST" message='#["Request to get project details for projectId:" ++ (vars.projectId default "")]' >
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	(payload: payload) if payload != null
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<choice doc:name="Choice" doc:id="6e09621d-85ef-40b2-8ecb-59f82b89d695" >
+			<when expression="#[sizeOf(payload) &lt; 1]" >
+				<raise-error doc:name="projectIsNotFound" doc:id="b6cfc7a3-90cd-4f50-8cef-9587f090a3f9" type="RESPONSE:NOT_FOUND" description="Project is not exist." />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Project CDM" doc:id="b6f8ff29-0cd2-4596-8472-497ea7f7876b" >
+					<ee:message >
+						<ee:set-payload resource="dw/project-details-response-cdm.dwl" />
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<json-logger:logger doc:name="Logger" doc:id="ec74ecd8-dc10-4e58-9951-53b39debf006" priority="DEBUG" tracePoint="END" message='#["Request to get project details for projectId:" ++ (vars.projectId default "")]'>
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="da043bf6-75fc-4852-b043-392d24c8f5cf" config-ref="JSON_Logger_Config" tracePoint="END" message='#["Request to get project details for projectId:" ++ (vars.projectId default "")]' >
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+	<sub-flow name="main-projects:\patch-project-by-id" doc:id="d1b3ab1d-fc3e-475c-8c1d-fc3ca30d98bb" >
+		<json-logger:logger doc:name="Start" doc:id="4d6dd0e5-e017-4f54-8b62-05b7a0db9374" config-ref="JSON_Logger_Config" message='#["Request to patch project for projectId:" ++ (vars.projectId default "")]' >
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebugging" doc:id="2c3b0a30-ee6d-4104-beb0-f8eb1ad58ee4" priority="DEBUG" message='#["Request to patch project for projectId:" ++ (vars.projectId default "")]' >
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<ee:transform doc:name="preparePayloadForPatchingProject" doc:id="291b1f9a-307a-4434-8cd7-ee0992d74a43" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+import * from modules::functions
+---
+{
+	Id: vars.projectId,
+	
+	(PLM_PublisherID__c: payload.phProjectId) if (payload.phProjectId != null),
+	(PLM_YearBuilt__c: payload.yearBuild as Number) if (payload.yearBuild != null),
+	(PLM_NoOfOffStreetParking__c: payload.noOfStreetParking as Number) if (payload.noOfStreetParking != null),
+	(PLM_EnergyEfficiencyRating__c: payload.energyEfficiencyRating as Number) if (payload.energyEfficiencyRating != null),
+	(PLM_NewConstruction__c: payload.newConstruction as Boolean) if (payload.newConstruction != null),
+	(PLM_PropertyURL__c: payload.url) if (payload.url != null),
+	(PLM_VirtualTourURL__c: payload.vitualTourURL) if (payload.vitualTourURL != null),
+	(PLM_VideoURL__c: payload.videoURL) if (payload.videoURL != null),
+	(PLM_ExternalLink1__c: payload.externalLink1) if (payload.externalLink1 != null),
+	(PLM_ExternalLink2__c: payload.externalLink2) if (payload.externalLink2 != null),
+	(PLM_UpcomingAuction__c: payload.upcomingAuction) if (payload.upcomingAuction != null),
+	(PLM_AuctionPlace__c: payload.auction.auctionPlace) if (payload.auction.auctionPlace != null),
+	//(PLM_AuctionTime__c: payload.auction.auctionTime as Time) if (payload.auction.auctionTime != null),
+	//(PLM_AuctionDate__c: payload.auction.auctionDate as Date) if (payload.auction.auctionDate != null),
+	(PLM_SaleAuthority__c: payload.salesAuthority) if (payload.salesAuthority != null),
+	(PLM_MethodOfSale__c: payload.methodOfSales) if (payload.methodOfSales != null),
+	(PLM_PublishTo__c: payload.publishTo) if (payload.publishTo != null),
+	(PLM_SYS_PublishTo__c: payload.publishToForAudit) if (payload.publishToForAudit != null),
+	(PLM_ListingAgentID__c: payload.listingAgentId) if (payload.listingAgentId != null),
+	(PLM_ListingClientID__c: payload.listingClientId) if (payload.listingClientId != null),
+	(PLM_SYS_ListingLastSyncStatus__c: payload.listingLastSyncStatus) if (payload.listingLastSyncStatus != null),
+	(PLM_SYS_ListingLastSyncDateTime__c: payload.listingLastSyncDateTime as DateTime) if (payload.listingLastSyncDateTime != null),
+	PLM_SYS_ListingLastSyncMessage__c: getSyncMessage(payload.listingLastSyncMessage)	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:update doc:name="Update project" doc:id="93905b2a-c2e7-482c-bef5-edaad2ea29ac" config-ref="Salesforce_Config" type="Project__c" />
+		<json-logger:logger doc:name="SFDC Response" doc:id="e69ee376-812c-4c5a-a221-e5d688820e0e" config-ref="JSON_Logger_Config" priority="DEBUG" tracePoint="AFTER_REQUEST" message='#["Request to patch project for projectId:" ++ (vars.projectId default "")]' >
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<ee:transform doc:name="patch-project-response" doc:id="0f010f40-d121-48e1-80e1-0a2e0546d413">
+					<ee:message>
+						<ee:set-payload resource="dw/patch-project-response-cdm.dwl" />
+					</ee:message>
+				</ee:transform>
+		<json-logger:logger doc:name="endDebugging" doc:id="5fcdd7da-4720-4a34-b1bc-555cbbb1f404" priority="DEBUG" tracePoint="END" message='#["Request to get project details for projectId:" ++ (vars.projectId default "")]' >
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="ff2266b1-5aee-47e2-b893-4c3984c0ab32" config-ref="JSON_Logger_Config" tracePoint="END" message='#["Request to get project details for projectId:" ++ (vars.projectId default "")]' >
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+	<sub-flow name="main-projects:\get-projects" doc:id="9a158158-00a6-4baf-8540-9df0313d8198" >
+		<json-logger:logger doc:name="Start" doc:id="bd5ebe5b-4963-4344-ad8b-3da7888355e9" config-ref="JSON_Logger_Config" message='#["Request to get project records"]' >
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebugging" doc:id="0759cb68-236a-436f-bd01-9faeb9defa5a" priority="DEBUG" message='#["Request to get project records"]' >
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<salesforce:query doc:name="Query Projects" doc:id="e39c598a-9010-4225-992b-47ff2f54ffea" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Id,SYS_ExternalPMSCode__c FROM Project__c WHERE 	SYS_ExternalPMSCode__c != '']]></salesforce:salesforce-query>
+		</salesforce:query>
+		<json-logger:logger doc:name="SFDC Response" doc:id="ee75ddd0-7633-4306-a3cb-6aa8939071b0" config-ref="JSON_Logger_Config" priority="DEBUG" tracePoint="AFTER_REQUEST" message='#["Request to get project details"]'>
+			<json-logger:content><![CDATA[#[output application/json ---
+{
+ 	(payload: payload) if payload != null
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<ee:transform doc:name="Projects CDM" doc:id="0d7377ff-4784-40dc-a939-c6a62de2d736">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json
+---
+{
+	projects: payload default [] map (item, index) -> {
+		projectId: item.Id,
+		phProjectId: "",
+		listingClientId: "",
+		name: "",
+		description: "",
+		status: "",
+		yearBuild: 0,
+		noOfStreetParking: 0,
+		energyEfficiencyRating: 0,
+		newConstruction: false,
+		url: "",
+		showAddress: "",
+		address: {
+			postcode: "",
+			state: "",
+			unitNumber: "",
+			longitude: "",
+			suburb: "",
+			streetName: "",
+			streetNumber: "",
+			country: "",
+			latitude: ""
+		},
+		vitualTourURL: "",
+		videoURL: "",
+		externalLink1: "",
+		externalLink2: "",
+		upcomingAuction: "",
+		auction: {
+			auctionDate: "",
+			auctionPlace: "",
+			auctionTime: ""
+		},
+		email: "",
+		phone: "",
+		salesAuthority: "",
+		methodOfSales: "",
+		publishTo: "",
+		publishToForAudit: "",
+		listingAgentId: "",
+		listingLastSyncStatus: "",
+		listingLastSyncDateTime: "",
+		agents: [{
+			phAgentId: "",
+			phProjectId: "",
+			agentType: "",
+			"firstName?": "",
+			lastName: "",
+			email: "",
+			phoneNumber: "",
+			mobileNumber: "",
+			faxNumber: "",
+			username: "",
+			level: "",
+			description: "",
+			position: "",
+			suburb: "",
+			role: "",
+			fullName: ""
+		}],
+		propertyCode: item.SYS_ExternalPMSCode__c
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+		<json-logger:logger doc:name="endDebugging" doc:id="78030026-0bbb-469c-b43f-957d8f59d3c3" priority="DEBUG" tracePoint="END" message='#["Request to get project records"]' >
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="29a35fa5-41ed-4da2-9847-b37638d09ee7" config-ref="JSON_Logger_Config" tracePoint="END" message='#["Request to get project records"]' >
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+	<sub-flow name="main-projects:\get-units-by-project-id" doc:id="e3bde6e0-5c78-47ba-a11d-91d4730e3ba6" >
+		<json-logger:logger doc:name="Start" doc:id="91a89449-83db-4808-8bba-7eba38230d7f" message='#["Get units from SF"]'>
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebugging" doc:id="659b2c19-8064-4ebf-8271-cc1d4987ab0f" message='"Request to get project records"'/>
+		<flow-ref doc:name="get-units-by-project-id" doc:id="b45e3d12-4cb3-4716-a54e-0125de41c055" name="get-units-by-project-id"/>
+		<json-logger:logger doc:name="endDebugging" doc:id="2278c82a-f147-4ef7-8d2c-7c0fce68ad10" tracePoint="END" message='#["Request to get project records"]'/>
+		<json-logger:logger doc:name="END" doc:id="51f5e7da-a913-4600-843b-a75f27f6b6ff" tracePoint="END" message='#["Request to get project records"]'>
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+
+</mule>

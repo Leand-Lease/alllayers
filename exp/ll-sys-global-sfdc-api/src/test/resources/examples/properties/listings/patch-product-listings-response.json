@@ -1,0 +1,31 @@
+{
+  "correlationId": "1ee4ce63-6f0e-48e5-83e3-2f42a00cbd6c",
+  "productId": "01tN0000006z3LPIAY",
+  "status": "success",
+  "data": [
+    {
+      "created": false,
+      "success": true,
+      "id": "a1GN0000002UxrIMAS",
+      "errors": [
+        
+      ]
+    },
+    {
+      "created": true,
+      "success": true,
+      "id": "a1GN0000002V2amMAC",
+      "errors": [
+        
+      ]
+    },
+    {
+      "created": true,
+      "success": true,
+      "id": "a1GN0000002V2anMAC",
+      "errors": [
+        
+      ]
+    }
+  ]
+}

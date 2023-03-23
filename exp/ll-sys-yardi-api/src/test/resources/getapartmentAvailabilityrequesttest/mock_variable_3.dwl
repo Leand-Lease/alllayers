@@ -1,0 +1,1 @@
+"requestType=apartmentavailability&apiToken=ODI0MzM%3D-SebwExgTkio%3D&propertyCode=p0000164"

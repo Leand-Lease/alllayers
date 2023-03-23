@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<!-- <http:listener-config name="sys-yardi-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081">
+			<tls:context >
+				<tls:key-store type="jks" path="keystore/keystore-${mule.env}.jks" alias="${https.key.alias}" keyPassword="${secure::https.key.password}" password="${secure::https.keystore.password}"/>
+			</tls:context>
+		</http:listener-connection>
+    </http:listener-config> -->
+    <http:listener-config name="sys-yardi-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8084" />
+    </http:listener-config>
+    <apikit:config name="sys-yardi-config" api="sys-yardi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="b772060d-2f52-42d2-a650-d317e62e0531" file="secure-properties/secure-${mule.env}.yaml" key="${enc.key}" />
+    <configuration-properties doc:name="Configuration properties" doc:id="d7168ee8-9ed7-492d-85fe-0b743dac975a" file="properties/${mule.env}.yaml" />
+	<global-property doc:name="Global Property" doc:id="0367ea80-bfa6-4bb7-83a4-6e5f4c5315c5" name="enc.key" value="1234567890123456" />
+	<global-property doc:name="Global Property" doc:id="b230f48d-4b0e-4e12-8d73-aa85b5509a02" name="mule.env" value="dev" />
+	<json-logger:config name="JSON_Logger_Config" doc:name="JSON Logger Config" doc:id="a4888ccd-bc2f-4191-9c1d-674ee3c7b77f" />
+	<configuration doc:name="Configuration" doc:id="3c68a229-3db2-40aa-8334-313174828dd9" defaultErrorHandler-ref="apikit-error-handler" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="0c08d979-3658-496d-bdd2-35c458efa553">
+		<http:request-connection host="${rentCafe.path}" port="${rentCafe.port}" protocol="HTTPS" connectionIdleTimeout="50000">
+		</http:request-connection>
+		<http:default-headers >
+		</http:default-headers>
+	</http:request-config>
+	<!-- <api-gateway:autodiscovery apiId="${anypoint.api.id}"  doc:name="API Autodiscovery" doc:id="8cd497e6-9869-4d51-afaa-8b9eb43ddbbe" flowRef="sys-yardi-main" /> -->
+
+</mule>

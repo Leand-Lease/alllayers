@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<flow name="main-leads:\post-lead" doc:id="baf1f36f-e3b0-432e-95af-275e8e78bec1" >
+		<logger level="INFO" doc:name="Start Logger1" doc:id="501b26dd-f89f-41dc-b3ce-1e9bc6a541ff" message="'&quot;correlationId:&quot; ++ correlationId ++ &quot; - start processing request to get product details&quot;'" />
+		<logger level="INFO" doc:name="Start Logger2" doc:id="890780b3-85d7-45db-89a4-cc06d8f4648a" message="#[{}]" />
+		<logger level="INFO" doc:name="Start Logger" doc:id="da7c735a-780d-4799-8c26-a9ea005f2f2b" message='"correlationId:" ++ correlationId ++ " - start processing request to get product details"' />
+		<logger level="INFO" doc:name="Start Logger1" doc:id="0c0dabce-1aaa-402e-aecf-806eb6ba622b" message="#[{}]" />
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="578327ef-9ee5-4434-ac15-862a0d7edf4a" />
+		<flow-ref doc:name="Flow Reference" doc:id="9e9e2c1c-0250-4f9f-800f-e348eb090f02" name="post-lead-validate-request"/>
+		<logger level="INFO" doc:name="Logger" doc:id="794be76e-91b4-49f9-9109-db6ebe193fa2" message='#["correlationId:" ++ correlationId ++ " - custom log message"]' tracePoint="AFTER_TRANSFORM" config-ref="JSON_Logger_Config" priority="WARN" /> 
+		<logger level="INFO" doc:name="Logger" doc:id="f54e3b66-2a16-43f3-a07b-c10d3d67b6a3" message="#[vars.rentCafeUrl]"/>
+		
+		<logger level="DEBUG" doc:name="End Debug Logger" doc:id="88e0594c-3865-474f-90a7-8ebd772cfaac" category="END" config-ref="JSON_Logger_Config" message='"correlationId:" ++ correlationId ++ " - finish processing request to get product details"' />
+		<logger level="INFO" doc:name="End Logger" doc:id="8f8d1b08-697f-471c-b5ff-43ed7c282a37" message='"correlationId:" ++ correlationId ++ " - finish processing request to get product details"' config-ref="JSON_Logger_Config" />		
+	
+</flow>
+</mule>

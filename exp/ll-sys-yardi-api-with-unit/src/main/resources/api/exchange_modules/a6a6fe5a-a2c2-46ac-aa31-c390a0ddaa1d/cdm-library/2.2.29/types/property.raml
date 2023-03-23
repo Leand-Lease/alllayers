@@ -1,0 +1,140 @@
+#%RAML 1.0 DataType
+description: Property Object
+
+properties:
+  productId: 
+    type: string 
+    required: false
+    description: salesforce recordId - master id 
+  phProductId:
+    type: string
+    required: false
+    description: ID of the collateral in the external publisher system (Property Hub)  
+  caStockId:
+    type: string
+    required: false
+    description: The master ID for the stock on commercial assessment system (Golden Key)
+  projectId?: string 
+  phProjectId?: string       
+  status?:
+    type: string
+    description: List of statuses from Dwelling_Status__c 
+    # enum:
+    #   - Pipeline
+    #   - Released
+    #   - Settled
+    #   - Sold
+    #   - Sold/Exchanged
+    #   - Unreleased
+    #   - Cancelled
+    #   - Not For Sale
+  
+  type?: 
+    type: string
+   # enum:
+   #  - Residential
+   #   - Business
+   #  - Apartment
+  
+  propertyType?: 
+    type: string
+    enum:
+      - Acreage/Semi-Rural
+      - Alpine
+      - Apartment
+      - Block of Units
+      - Flat
+      - House
+      - Land
+      - Semi Detached
+      - Serviced Apartment
+      - Studio
+      - Terrace
+      - Townhouse
+      - Unit
+      - Villa
+      - Warehouse
+      - Retirement
+      - Rural
+      - Other
+      - Home Design
+  
+  headline?: string  
+  description?: string
+  
+  address?: !include common/address.raml
+      
+  displayAddress?: boolean
+  price?: integer
+  priceLimit?:
+    type: integer
+    description: it serves as price_to for property hub and in sfdc Product2 object
+  priceText?: string
+  displayPrice?: 
+    type: string
+    enum:
+      - None
+      - Price Text
+      - Dollar Price
+  soldDate?: string
+  dateAvailable?: date-only
+  underOffer?: boolean
+  pricePeriod?:
+    type: string
+    enum:
+      - Weekly
+      - Monthly
+      - Quarterly
+      - Yearly
+  bondDeposit?: integer
+  soldPrice?: integer
+  showSoldPrice?: boolean
+  firstAgentId?: integer
+  builtYear?: string
+  carportSpaces?: integer
+  garageSpaces?: integer
+  offStreetSpaces?: integer
+  bedrooms?: integer
+  halfBedroom?: boolean
+  bathrooms?: integer
+  halfBathroom?: boolean
+  ensuites?: integer
+  landArea?: integer
+  landAreaMetric?:
+    type: string
+    enum:
+      - Square Metres
+      - Square Feet
+      - Square Yards
+      - Acres
+      - Hectares
+  floorArea?: integer
+  floorAreaMetric?:
+    type: string
+    enum:
+      - Square Metres
+      - Square Feet
+      - Squares
+      - Square Yards
+  landFrontage?: integer
+  landFrontageMetric?: string
+  energyEfficiencyRating?: string
+  entranceFloor?: string
+  productCode?: string
+  numberOfFloors?: integer
+  newConstruction?: boolean
+  propertyUrl?: string
+  virtualTourUrl?: string
+  extLink1?: string
+  extLink2?: string
+  videoUrl?: string
+  auctionPlace?: string
+  auctionDate?: date-only
+  auctionTime?: string
+  forthcomingAuction?: boolean
+  developmentName?: string
+  authority?: string
+  methodOfSale?: string
+  propertyId?: string
+  apartmentId?: string
+  specials?: string

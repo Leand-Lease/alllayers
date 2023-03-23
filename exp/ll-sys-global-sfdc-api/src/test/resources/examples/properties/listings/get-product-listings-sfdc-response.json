@@ -1,0 +1,32 @@
+[
+  {
+    "LastModifiedDate": "2020-02-04T00:04:54.000Z",
+    "PLM_Status__c": "Pending Export",
+    "PLM_LastExportDate__c": null,
+    "PLM_LastSentDate__c": null,
+    "type": "PLM_ListingStatus__c",
+    "SystemModstamp": "2020-02-04T00:04:54.000Z",
+    "Name": "REA",
+    "PLM_Product__c": "01tN0000006z3LPIAY",
+    "PLM_LastConfirmedDate__c": null,
+    "PLM_LastStatusMessage__c": null,
+    "Id": "a1GN0000002V0FPMA0",
+    "LastModifiedById": "005N0000008D1GLIA0",
+    "PLM_ListingSite__c": "REA"
+  },
+  {
+    "LastModifiedDate": "2020-02-04T00:04:54.000Z",
+    "PLM_Status__c": "Pending Export",
+    "PLM_LastExportDate__c": null,
+    "PLM_LastSentDate__c": null,
+    "type": "PLM_ListingStatus__c",
+    "SystemModstamp": "2020-02-04T00:04:54.000Z",
+    "Name": "Domain",
+    "PLM_Product__c": "01tN0000006z3LPIAY",
+    "PLM_LastConfirmedDate__c": null,
+    "PLM_LastStatusMessage__c": null,
+    "Id": "a1GN0000002V0FQMA0",
+    "LastModifiedById": "005N0000008D1GLIA0",
+    "PLM_ListingSite__c": "Domain"
+  }
+]

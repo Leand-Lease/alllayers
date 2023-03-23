@@ -1,0 +1,45 @@
+{
+  "photos": [
+    {
+      "sfId": "124ghrt6x",
+      "phId": "01tN0000006wYvxIAE",
+      "collateralId": "124ghrt6x",      
+      "mediaType": "Photo",
+      "collateralAssociation": "product",
+      "order": 1,
+      "url": "file:///tmp/test.jpg",
+      "projectId": "123",
+      "productId": "234",
+      "markDeleteFlag": true
+    }
+  ],
+    "brochures": [
+    {
+      "sfId": "124ghrt6x",
+      "phId": "01tN0000006wYvxIAE",
+      "collateralId": "124ghrt6x",
+      "mediaType": "Brochure",
+      "collateralAssociation": "product",
+      "order": 1,
+      "url": "file:///tmp/test.jpg",
+      "projectId": "123",
+      "productId": "234",
+      "markDeleteFlag": true,
+      "description": "some text"
+    }
+  ],
+    "floorplans": [
+    {
+      "sfId": "124ghrt6x",
+      "phId": "01tN0000006wYvxIAE",
+      "collateralId": "124ghrt6x",
+      "mediaType": "Floorplan",
+      "collateralAssociation": "product",
+      "order": 1,
+      "url": "file:///tmp/test.jpg",
+      "projectId": "123",
+      "productId": "234",
+      "markDeleteFlag": true
+    }
+  ]
+}

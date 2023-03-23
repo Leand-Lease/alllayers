@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="sys-yardi-leads.xml" />
+	<!-- MUnit Main flow -->
+	<munit:test name="sys-yardi-leads-post:\Lead:application\json:sys-yardi-config-test" doc:id="9d2ecfa6-730a-42b6-8f7f-47e4556683a0" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="cb7d3fa4-ec32-4933-bea8-ef02073682d8" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://examples/leads/post-lead-request.json')]" encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to post:\Lead:application\json:sys-yardi-config" doc:id="e38e7afb-4500-483e-abbf-d353791b7274" name="post:\Lead:application\json:sys-yardi-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals Flow success" doc:id="f288e43e-8b96-4e38-8eb2-f341a5a1d20f" actual="#[payload.Success]" expected='#[false]'/>
+			<!-- <munit-tools:assert doc:name="Assert payload" doc:id="b049748c-3718-4997-9e2d-2704abe0ea97" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import postLeadapplicationjsonsysyardiconfigtest::assert_expression_payload
+-&#45;&#45;
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert> -->
+		</munit:validation>
+	</munit:test>
+	
+	<munit:test name="sys-yardi-leads-post:\Lead:application\main-leads:\post-lead-test\json:sys-yardi-configTest" doc:id="266a112f-4b4e-4f37-b6f6-eeebd6d764fb" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Flow Reference" doc:id="df7980ab-1649-431a-ad6f-21567650a1a5" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="9e9e2c1c-0250-4f9f-800f-e348eb090f02" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://examples/leads/post-lead-mock-payload.json')]" mediaType="application/json" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="BuildMessage" value="#[output application/json --- readUrl('classpath://examples/leads/post-lead-BuildMessage-variable.json')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="url_03_contact_address_params" value="#[output application/java --- readUrl('classpath://examples/leads/post-lead-url-03-contact-address-params-variable.json')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="url_01_other_params" value="#[output application/java --- readUrl('classpath://examples/leads/post-lead-url-01-other-params-variable.json')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="rentCafeRequest" value="#[output application/java --- readUrl('classpath://examples/leads/post-lead-rentCafeRequest-variable.json')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="url_02_contact_params" value="#[output application/java --- readUrl('classpath://examples/leads/post-lead-url-02-contact-params-variable.json')]" mediaType="application/java" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="8c226c6c-6245-4d84-b5f6-7f12c37e6488" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://examples/leads/post-lead-request.json')]" encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to main-leads:\post-lead" doc:id="6cb64213-b39f-4849-8d49-0214f52b2149" name="main-leads:\post-lead"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="45d18cc4-8af5-4b3a-ad26-4bda377ec8f2" expected="#[readUrl('classpath://examples/leads/post-lead-request-response.json', 'application/json') - 'correlationId']" actual="#[payload - 'correlationId']"/>
+		</munit:validation>
+	</munit:test>
+	<!-- Munit for custom validations   -->
+	<munit:test name="sys-yardi-leads-post:\Lead:application\main-leads:\leads-impl\post-lead-validate-request-test\json:sys-yardi-configTest" doc:id="d5b61404-3642-4ab0-bc6b-95309d6ba704" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="037d0bbf-7311-40c7-b5d3-36435c3603d7" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://examples/leads/post-lead-for-validation-request.json')]" encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to post-lead-validate-request" doc:id="bea6c0bd-fe06-4331-86ad-3eb2f06d55b4" name="post-lead-validate-request"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="b2e02e13-dd6c-447c-8ac5-756fd95b4293" actual="#[payload.ErrorMessage]" message="Agent Full Name not match" expected='#["Agent full name is required" as String]'/>
+		</munit:validation>
+	</munit:test>
+	<!-- MUnit build request -->
+	<munit:test name="sys-yardi-leads-post:\Lead:application\main-leads:\leads-impl\post-lead-build-rentCafe-request\json:sys-yardi-configTest" doc:id="18d98d11-2702-46a0-a370-d7ef4b2ca69c" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="54a2bb4b-f7e4-4c04-89d2-bbed1d55f5fc" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://examples/leads/post-lead-request.json')]" encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to post-lead-build-rentCafe-request" doc:id="7114cf8a-6d45-4d5e-99e9-0bb28cbf256b" name="post-lead-build-rentCafe-request"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals build message" doc:id="10625f7c-4b47-40bb-8e0e-4b79806f2888" actual="#[vars.BuildMessage]" expected="#[output application/java --- readUrl('classpath://examples/leads/post-lead-BuildMessage-variable.json')]" message="Matching with build message"/>
+			<munit-tools:assert-equals doc:name="Assert equals contact address param" doc:id="60915315-46ee-4a0a-b574-b5badc65d3e7" actual="#[vars.url_03_contact_address_params]" expected="#[output application/java --- readUrl('classpath://examples/leads/post-lead-url-03-contact-address-params-variable.json')]" message="Matching with contact address params build"/>
+			<munit-tools:assert-equals doc:name="Assert equals other param" doc:id="3d2fc3d1-e4a6-4ab9-9bc1-9eca7378be35" actual="#[vars.url_01_other_params]" expected="#[output application/java --- readUrl('classpath://examples/leads/post-lead-url-01-other-params-variable.json')]" message="Matching with other params build"/>
+			<munit-tools:assert-equals doc:name="Assert equals contact param" doc:id="a650e80b-3efb-47f8-80b4-5f45613bdb95" actual="#[vars.url_02_contact_params]" expected="#[output application/java --- readUrl('classpath://examples/leads/post-lead-url-02-contact-params-variable.json')]" message="Matching with contact params build"/>
+			<!-- <munit-tools:assert doc:name="Assert variables" doc:id="ef2b4ef6-248c-45de-9153-ab44e69745db" message="The variables do not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import postleadbuildrentCaferequesttest::assert_expression_variables
+-&#45;&#45;
+assert_expression_variables::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert> -->
+		</munit:validation>
+	</munit:test>
+	<!-- MUnit Lead creation -->
+	<munit:test name="sys-yardi-leads-post:\Lead:application\main-leads:\leads-impl\post-lead-send-request\json:sys-yardi-configTest" doc:id="c6a94102-e722-4108-83f4-a252c95a5163" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Build rentCafe request" doc:id="444d306a-f299-426c-81b1-7a7295987ff1" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="b74a2745-c654-4d7d-b7e7-e86b9eb4a445" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://examples/leads/post-lead-request.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock rentCafe Request" doc:id="35039aba-644b-4270-82fc-d8935e6d4b70" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="96544cbd-f334-4cc3-a139-9ef12a67760e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://examples/leads/post-lead-success-response.json')]" mediaType="application/json" encoding="UTF-8" />
+					<munit-tools:variables >
+						<munit-tools:variable key="BuildMessage" value="#[output application/json --- readUrl('classpath://examples/leads/post-lead-BuildMessage-variable.json')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="url_03_contact_address_params" value="#[output application/java --- readUrl('classpath://examples/leads/post-lead-url-03-contact-address-params-variable.json')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="url_01_other_params" value="#[output application/java --- readUrl('classpath://examples/leads/post-lead-url-01-other-params-variable.json')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="rentCafeRequest" value="#[output application/java --- readUrl('classpath://examples/leads/post-lead-rentCafeRequest-variable.json')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="url_02_contact_params" value="#[output application/java --- readUrl('classpath://examples/leads/post-lead-url-02-contact-params-variable.json')]" mediaType="application/java" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="30d659ce-e2e0-4c0e-898c-8c5c3a7397b1" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://examples/leads/post-lead-request.json')]" encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to post-lead-send-request" doc:id="af183757-ff5f-4231-bcbc-2512bf89f58d" name="post-lead-send-request"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="fc39c6d0-a053-46cf-bbd6-459bb5543d2d" actual="#[payload]" expected='#["Success": true]' message="Lead Created!"/>
+		</munit:validation>
+	</munit:test>
+</mule>

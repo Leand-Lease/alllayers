@@ -1,0 +1,35 @@
+[
+  {
+   "sfId" : "a1GN0000002UxrIMAS",
+    "phId": "acc123",
+    "listingSite": "Domain",
+    "listingStatus": "Pending Export",
+    "lastSent": "2019-07-04T21:00:00",
+    "lastConfirmed": "2015-07-04T21:00:00",
+    "lastExport": "2015-07-04T21:00:00",
+    "productId" : "",
+    "lastStatus": "updated"
+  }, 
+  {
+    
+    "phId": "acc123",
+    "listingSite": "Domain",
+    "listingStatus": "Pending Export",
+    "lastSent": "2018-07-04T21:00:00",
+    "lastConfirmed": "2015-07-04T21:00:00",
+    "lastExport": "2015-07-04T21:00:00",
+    "productId" : "",
+    "lastStatus": "updated"
+  }, 
+  {
+    
+    "phId": "acc123",
+    "listingSite": "Domain",
+    "listingStatus": "Pending Export",
+    "lastSent": "2017-07-04T21:00:00",
+    "lastConfirmed": "2015-07-04T21:00:00",
+    "lastExport": "2015-07-04T21:00:00",
+    "productId" : "",
+    "lastStatus": "updated"
+  }
+]

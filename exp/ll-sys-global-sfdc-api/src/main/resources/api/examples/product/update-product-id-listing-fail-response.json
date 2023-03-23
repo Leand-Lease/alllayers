@@ -1,0 +1,34 @@
+{
+  "correlationId": "f5a72ce0-3ce6-11ea-9f63-8c8590d44016",
+  "productId": "01tN0000006yliVIAQ",
+  "status": false,
+  "data": [
+    {
+      "created": false,
+      "success": false,
+      "id": null,
+      "errors": [
+        {
+          "duplicateResult": null,
+          "message": "Status: bad value for restricted picklist field: Pending Exports",
+          "fields": [
+            "PLM_Status__c"
+          ],
+          "statusCode": "INVALID_OR_NULL_FOR_RESTRICTED_PICKLIST"
+        }
+      ]
+    },
+    {
+      "created": true,
+      "success": true,
+      "id": "a1GN0000002UxttMAC",
+      "errors": []
+    },
+    {
+      "created": true,
+      "success": true,
+      "id": "a1GN0000002UxtuMAC",
+      "errors": []
+    }
+  ]
+}

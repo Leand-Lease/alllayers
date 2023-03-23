@@ -1,0 +1,29 @@
+#%RAML 1.0
+title: exp-global-sfdc
+description: To Accept an Application with related and relevant attributes and route to Yardi RENT Cafe accordingly via sys-yardi.
+version: 1.0.0
+
+uses:
+  caf: exchange_modules/a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d/common-api-fragments/1.0.3/common-fragments.raml
+  
+/application:
+  is: [caf.client-id-auth, caf.compliant]
+  displayName: Application
+  description: This API allows interaction with lease applications
+
+  post:
+    description: This method send data attributes(payload) to sys-yardi and returns a success/failure as a payload in the response.
+    body:
+      application/json:
+        type: !include types/CRM-application.raml
+        example: !include examples/CRM-application-example.raml
+
+    responses:
+      200:
+        body:
+          application/json:
+            type: !include types/CRM-application-response.raml
+            example: !include examples/CRM-application-response-example.raml  
+      404:
+        body:
+          application/json:

@@ -1,0 +1,22 @@
+logger:
+  message: "![OjAKo1Vkv+JGfRKwZbsgZD3xP+nCZRZ2rwwaorQ7ZaE=]"
+https:
+  key:
+    password: "![5VJiN8lkM+70nJLWAwvSjg==]"
+  keystore:
+    password: "![5VJiN8lkM+70nJLWAwvSjg==]"
+
+anypoint.mq:
+  client.id: "96a1d4e517e740a48cbbf610dd040ec7"
+  client.secret: "489BFf39FdF14Db390c2f900De7bFFBb"
+  
+sftp:
+  password: "OwVgYZLT"  
+  
+sys-yardi:    
+  client.id: "98019424e576457d9e0955b7b28abbd9"
+  client.secret: "409f82b837B04355AE707B2CFad11037"  
+
+sys-global-sfdc:
+  client.id: "8c78e91faff44c04afdd4524a8fbaa79"
+  client.secret: "e3da15d48E9246D2BB73E398aCEb38B6"       

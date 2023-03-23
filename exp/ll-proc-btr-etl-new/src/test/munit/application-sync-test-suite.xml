@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="tenant-sync-test-suite.xml" />
+	<munit:test name="opportunity-update-flowTest" doc:id="7b5d90e9-18dc-4fd8-99fb-475571a74be7" >
+		<munit:behavior >
+			<set-variable value="#[readUrl('classpath://examples/tenants/tenant_input_response.json','application/json')]" doc:name="tenant_records" doc:id="ff8690bc-2c00-4d3e-9eb5-51657a715712" variableName="tenant_records"/>
+			<set-variable value="#[readUrl('classpath://examples/prospects/prospect_input_response.json','application/json')]" doc:name="prospect_records" doc:id="73d3e7bf-5b78-410f-81fd-ff7287504073" variableName="prospect_records"/>
+			<munit-tools:mock-when doc:name="update contact" doc:id="8585b441-bbb8-4a44-bc71-8ada9de35bb3" processor="salesforce:update">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="Opportunity Update" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[readUrl('classpath://examples/roommates/roommate_sfdc_update_response.json','application/json')]" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="application-update-flow" doc:id="ebc5a5d3-8594-4390-becf-673403cc7ea3" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="application-update-flow" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#["Sucess"]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="opportunity-update-flow" doc:id="8c2d7d45-a842-47d5-ade2-a57143293bc7" name="opportunity-update-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="00270989-0bfa-4ddd-ae0a-0b10e1dc85d7" actual='#["Success"]' expected='#["Success"]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="tenant-OCR-update-suiteTest" doc:id="f330409f-961b-4b98-b59c-ca8bf91a5d95" >
+		<munit:behavior >
+			<set-variable value="#[readUrl('classpath://examples/prospects/prospect_input_response.json','application/json')]" doc:name="prospect records" doc:id="796243fe-c397-496b-8fb9-5c4bb815bdee" variableName="prospect_records"/>
+			<munit-tools:mock-when doc:name="opportunity contact role" doc:id="48823d4c-54b1-43db-b6c5-f75090cb9b55" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Query Opportunity Contact Role" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/prospects/prospect_sfdc_OCR_response.json','application/json')]" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<set-variable doc:name="OCR ContactId" doc:id="23ded54d-47f2-4c1c-8c8b-6fdbe6fcacd0" variableName="oppContactRoleId" value="#[{}]"/>
+			<munit-tools:mock-when doc:name="create ocr" doc:id="a4129fb1-9c1d-4816-9190-8bce26a4fbad" processor="salesforce:create">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create OCR" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/prospects/prospect_sfdc_opp_update_response.json','application/json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="roommate_opportunityConetactRole_update_flow" doc:id="49aae881-bd55-4af9-bcf7-8f6a81d0b49d" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="roommate-opportunityContactRole-update-flow" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#["Success"]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="tenant-opportunityContactRole-update-flow" doc:id="ab96d1ac-1404-430c-93a4-2e0f22938858" name="tenant-opportunityContactRole-update-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="9a0b1c78-4b8d-4c13-9618-21fdc414ce3f" actual='#["Success"]' expected='#["Success"]'/>
+		</munit:validation>
+	</munit:test>
+	<!-- <munit:test name="roommate-OCR-update-suiteTest" doc:id="da4c4067-4f59-472f-a958-34736a0af91f" >
+		<munit:behavior >
+			<set-variable value="#[readUrl('classpath://examples/prospects/prospect_input_response.json','application/json')]" doc:name="prospect records" doc:id="7fa88b51-49e4-43b5-a740-b64ab0673793" variableName="prospect_records"/>
+			<munit-tools:mock-when doc:name="opportunity contact role" doc:id="103821a2-f4d1-4699-8ea6-9440f2d7cf18" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Query Opportunity Contact Role" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/prospects/prospect_sfdc_OCR_response.json','application/json')]" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<set-variable value="#[{}]" doc:name="OCR ContactId" doc:id="69aba387-a58b-44a6-9ca3-8ddbde89bc20" variableName="oppContactRoleId"/>
+			<munit-tools:mock-when doc:name="Create OCR" doc:id="f7fb357b-bd4c-4e29-8aec-942483b30ef0" processor="salesforce:create">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create OCR" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/prospects/prospect_sfdc_opp_update_response.json','application/json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="roommate_opportunityConetactRole_upsert_flow" doc:id="88415d49-bc6b-4133-ac01-d09ed8f9b367" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="roommate-opportunityContactRole-upsert-flow" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#["Success"]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="roommate-opportunityContactRole-update-flow" doc:id="f9c2b1c5-b35c-4180-9851-392beee4854d" name="roommate-opportunityContactRole-update-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="2465f561-0bd1-42c9-a0c3-43509def5dcb" actual='#["Success"]' expected='#["Success"]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="roommate-OCR-upsert-suiteTest" doc:id="6071a238-7859-4fc7-a522-294ce2fb7807" >
+		<munit:behavior >
+			<set-variable value="#[readUrl('classpath://examples/prospects/prospect_input_response.json','application/json')]" doc:name="prospect records" doc:id="76b136b9-7134-440f-afeb-0a0a35455c38" variableName="prospect_records"/>
+			<munit-tools:mock-when doc:name="opportunity contact role" doc:id="da929f29-3382-4573-ab8c-9f44562e2e2c" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Query OCR with contact Ext id" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/prospects/prospect_sfdc_OCR_response.json','application/json')]" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+			<set-variable value="#[{}]" doc:name="OCR ContactId" doc:id="b8549bcb-f0d6-40b7-879d-b51cb95eaf2e" variableName="oppContactRoleId"/>
+			<munit-tools:mock-when doc:name="Create OCR" doc:id="53f32503-9f15-446a-a705-5e8d692799ab" processor="salesforce:create">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Create ocr" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/prospects/prospect_sfdc_opp_update_response.json','application/json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="get-lease-from-ftp-sub-flow" doc:id="1d35e099-2343-448e-a912-6253546164f0" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="get-lease-from-ftp-sub-flow" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#["Success"]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="roommate-opportunityContactRole-upsert-flow" doc:id="8640a918-e449-49aa-a555-5f727f6da1bc" name="roommate-opportunityContactRole-upsert-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="01023b16-df36-42dd-81ea-657de80fe107" actual='#["Success"]' expected='#["Success"]'/>
+		</munit:validation>
+	</munit:test> -->
+		
+
+
+</mule>

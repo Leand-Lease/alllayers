@@ -1,0 +1,10 @@
+#%RAML 1.0 DataType
+
+properties:
+  correlationid: string
+  errorType: string
+  message: string
+  additionalDetails?: string
+  errorCode?: 
+    type: string
+    description: Used mainly to send the custom error codes, mainly related to business. It doesnt replace the HTTP error code. For future use

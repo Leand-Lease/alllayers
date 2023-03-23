@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ftps="http://www.mulesoft.org/schema/mule/ftps" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ftps http://www.mulesoft.org/schema/mule/ftps/current/mule-ftps.xsd">
+	<file:config name="File_Config" doc:name="File Config" doc:id="95d761d6-5648-42e9-9824-8cd1d4d2a2d3" >
+		<file:connection workingDir="C:\" />
+	</file:config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="25a80d35-00a2-4b19-9e39-859c781d720c" >
+		<salesforce:basic-connection username="raagvitech@raagvitech1.com" password="Mulesoft123@" securityToken="KwTzvmAVKsrYioHfi2kv96eP" />
+	
+</salesforce:sfdc-config>
+	<json-logger:config name="JSON_Logger_Config" doc:name="JSON Logger Config" doc:id="7c975377-d343-4170-98fc-6a681f7893a2" applicationName="test" applicationVersion="1.0" environment="dev" />
+	<ftps:config name="FTPS_Config" doc:name="FTPS Config" doc:id="ab3ffafc-4776-4248-946a-353019207518" >
+		<ftps:connection host="localhost" workingDir="C:\"/>
+	</ftps:config>
+	<flow name="csv-sf-record-createFlow" doc:id="7925cc1e-7bf2-4661-bc41-4509a4a1a307" >
+		<file:listener doc:name="On New or Updated File" doc:id="d2e9f37d-9ecb-4362-a1da-2741f0c699ff" config-ref="File_Config" directory="C:\D_Folder\sample_data">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</file:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="99b0e03b-f446-4593-a1ec-3667980a73ec" />
+		<batch:job jobName="Batch_Job" doc:id="173659a9-50a4-475b-9273-9db9cb423898" >
+			<batch:process-records >
+				<batch:step name="Batch_Step1" doc:id="6defaa11-0276-4d93-9420-fdd2800ef48d" >
+					<ee:transform doc:name="Transform Message" doc:id="10c6589a-1bc4-48b6-98b9-f9652b28e9ce" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="83ececa1-2e91-47b8-8325-61659b94c04c" streaming="true">
+						<salesforce:create doc:name="Create" doc:id="81aec51d-2023-434b-9c24-8e0a89419ead" config-ref="Salesforce_Config" type="Account"/>
+						<logger level="INFO" doc:name="Logger1" doc:id="a9323218-2764-482f-80ec-428016e21655" message='"Test log"' />
+						<logger level="INFO" doc:name="Logger" doc:id="af162771-bed8-49ec-9179-cdb2be0ec71e" />
+					
+</batch:aggregator>
+
+
+
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+	</flow>
+
+</mule>

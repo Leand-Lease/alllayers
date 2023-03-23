@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="sys-global-sfdc-properties.xml" />
+	<munit:test name="sys-global-sfdc-properties-put:\products\(productId)\inspection-times:application\json:sys-global-sfdc-configTest" doc:id="bb4454f8-c64d-443d-a8cc-d3a8404164a4" description="Test">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event" doc:id="cbac703e-36c2-4c4f-9f51-e6b7e2a8fa80" >
+				<munit:payload value="#[readUrl('classpath://examples/properties/inspectiontimes/put-products-inspectiontime-request.json', 'application/json')]" />
+				<munit:attributes value='#[{uriParams:{"productId" : "01tN0000006z3LPIAY"}}]' />
+			</munit:set-event>
+			<munit-tools:mock-when doc:name="Mock SFDC upsert Marketing Colatterals" doc:id="b6f45ba3-515b-4030-a88a-c90470b7615b" processor="salesforce:upsert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Upsert Marketing Collaterals" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:variables >
+						<munit-tools:variable key="sfdcResponse" value="#[readUrl('classpath://examples/properties/inspectiontimes/put-products-inspectiontime-upsert-marketingcolatterals-Result.json', 'application/json')]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to put:\products\(productId)\inspection-times:application\json:sys-global-sfdc-config" doc:id="1e4ac741-32de-4f1f-9063-bbb1bdce5127" name="put:\products\(productId)\inspection-times:application\json:sys-global-sfdc-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="c457b72b-e0c8-4af3-8a9a-fae440334db6" actual="#[payload - 'correlationId']" expected="#[readUrl('classpath://examples/properties/inspectiontimes/put-products-inspectiontime-response.json', 'application/json') - 'correlationId']" message="Put Inspection time results is not acceptable. "/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sys-global-sfdc-properties-put:\products\(productId)\media:application\json:sys-global-sfdc-configTest" doc:id="bbb78d50-aafc-461c-88f3-db2ff25761a5" description="Test">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event" doc:id="2091c78d-8d86-490c-8c81-e77297eef3f1" >
+				<munit:attributes value='#[{uriParams:{"productId" : "01tN0000006z3LPIAY"}}]' />
+			</munit:set-event>
+			<munit-tools:mock-when doc:name="Mock SFDC upsert Marketing Colatterals" doc:id="f13fd9b7-7871-42ef-8984-33ed78222c62" processor="salesforce:upsert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Upsert Product Media in Marketing Collaterals" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:variables >
+						<munit-tools:variable key="upsertMarketingColatteralsResult" value="#[readUrl('classpath://examples/properties/media/put-product-media-upsert-marketing-colatterals-response.json', 'application/json')]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to put:\products\(productId)\media:application\json:sys-global-sfdc-config" doc:id="1d0df469-f690-41eb-8b31-64a8a25ae4da" name="put:\products\(productId)\media:application\json:sys-global-sfdc-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="453c16e8-01c9-4560-915d-fb28590c689b" actual="#[payload - 'correlationId']" expected="#[readUrl('classpath://examples/properties/media/put-product-media-response.json', 'application/json') - 'correlationId']" message="Put Inspection time results is not acceptable. " />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sys-global-sfdc-properties-patch:\products\(productId):application\json:sys-global-sfdc-configTest" doc:id="8b2fa852-99a4-4f79-b775-0705558bbdfa" description="Test">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event" doc:id="c9414c62-3afc-49fc-ae9f-7643df7d0240" >
+				<munit:attributes value='#[{uriParams:{"productId" : "01tN0000006z3LPIAY"}}]' />
+			</munit:set-event>
+			<munit-tools:mock-when doc:name="Mock SFDC upsert Product" doc:id="2ce30363-2e0d-493f-ba55-59f9e46d8d83" processor="salesforce:upsert">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Upsert Product" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/properties/patch-property-upsert-product-response.json', 'application/json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<set-payload value="#[readUrl('classpath://examples/properties/patch-property-request.json', 'application/json')]" doc:name="Set Payload" doc:id="ac7015f3-da9d-4224-bc44-72783026e4b8" />
+			<flow-ref doc:name="Flow-ref to patch:\products\(productId):application\json:sys-global-sfdc-config" doc:id="590921d3-774e-46df-a927-ff61d909bacf" name="patch:\products\(productId):application\json:sys-global-sfdc-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="87bca490-3f22-44f4-ab62-788545a9fad0" actual="#[payload - 'correlationId']" expected="#[readUrl('classpath://examples/properties/patch-property-response.json', 'application/json') - 'correlationId']" message="Put Inspection time results is not acceptable. " />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sys-global-sfdc-properties-get:\products\(productId)\features:sys-global-sfdc-configTest" doc:id="57d7f5dd-84ea-432f-92c8-44afd8e32920" description="Test">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event" doc:id="2ac32fdf-47e3-4749-815a-9dbf98404527" >
+				<munit:attributes value='#[{uriParams:{"productId" : "01tN0000006z3LPIAY"}}]' />
+			</munit:set-event>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="71512049-dffc-4d1c-85d3-c4d00f940ef2" processor="salesforce:query-single">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Query Product Features" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/properties/features/get-property-features-sfdc-query-response.json', 'application/json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get:\products\(productId)\features:sys-global-sfdc-config" doc:id="9c29ceca-ef55-432a-a18c-c9986b8dcc62" name="get:\products\(productId)\features:sys-global-sfdc-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="0cb157cf-8e6e-47e9-abfb-29e66a9c7c61" actual="#[payload]" expected="#[readUrl('classpath://examples/properties/features/get-property-features-response.json', 'application/json')]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sys-global-sfdc-properties-get:\products\(productId)\inspection-times:sys-global-sfdc-configTest" doc:id="3b22d9ae-e13c-49e6-b32d-6d94508a9bb2" description="Test">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event" doc:id="fb5e9693-3870-4bfc-93e2-2a49d29df7cb" >
+				<munit:attributes value='#[{uriParams:{"productId" : "01tN0000006z3LPIAY"}}]' />
+			</munit:set-event>
+			<munit-tools:mock-when doc:name="Mock SFDC get property opentimes" doc:id="e1da4e04-595f-4923-8bf2-134a9e2ccba3" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Query property opentimes" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:variables >
+						<munit-tools:variable key="sfdcProdResp" value="#[[]]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock SFDC get project Id" doc:id="6b9da410-21fa-4366-a1e5-f1bb5874ba55" processor="salesforce:query-single">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Get project Id" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:variables >
+						<munit-tools:variable key="sfdcGetProjectResp" value="#['{&quot;Id&quot;: null, &quot;type&quot;: &quot;Product2&quot;, &quot;Project__r&quot;: {&quot;Id&quot;: &quot;a0dN000000CnRd3IAF&quot;,&quot;type&quot;: &quot;Project__c&quot;}}']" mediaType="application/json" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock SFDC Query project opentimes" doc:id="7e1d016f-f9b1-4025-94db-2ef718993474" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Query project opentimes" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:variables >
+						<munit-tools:variable key="sfdcProjectOpentimesResp" value="#['[{&quot;PLM_InspectionDate__c&quot;: &quot;2020-03-31&quot;,&quot;PLM_Project__c&quot;: &quot;a0dN000000CnRd3IAF&quot;,&quot;PLM_Product__c&quot;: null,&quot;PLM_StartTime__c&quot;: &quot;11:00:00&quot;,&quot;Id&quot;: &quot;a1FN0000001yCYbMAM&quot;,&quot;PLM_EndTime__c&quot;: &quot;12:00:00&quot;,&quot;type&quot;: &quot;PLM_MarketingCollateral__c&quot;}]']" mediaType="application/json" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get:\products\(productId)\inspection-times:sys-global-sfdc-config" doc:id="68cb7db5-19b8-44b5-918d-b130ffa5a67c" name="get:\products\(productId)\inspection-times:sys-global-sfdc-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="5e124fd2-b7a0-428e-a666-eb5f22c3a3ab" actual="#[payload]" expected="#[readUrl('classpath://examples/properties/inspectiontimes/get-products-inspectiontime-response.json', 'application/json')]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sys-global-sfdc-properties-get:\products\(productId)\media:sys-global-sfdc-configTest" doc:id="91318142-99a8-4fb2-b9f2-5eed9d4d1c1b" description="Test">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event" doc:id="ce75f229-70e4-43bc-ba5e-da4bacc0d2b7" >
+				<munit:attributes value='#[{uriParams:{"productId" : "01tN0000006z3LPIAY"},
+	queryParams:{projectId:"a0dN000000CnRd3IAF"}}]' />
+			</munit:set-event>
+			<munit-tools:mock-when doc:name="Mock SFDC Query Product Media" doc:id="a5346033-f02d-4035-8306-c8c0d6c243be" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Query Product Media" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[[]]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock SFDC Query project media" doc:id="8ea0cde4-c5bb-42a9-a74f-f52b2febd4c8" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Query project media" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:variables >
+						<munit-tools:variable key="sfdcProjectMediaResp" value="#[readUrl('classpath://examples/properties/media/get-product-media-sfdc-project-media-response.json','application/json')]" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get:\products\(productId)\media:sys-global-sfdc-config" doc:id="635dcf01-66cc-4416-87ab-eca56e885de3" name="get:\products\(productId)\media:sys-global-sfdc-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="d88665c8-e095-4d9d-935c-7569416fa013" actual="#[payload]" expected="#[readUrl('classpath://examples/properties/media/get-product-media-response.json','application/json')]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sys-global-sfdc-properties-get:\products\(productId):sys-global-sfdc-configTest" doc:id="85f500fe-639b-45f3-b952-cff301ec7d4d" description="Test">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event" doc:id="fccfe8b8-7636-42b6-8ec7-79784ef25254" >
+				<munit:attributes value='#[{uriParams:{"productId" : "01tN0000006z3LPIAY"}}]' />
+			</munit:set-event>
+			<munit-tools:mock-when doc:name="Mock SFDC Query Product Details" doc:id="7e9286e6-9a34-464c-9428-b072939edc8d" processor="salesforce:query-single">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Query Product Details" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/properties/get-product-sfdc-query-product-details-response.json','application/json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get:\products\(productId):sys-global-sfdc-config" doc:id="9db0a3e6-f9aa-4a6d-8e42-9ef7862b9a0d" name="get:\products\(productId):sys-global-sfdc-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="04e52278-dd8d-4e33-abba-a5377100245f" actual="#[payload]" expected="#[readUrl('classpath://examples/properties/get-product-response.json','application/json')]"/>
+		</munit:validation>
+	</munit:test>
+
+</mule>

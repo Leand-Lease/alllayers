@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="tenant-sync-suite.xml" />
+	<munit:test name="get-tenants-from-ftp-sub-flow-test" doc:id="efd79d49-9a0a-4b88-9f70-19a32e1d6394" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Read Tenants file" doc:id="65d1a375-8119-444a-8189-092afa4315be" processor="sftp:read">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="80c00c74-d0de-4e17-a187-e1008d17c621" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output text/plain --- readUrl('classpath://gettenantsfromftpsubflowtest\mock_payload.dwl')]" mediaType="text/plain" encoding="UTF-16" />
+					<munit-tools:attributes value="#[readUrl('classpath://gettenantsfromftpsubflowtest\mock_attributes.dwl')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock resTenant FTP Folder files list" doc:id="6fbce382-07b6-4078-a5b5-493867fbf7f0" processor="sftp:list">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0cd50425-8601-43c2-bc0e-021936243c0a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://gettenantsfromftpsubflowtest\mock_payload1.dwl')]" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock get-prospects-from-ftp-sub-flow" doc:id="934e7992-154c-4565-8c4c-1806a103836b" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="93a986e7-0800-43cc-8a3f-e6628d99bd94" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://gettenantsfromftpsubflowtest\mock_payload2.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="prospect_records" value="#[output application/json --- readUrl('classpath://gettenantsfromftpsubflowtest\mock_variable_.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="tenant_archive_file_path" value="#[output application/json --- readUrl('classpath://gettenantsfromftpsubflowtest\mock_variable_1.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="batchJobInstanceId" value="#[readUrl('classpath://gettenantsfromftpsubflowtest\mock_variable_2.dwl')]" />
+						<munit-tools:variable key="tenant_records" value="#[output application/json --- readUrl('classpath://gettenantsfromftpsubflowtest\mock_variable_3.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="prospect_archive_file_path" value="#[output application/json --- readUrl('classpath://gettenantsfromftpsubflowtest\mock_variable_4.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="da05d68c-7426-436d-9641-e82d28f393db" >
+				<munit:payload value="#[readUrl('classpath://gettenantsfromftpsubflowtest\set-event_payload.dwl')]" encoding="UTF-8" />
+				<munit:attributes value="#[readUrl('classpath://gettenantsfromftpsubflowtest\set-event_attributes.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get-tenants-from-ftp-sub-flow" doc:id="53bcc0c3-039b-4cfd-b19a-e8ea8f6d161e" name="get-tenants-from-ftp-sub-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="5934094d-6cb7-4ac7-994d-1d2ff455c368" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import gettenantsfromftpsubflowtest::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

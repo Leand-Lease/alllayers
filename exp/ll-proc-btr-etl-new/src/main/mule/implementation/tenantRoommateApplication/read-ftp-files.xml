@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="get-appinfo-from-ftp-sub-flow" doc:id="33c9712d-7f3a-44ff-ae86-a64954f7ed92" >
+		<try doc:name="Try" doc:id="d7e30330-64ff-48be-88d4-c04bef73a078" >
+			<sftp:list doc:name="appinfo FTP folder files list" doc:id="1a580be2-1941-474b-9d82-7507484cd506" config-ref="sftp" directoryPath="${sftp.appinfo.directory.path}">
+				<sftp:matcher />
+			</sftp:list>
+		</try>
+		<json-logger:logger doc:name="appinfo files logger" doc:id="2dcb3fe9-173c-43f3-9053-71c2ad8592e4" message='"appinfo files from FTP folder"'/>
+		<ee:transform doc:name="sort application offers list of csv files" doc:id="5005f47d-66bd-45f7-9658-3ffcf9b437b5">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+(payload filter ($.attributes.fileName contains /^ApplicantOffers_ySQL/) orderBy $.attributes.timestamp)[-1 to 0] ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+		<choice doc:name="Choice" doc:id="ab079eb9-60f9-4a10-b86a-dd7649b7ab6d" >
+			<when expression="#[!isEmpty(payload)]">
+				<ee:transform doc:name="Lastmodified by csv data" doc:id="8f1cdc28-d4e9-4384-9fde-4319e430d84e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output text/csv
+---
+payload[0].typedValue]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="appinfo_archive_file_path" ><![CDATA[%dw 2.0
+output application/json
+---
+if(sizeOf(payload) > 0)
+	{
+		"sourcePath": p('sftp.appinfo.directory.path') ++ "/" ++ payload[0].typedAttributes.fileName as String, 
+		"targetPath": p('sftp.move.file.appinfo.path'),
+		"renameTo": (payload[0].typedAttributes.fileName as String replace (".csv") with "") ++ '_' ++ now() as String {format: "ddMMyyyyhhmmss"} ++ ".csv"
+	}
+else
+	[]]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<ee:transform doc:name="csv to json" doc:id="693e365c-595e-4428-88fd-94faed8bd6f1">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+				<ee:set-variable variableName="appinfo_records"><![CDATA[%dw 2.0
+output application/json
+---
+if(sizeOf(payload) > 0)
+	payload map (item,index) -> {
+		pCode: item.pCode,
+		ProspectExtRef: item.ProspectExtRef,
+		Status: item.Status,
+		ScreenResult: item.ScreenResult,
+		ContentsIns: item.ContentsIns,
+		DepositAlt: item.DepositAlt,
+		Guarantor: item.Guarantor
+	}
+else
+	[]	]]></ee:set-variable>
+					
+
+</ee:variables>
+				</ee:transform>
+			
+
+
+</when>
+			<otherwise >
+				<json-logger:logger doc:name="Application Files not found" doc:id="8bf10f3c-6e09-4a62-ad20-ea60198e2b48" message='#["File not found from /appinfo folder"]'/>
+				<ee:transform doc:name="empty payload" doc:id="cde6e8fe-75c0-45cb-a629-bb3e90de080c" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="appinfo_records" ><![CDATA[%dw 2.0
+output application/json
+---
+[]]]></ee:set-variable>
+						<ee:set-variable variableName="appinfo_archive_file_path" ><![CDATA[%dw 2.0
+output application/java
+---
+[]]]></ee:set-variable>
+					</ee:variables>
+				
+</ee:transform>
+			
+</otherwise>
+		</choice>
+		<json-logger:logger doc:name="last modified roommate file info" doc:id="96bbbac6-e589-49d5-99cc-d1ad4d000bbe" message='#["last modified roommate file details"]' />
+	
+
+</sub-flow>
+</mule>

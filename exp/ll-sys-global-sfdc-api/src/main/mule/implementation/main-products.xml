@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	
+	
+	<sub-flow name="main-products:\get-product-by-id" doc:id="c48f4350-c122-418e-99f1-bca983693be7" >
+		<json-logger:logger doc:name="Start" doc:id="7e44b0cd-3f6a-4317-8955-d2678cb4d031" message='#["correlationId:" ++ correlationId ++ " - start processing request to get product details"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebuger" doc:id="f09c4ead-f8fb-4d35-a5fa-e44a3643536d" message='#["correlationId:" ++ correlationId ++ " - start processing request to get product details"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default ""
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<flow-ref doc:name="Get product by Id" doc:id="e57eca31-e04d-485d-80e7-cc369c765985" name="get-product-by-id-impl" />
+		<json-logger:logger doc:name="endDebugger" doc:id="43dee44e-1783-44b0-8278-e58cc2ef1271" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get product details"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="690041f7-2339-40b7-9a15-c976d1844906" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get product details"]' config-ref="JSON_Logger_Config" >
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>		
+	</sub-flow>
+	
+	
+	<sub-flow name="main-products:\get-product-inspection-times-by-id" doc:id="fd50099a-865d-4a25-b700-b3e6e3b35d3a" >
+		<json-logger:logger doc:name="Start" doc:id="c9e35997-7bd5-4db5-b591-bbca481edbc7" config-ref="JSON_Logger_Config" message='#["correlationId:" ++ correlationId ++ " - start processing request to get open times detail"]' >
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebuger" doc:id="88bcd67d-9948-4bbc-89cf-b99b0e58ccc2" config-ref="JSON_Logger_Config" message='#["correlationId:" ++ correlationId ++ " - start processing request to get open times detail"]' priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default ""
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<flow-ref doc:name="Get opentimes" doc:id="50ceadc8-cd5f-49bb-9963-828b050e0bda" name="get-opentimes-impl" />
+		<json-logger:logger doc:name="endDebugger" doc:id="4894029d-87a1-4b96-8a92-257a561ac50c" config-ref="JSON_Logger_Config" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get open times detail"]' priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="4f9788da-7031-4612-be89-1186c18ab5b2" config-ref="JSON_Logger_Config" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get open times detail"]' >
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+
+
+	<sub-flow name="main-products:\get-product-features-by-id" doc:id="b1ea62f3-9832-44b5-be8b-1ab1fe35e1e0" >
+		<json-logger:logger doc:name="Start" doc:id="993442ae-4b4b-4843-b54b-7a89d178743d" message='#["correlationId:" ++ correlationId ++ " - start processing request to get product features"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebuger" doc:id="f6ee2bb1-07a6-4dbd-8c52-621022750fc6" message='#["correlationId:" ++ correlationId ++ " - start processing request to get product features"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default ""
+}]]]></json-logger:content>
+		</json-logger:logger>
+
+		<flow-ref doc:name="Get features" doc:id="d91b1297-8d4a-41da-8ca3-95af723fce1b" name="get-features" />
+		<json-logger:logger doc:name="endDebugger" doc:id="93cbe174-9910-42d8-8bc2-7cc29154501b" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get product features"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="171ff8b9-b10b-4bdf-a8a9-82c082aafb7c" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get product features"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+
+
+	<sub-flow name="main-products:\get-product-media-by-id" doc:id="fa1e4a18-c250-4ff3-b6b5-bdb064aade5e" >
+		<json-logger:logger doc:name="Start" doc:id="166b7b12-d2c4-4667-81f5-96639fff2c19" message='#["correlationId:" ++ correlationId ++ " - start processing request to get product media"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebuger" doc:id="8fea6984-64ce-4792-927d-580e386e7ccb" message='#["correlationId:" ++ correlationId ++ " - start processing request to get product media"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default ""
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<flow-ref doc:name="Get product media by id" doc:id="456db181-025b-43eb-9eb0-c7980fe33992" name="get-product-media-by-id" />
+		<json-logger:logger doc:name="endDebugger" doc:id="b206bc13-43f5-4fbb-b90e-3d4647b01c5a" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get product media"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="68a42bcd-68c6-4b19-93f8-e1d5c652eb80" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get product media"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+	
+	
+	<sub-flow name="main-products:\patch-product-by-id" doc:id="e3623cf8-4528-4937-a7a0-8993907a5bd1" >
+		<json-logger:logger doc:name="Start" doc:id="bf4d440f-2063-406d-905d-5caee08e407e" message='#["correlationId:" ++ correlationId ++ " - start processing the request to patch product by productId"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebuger" doc:id="6ae959b1-6449-4c49-b524-95bc53a3fb8d" message='#["correlationId:" ++ correlationId ++ " - start processing the request to patch product by productId"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<flow-ref doc:name="Patch product by Id" doc:id="5f74818b-86d6-484d-88aa-a34b5e436e57" name="patch-product-by-id-impl" />
+		<json-logger:logger doc:name="endDebugger" doc:id="f0a84d39-7590-45e6-ba18-0ce1b64be6d7" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing the request to patch product by productId"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="683c4a71-0830-41d9-9710-e01aa7c38d53" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing the request to patch product by productId"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+	
+	
+	<sub-flow name="main-products:\get-product-listings-by-id" doc:id="a78ea9fb-9d3d-4a49-b405-ea1c5c3b591f" >
+		<json-logger:logger doc:name="Start" doc:id="670e3163-a59e-4a3c-8294-844f7a6102b2" message='#["correlationId:" ++ correlationId ++ " - start processing request to get product listings"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebuger" doc:id="18fc046e-5c24-4b46-97cf-f99693e0016a" message='#["correlationId:" ++ correlationId ++ " - start processing request to get product listings"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default ""
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<flow-ref doc:name="Get listings" doc:id="90483099-7c16-4b29-81ab-bb15de34e20d" name="main-listings:\get-listings"/>
+		<json-logger:logger doc:name="endDebugger" doc:id="f7de8ff3-093b-43b8-a652-6888f3d04fa6" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get product listings"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="cc8e4efe-59c3-4664-a44c-88a481939dd1" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get product listings"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+	
+	
+	<sub-flow name="main-products:\put-product-inspection-times" doc:id="53fe551d-b580-412e-8c7e-741542b9751b">
+		<json-logger:logger doc:name="Start" doc:id="99155838-41b2-470e-82ee-dfa5b4caabe8" message='#["correlationId:" ++ correlationId ++ " - start processing request to update product inspection times"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebuger" doc:id="280ecc3c-81da-4459-b4b7-b6a9d9b929da" message='#["correlationId:" ++ correlationId ++ " - start processing request to update product inspection times"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<flow-ref doc:name="Put inspection times" doc:id="61a7008f-f9cc-4810-858c-b551f18db66d" name="put-inspection-times-impl"/>
+		<json-logger:logger doc:name="endDebugger" doc:id="2b89615e-e1e8-4160-bebd-e70b090b84c8" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to update product inspection times"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="ea4b746d-56fe-4944-ab28-cba0b30e86d6" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to update product inspection times"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+	
+	
+	<sub-flow name="main-products:\put-product-media" doc:id="4d59b426-d362-47f1-8817-d8fd31d1ff63">
+		<json-logger:logger doc:name="Start" doc:id="a8489572-3274-4149-a869-0ce4e54abd2c" message='#["correlationId:" ++ correlationId ++ " - start processing request to update product media"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebuger" doc:id="22839e98-0a8d-4866-903b-572a1f3254be" message='#["correlationId:" ++ correlationId ++ " - start processing request to update product media"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<flow-ref doc:name="Put media" doc:id="4bc83c39-85c3-455a-9131-180fddb952b3" name="put-product-media-impl"/>
+		<json-logger:logger doc:name="endDebugger" doc:id="81413512-c5b9-490c-a520-382780b977fa" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to update product media"]' config-ref="JSON_Logger_Config" priority="DEBUG">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="793fff3d-78bc-44b3-8b34-d65574ea423e" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to update product media"]' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+	
+	
+</mule>

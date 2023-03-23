@@ -1,0 +1,12 @@
+salesforce:
+  consumer:
+    key: "![csJuZ6Njwg55nxeLZSJJRo7OMe3CRAn6JRuh/ax4zUdEdvEvbBzJZ+hup+SU9hpjcapA/mwT13V0Zu8uWnVfcxPzlRX3f9amUvZRnO/GsK9mAZyXDK31Lf7TFxpEzJUa]"
+    secret: "![puVh56MdKlJQM+I0jsA/2MOSk68x07gUQsfh8UvegNUbp3tsE/iBDeNelgJkKxsvVUkc4UhqLSiAcZmm8ZVQCnNAAT89GVF4q9XzJdYpHW4=]"
+  password: "![o6b3K5drEl4DkQLHNtsSKg==]"
+  security.token: "![vaY4cn06b5QVc8uPu37RMJ6Dp41fv9tNF1FK2CN4ZKA=]"
+
+https:
+  key:
+    password: "![5VJiN8lkM+70nJLWAwvSjg==]"
+  keystore:
+    password: "![5VJiN8lkM+70nJLWAwvSjg==]"

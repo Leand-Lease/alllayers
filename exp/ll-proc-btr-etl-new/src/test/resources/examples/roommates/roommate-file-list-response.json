@@ -1,0 +1,30 @@
+[    
+	{   "payload": [ 
+				{
+				"Tenant_Code": "t0000001",
+				"Roommate_Code": "r0000001",
+				"Roommate_UserDefined0": "003N000001ll7OVIAY",
+				"Ext_Roommate_Prosp_map": "t0000006_r0000001",
+				"Ext_Ref_Roommate_Id": "",
+				"Ext_Ref_Tenant_Id": "003N000001ll7OVIAY",
+				"Roommate_Email": "test@test.com",
+				"Roommate_FirstName": "testFirstName",
+				"Roommate_LastName": "testLastName",
+				"Roommate_Salutation" : "Mrs.",
+				"Roommate_PhoneNumber4" : "1234562324",				
+				"Roommate_MoveIn": "01/08/2020",
+				"Roommate_MoveOut": "01/08/2020",
+				"Roommate_Relationship": "Roommate"
+				}
+			],      
+		"attributes": {        
+			"symbolicLink": false,        
+			"regularFile": true,        
+			"directory": false,        
+			"path": "/upload/test/ResRoomamte/ResRoommate.csv",        
+			"size": 589,        
+			"fileName": "ResResRoommate.csv",        
+			"timestamp": "2020-08-26T17:59:45"      
+		}   
+	}  
+]

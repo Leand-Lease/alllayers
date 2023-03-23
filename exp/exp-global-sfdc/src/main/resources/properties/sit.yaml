@@ -1,0 +1,20 @@
+anypoint.mq:
+  url: "https://mq-us-west-2.anypoint.mulesoft.com/api/v1"
+  
+salesforce:
+  username: "msapi@lendlease.com.sit01"
+  token.endpoint: "https://test.salesforce.com/services/oauth2/token"
+  api.version: "47.0"
+  
+pe:
+  listing.commercial.update.channel: "/event/PLM_ListingCommercialUpdateEvent__e"
+  listing.publish.channel: "/event/PLM_ListingPublishEvent__e"
+  project.publish.channel: "/event/PLM_ProjectPublishEvent__e"
+  
+listing.publish.platform.event.q: "ll.pe.listing.publish.q"
+listing.commercial.update.platform.event.q: "ll.pe.listing.commercial.update.q"
+project.publish.platform.event.q: "ll.pe.project.publish.q"
+
+json.logger.application:
+  name: "exp-global-sfdc"
+  version: "v1.0"

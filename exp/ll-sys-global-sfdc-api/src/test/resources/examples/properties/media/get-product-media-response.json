@@ -1,0 +1,33 @@
+{
+  "photos": [
+    {
+      "collateralId": "a1FN0000001yCfsMAE",
+      "mediaType": "Photo",
+      "collateralAssociation": "project",
+      "order": 1.0,
+      "url": "www.project-photo.com",
+      "projectId": "a0dN000000CnRd3IAF"
+    }
+  ],
+  "floorplans": [
+    {
+      "collateralId": "a1FN0000001yCfnMAE",
+      "mediaType": "Floorplan",
+      "collateralAssociation": "project",
+      "order": 1.0,
+      "url": "www.myfloorplan.com",
+      "projectId": "a0dN000000CnRd3IAF"
+    }
+  ],
+  "brochures": [
+    {
+      "collateralId": "a1FN0000001yCfxMAE",
+      "mediaType": "Brochure",
+      "collateralAssociation": "project",
+      "order": 1.0,
+      "url": "www.project-brochure.com",
+      "projectId": "a0dN000000CnRd3IAF",
+      "description": "hello"
+    }
+  ]
+}

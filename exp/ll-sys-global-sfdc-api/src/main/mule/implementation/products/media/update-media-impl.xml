@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<sub-flow name="put-product-media-impl" doc:id="f5adf449-ccf3-4ccc-b7a7-c6b42e2c4e10">
+		<ee:transform doc:name="Aggregate all media into a variable"
+			doc:id="8ccf1fae-41bc-4704-bd70-207f2811ead1">
+			<ee:message >
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="aggrMedia" ><![CDATA[%dw 2.0
+output application/json
+---
+(if(payload.photos != null) payload.photos else []) 
+++ 
+(if(payload.brochures != null) payload.brochures 	else []) 
+++ 
+(if(payload.floorplans != null) payload.floorplans else []) ]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Split and Transform to CDM" doc:id="8c621599-b05b-4176-a610-decca09aa6d9">
+			<ee:message>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="productsPayload" ><![CDATA[%dw 2.0
+output application/java
+import * from modules::functions
+---
+(vars.aggrMedia filter $.collateralAssociation == 'product') map(item,index) -> {
+		Id: item.sfId,		
+		(PLM_URL__c: item.url) if item.url != null,
+		(PLM_Order__c: item.order) if item.order != null,
+		(PLM_Description__c: item.description) if (lower(item.mediaType) == lower('Brochure'))
+}
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		
+		<salesforce:upsert doc:name="Upsert Product Media in Marketing Collaterals" doc:id="d2d093da-ca78-437d-91d0-4abd12b836af" config-ref="Salesforce_Config" externalIdFieldName="Id" type="PLM_MarketingCollateral__c" target="upsertMarketingColatteralsResult">
+			<salesforce:records><![CDATA[#[vars.productsPayload]]]></salesforce:records>
+		</salesforce:upsert>
+		<logger level="TRACE" doc:name="Upsert MC Results" doc:id="d033165b-4ed5-4983-aec5-74df6396db0a" message='#["correlationId:" ++ correlationId ++ " - SFDC response for update product media"]' category='"AFTER_REQUEST"' />
+		<logger level="INFO" doc:name="Upsert MC Results1" doc:id="fd0f24f8-b5dd-4ccf-bf59-8243a6261748" message='#[output application/json &#10;---&#10;{&#10; 	payload: vars.upsertMarketingColatteralsResult,&#10; 	productId: vars.productId default ""&#10;}]' />
+		<ee:transform doc:name="Transform Message" doc:id="c7d6b081-83c1-4778-9cef-6005b593613a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json 
+var statusFlag = if(!(vars.upsertMarketingColatteralsResult.success contains 'failed')) 'success' else 'failed'
+---
+{
+	correlationId: correlationId,
+	productId: vars.productId,
+	status: statusFlag,
+	data: vars.upsertMarketingColatteralsResult
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+
+</mule>

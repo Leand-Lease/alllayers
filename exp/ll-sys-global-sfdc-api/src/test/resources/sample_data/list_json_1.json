@@ -1,0 +1,14 @@
+[
+  {
+    "sfId": "abcd",
+    "phId": "abcd123",
+    "collateralId": "abcd123",
+    "date": "20/12/1980",
+    "startTime": "10:00am",
+    "endTime": "12:00pm",
+    "projectId": "abcd123",
+    "productId": "abcd1234",
+    "collateralAssociation":"product",
+    "isDeleted": true
+  }
+]
