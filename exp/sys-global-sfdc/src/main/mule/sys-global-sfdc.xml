@@ -42,7 +42,7 @@ output application/java
 					<batch:aggregator doc:name="Batch Aggregator" doc:id="83ececa1-2e91-47b8-8325-61659b94c04c" streaming="true">
 						<salesforce:create doc:name="Create" doc:id="81aec51d-2023-434b-9c24-8e0a89419ead" config-ref="Salesforce_Config" type="Account"/>
 						<logger level="INFO" doc:name="Logger1" doc:id="a9323218-2764-482f-80ec-428016e21655" message='"Test log"' />
-						<logger level="INFO" doc:name="Logger" doc:id="7b163a1c-b609-49bf-8069-ef858578e578" />
+						<logger level="INFO" doc:name="Logger" doc:id="af162771-bed8-49ec-9179-cdb2be0ec71e" />
 					
 </batch:aggregator>
 				</batch:step>
