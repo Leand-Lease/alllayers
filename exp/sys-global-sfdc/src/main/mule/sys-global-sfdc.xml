@@ -45,6 +45,9 @@ output application/java
 						<logger level="INFO" doc:name="Logger" doc:id="af162771-bed8-49ec-9179-cdb2be0ec71e" />
 					
 </batch:aggregator>
+
+
+
 				</batch:step>
 			</batch:process-records>
 		</batch:job>
