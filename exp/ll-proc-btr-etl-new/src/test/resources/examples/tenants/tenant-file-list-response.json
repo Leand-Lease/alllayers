@@ -1,0 +1,49 @@
+[    
+	{   "payload": [ 
+				{
+					
+			    "Ext_LeaseContactRole_Map": "t0000004_",
+			    "Ext_Ref_Tenant_Id": "",
+			    "First_Name": "Hawk",
+			    "Last_Name": "Eye",
+			    "Middle_Name": "",
+			    "Salutation": "",
+			    "Address1": "Rent Cafe Test Property Unit 01",
+			    "Address2": "201-249 Avebury Blvd",
+			    "City": "Milton Keynes",
+			    "State": "",
+			    "Zipcode": "MK9 1AZ",
+			    "Email": "rentcafe.lendlease+hawkeye@gmail.com",
+			    "Phone_Number_4": "",
+			    "Status": "1",
+			    "Tenant_Code": "t0000004",
+			    "Rent": "2487.00",
+			    "Move_In_Date": "27/06/2020",
+			    "Lease_Sign_Date": "03/07/2020",
+			    "Notice_Date": "24/09/2020",
+			    "Lease_From_Date": "27/06/2020",
+			    "Lease_To_Date": "26/06/2022",
+			    "Move_Out_Date": "25/09/2020",
+			    "Renew_Date": "",
+			    "General_Info_3": "",
+			    "General_Info_4": "",
+			    "General_Info_5": "",
+			    "General_Info_10": "",
+			    "General_Info_11": "",
+			    "MTM": "0",
+			    "LeaseTerm": "24",
+			    "NoticeType": "0"
+
+				}
+			],      
+		"attributes": {        
+			"symbolicLink": false,        
+			"regularFile": true,        
+			"directory": false,        
+			"path": "/upload/test/ResTenant/ResTenant.csv",        
+			"size": 589,        
+			"fileName": "ResTenant.csv",        
+			"timestamp": "2020-08-26T17:59:45"      
+		}   
+	}  
+]

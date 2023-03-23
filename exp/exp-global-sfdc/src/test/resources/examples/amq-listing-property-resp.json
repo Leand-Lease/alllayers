@@ -1,0 +1,10 @@
+{
+  "header": {
+    "correlationId": "763dec54-d38c-4564-9b13-cbdc64aa3670",
+    "entity": "listing-publish",
+    "source": "global-org"
+  },
+  "payload": {
+    "productId": "123-abc-product"
+  }
+}

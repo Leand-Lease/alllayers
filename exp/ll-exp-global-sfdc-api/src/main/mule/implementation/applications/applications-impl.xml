@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="post-application-create-lead" doc:id="07032917-af5d-4fb6-91e3-926bd21e1a49" >
+
+		<json-logger:logger doc:name="Payload Request" doc:id="19bd5789-d902-4828-8b05-9386c9d0e6be" message='"correlationId:" ++ correlationId ++ " - start processing  to build rentCafe request"' tracePoint="BEFORE_TRANSFORM">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<ee:transform doc:name="Transform Message" doc:id="20f329df-a1c5-4e06-b69d-ce84db7a7b40" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"extLeadId": payload.SFOpportunityId,
+	"contact": {
+	    "firstName": payload.contactFirstName,
+	    "lastName": payload.contactLastName,
+	    "email": payload.contactEmail,
+	    "phone": payload.contactMobilePhone,
+	    "address": {
+	      "streetNumber": payload.contactAddress1,
+	      "streetName": "Broadway",
+	      "unitNumber": payload.contactAddress2,
+	      "state": payload.contactAddressState,
+	      "country": "USA",
+	      "suburb": "New York",
+	      "postcode": payload.contactZipcode
+	    },
+	    "extContactId": payload.SFContactId
+	  },
+	  "campaign": {
+	    "source": payload.campaignSource
+	  },
+	  "project": {
+	    "propertyCode": payload.projectPropertyCode
+	  },
+	  "agent": {
+	  	"agentType": "Unit",
+	    "fullName": payload.agentFullName
+	  },
+	  "property": {
+	    "productCode": payload.unitCode
+	  },
+	  "lease": {
+	    "startDate": payload.leaseStartDate,
+	    "endDate": payload.leaseEndDate,
+	    "tenantType": payload.tenantType
+	  }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="Logger" doc:id="d3adbc28-5a72-4e94-8d7b-9759e0b7bd86" tracePoint="AFTER_TRANSFORM" message='"Payload after transform"'/>
+		<!-- <validation:is-not-blank-string doc:name="ProductCode is blank string" doc:id="ab4b90b2-dd82-4afb-8937-e2cfb2172978" value="#[payload.property.productCode]" message="Product Code is required" >
+			<error-mapping sourceType="VALIDATION:BLANK_STRING" targetType="APP:ProductCode_Is_Blank" />
+		</validation:is-not-blank-string>
+		<validation:is-not-blank-string doc:name="Agent Is blank string" doc:id="912b93c9-eb56-4412-9960-eaff126bd24e" value="#[payload.agent.fullName]" message="Agent Full Name is blank"/>
+		<validation:is-not-blank-string doc:name="StreetNumber Is blank string" doc:id="a4aa1e81-c90e-42bf-adbe-f2eedff680a6" value="#[payload.contact.address.streetNumber]" message="Contact StreetNumber Is blank string"/>
+		<validation:validate-size doc:name="StreetNumber max 40 characters" doc:id="d0262fe9-bcb6-4383-8256-e9edca71b1f2" value="#[payload.contact.address.streetNumber]" max="40" message="Address1 more than 40 characters"/>
+		<validation:is-not-blank-string doc:name="StreetName Is blank string" doc:id="2d8726d7-c1b4-48b4-a848-0c931afba23d" value="#[payload.contact.address.streetName]" message="Contact StreetName Is blank string" />
+		<validation:validate-size doc:name="StreetName max 40 characters" doc:id="32ff101c-c63f-4c06-a779-06c8fc620b91" value="#[payload.contact.address.streetName]" max="40" message="Street Name more than 40 characters" />
+		<validation:is-not-blank-string doc:name="UnitNumber Is blank string" doc:id="4e346942-13b7-4512-ab43-f7976889e117" value="#[payload.contact.address.unitNumber]" message="Unit Number is blank string" />
+		<validation:validate-size doc:name="Unit Number max 40 characters" doc:id="14546d90-f87d-4998-b704-3effb416735a" value="#[payload.contact.address.unitNumber]" max="40" message="UnitNumber more than 40 characters" />
+		<validation:is-not-blank-string doc:name="State Is blank string" doc:id="252096b2-a010-4959-a706-5819ccc458df" value="#[payload.contact.address.state]" message="Contact Stae Is blank string" />
+		<validation:validate-size doc:name="State max 4 characters" doc:id="915f8090-bdf2-47ab-ae88-e27322b4dbda" value="#[payload.contact.address.state]" max="4" message="State more than 4 characters" />
+		<validation:is-not-blank-string doc:name="PostCode Is blank string" doc:id="292f3043-6a62-4023-9b74-fe1f83351620" value="#[payload.contact.address.postcode]" message="Contact postal code Is blank string" />
+		<validation:validate-size doc:name="Postcode max 40 characters" doc:id="96a482e3-f16b-4c5e-96a6-a28bc541a4a8" value="#[payload.contact.address.postcode]" max="12" message="Postcode more than 12 characters" />
+		<validation:is-not-blank-string doc:name="Source Is blank string" doc:id="5b1de2ae-6a53-4350-93f7-81aec3fd008a" value="#[payload.project.propertyCode]" message="Property Code is blank"/> 
+		<flow-ref doc:name="Lead Create " doc:id="68e5ac6a-9049-4126-8c85-7d918376dc76" name="post-lead-build-rentCafe-request"/>   -->
+	
+	</sub-flow>
+</mule>	

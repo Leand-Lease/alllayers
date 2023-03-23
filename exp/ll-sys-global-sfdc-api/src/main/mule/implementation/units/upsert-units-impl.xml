@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd">
+	<!-- units upsert -->
+	<!-- <sub-flow name="get-bld-code-matched-projectId" doc:id="7667249a-a9e8-42f3-950a-fa13f70e6f96" >
+		<salesforce:query-single doc:name="Query single" doc:id="b40f3990-f101-4308-aee7-712b42d12ce5" config-ref="Salesforce_Config" target="sysProjectId" targetValue="#[payload.Id]">
+			<salesforce:salesforce-query ><![CDATA[SELECT Id FROM Project__c WHERE RecordType.developerName = 'Building' AND SYS_ProjectCode__c = ':Bldg_Code' ]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/json
+-&#45;&#45;
+{
+	"Bldg_Code": payload.Bldg_Code
+}]]]></salesforce:parameters>
+		</salesforce:query-single>
+		<json-logger:logger doc:name="projectId" doc:id="18df8593-80a5-43e3-a9e7-a4e34c872be2" tracePoint="AFTER_REQUEST" message='#["Bldg_code matching Project Id"]'/>
+	</sub-flow> -->
+	<sub-flow name="read-yExplore-from-ftp-folder-sub-flow" doc:id="dc8e731c-8228-4f5b-879e-3c474a307622" >
+		<try doc:name="Try" doc:id="3cce9051-1afd-49a9-b34a-312f740b5acb" >
+			<sftp:list doc:name="FTP Folder files list" doc:id="5365f1a6-d8e5-458f-ae87-ebc13be91b11" config-ref="sftp" directoryPath="${sftp.directory.path}">
+			<sftp:matcher />
+		</sftp:list>
+		</try>
+		<json-logger:logger doc:name="Logger" doc:id="e614265b-7a07-4a96-bdd9-68cab92b0201" message='""'/>
+		<choice doc:name="if files found" doc:id="6ac9062a-f1ad-4106-abae-2c5f220c4fe4" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="Order Files with lastmodifieddate" doc:id="c3aa7a43-8e3a-4a7f-90a0-d47ac95015b4">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+(payload filter ($.attributes.fileName contains /^Unit_yExport/) orderBy $.attributes.timestamp)[-1 to 0] 
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<json-logger:logger doc:name="First payload from files list logger" doc:id="93012499-bf0b-4b3f-abbc-691491181e43" tracePoint="AFTER_TRANSFORM" message='#["First payload from files list logger"]'>
+					<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload[0],
+ 	attributes: attributes
+}]]]></json-logger:content>
+				</json-logger:logger>
+				<ee:transform doc:name="Transform Message" doc:id="13b87869-873d-437d-8f8a-063ee4b92659">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output text/csv
+---
+payload[0].typedValue]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<ee:transform doc:name="Transform Message" doc:id="e2893408-7761-45a6-8dc8-ede1414125cd">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+import * from modules::functions
+output application/json
+---
+payload map (item,index) -> {
+	Property_Code: trim(item.Property_Code),
+	Unit_Code: trim(item.Unit_Code),
+	StartDate: item.StartDate,
+	EndDate: item.EndDate default "",
+	sStatus: if(item.sStatus != "") dwellingStatus(item.sStatus) else "",
+	VacantDate: item.VacantDate default "",
+	ReadyDate: item.ReadyDate default "",
+	Floor_Code: item.Floor_Code,
+	Country: item.Country default "",
+	Bldg_Code: item.Bldg_Code default "",
+	Street_Number: (item.Address_1 splitBy(" "))[0] default "",
+	Street_Name: (item.Address_1 replace ((item.Address_1 splitBy(" "))[0]) with("")) default "",	
+	Address_3: item.Address_3 default "",
+	Address_4: item.Address_4 default "",
+	City: item.City default "",
+	Zip_Code: item.Zip_Code default "",
+	Rent: item.Rent default "",
+	SQFT: item.SQFT default "",
+	Rent_Ready: if(item.Rent_Ready == "-1") "true" else "false",
+	Unit_Type: item.Unit_Type,
+	Bedrooms: item.Bedrooms default "0",
+	Baths: item.Baths default "0",
+	Attributes_2: if(item.Attributes_2 == "Yes") "true" else "false",
+	Attributes_5: if(item.Attributes_5 != "") furnitureType(item.Attributes_5) else item.Attributes_5,
+	Attributes_6: if(item.Attributes_6 != "") item.Attributes_6 else item.Attributes_6,
+	Attributes_8: if(item.Attributes_8 != "") balconyType(item.Attributes_8) else item.Attributes_8,
+	Attributes_9: if(item.Attributes_9 != "") partOrCityView(item.Attributes_9) else item.Attributes_9,
+	Attributes_10: if(item.Attributes_10 != "") buildingLocation(item.Attributes_10) else item.Attributes_10
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<foreach doc:name="For Each" doc:id="319ca7eb-d971-4bc9-ae91-7b47d872cca2" collection="#[payload]">
+					<flow-ref doc:name="upsert-units-in-sf" doc:id="14eae23b-32fc-4482-a96a-e592a14facc3" name="upsert-units-in-sf" />
+				</foreach>
+			
+</when>
+			<otherwise>
+				<json-logger:logger doc:name="END" doc:id="fc709b73-0d42-444d-900a-8609cc741c2a" tracePoint="END" message='"No files found"'>
+					<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+				</json-logger:logger>
+			</otherwise>
+		</choice>
+		<!-- <sftp:read doc:name="FTP folder read" doc:id="95a397fb-f9dd-419a-a86f-6138996aa8af" config-ref="sftp" path="/upload/test/Unit_yExport_10072020065313.csv" /> -->
+	
+</sub-flow>
+	<sub-flow name="upsert-units-in-sf" doc:id="b9a3316a-1628-402e-9a55-ca639e1b37dc" >
+		<json-logger:logger doc:name="Start" doc:id="2d6772b8-0166-49cc-9992-24bd00a7d109" message='"Unit record insert/update in Salesforce"'>
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<!-- <ee:transform doc:name="Transform Message" doc:id="c7f75d9d-d20e-4ca8-b96f-5300924be336" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+-&#45;&#45;
+[{
+    "Property_Code": "44400002",
+    "Unit_Code": "A-0102  ",
+    "StartDate": "09/07/2020",
+    "EndDate": "09/07/2020",
+    "sStatus": "Vacant Unrented - Ready",
+    "VacantDate": "09/07/2020",
+    "ReadyDate": "09/07/2020",
+    "Floor_Code": "",
+    "Country": "United Kingdom",
+    "Bldg_Code": "h5.a",
+    "Street_Number": "2",
+    "Street_Name": "New Lion Way",
+    "Address_3": "",
+    "Address_4": "",
+    "City": "London",
+    "Zip_Code": "SE17 1GS",
+    "Rent": "2487",
+    "SQFT": "539.28",
+    "Rent_Ready": "true",
+    "Unit_Type": "02_A_A1 ",
+    "Bedrooms": "1",
+    "Baths": "1",
+	"Attributes_2": "false",      
+	"Attributes_5": "Furnished",      
+	"Attributes_6": "64",      
+	"Attributes_8": "Standard Balcony",      
+	"Attributes_9": "View-Park",      
+	"Attributes_10": "Penthouse" 
+}]
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform> -->
+		<!--  <choice doc:name="Choice" doc:id="9b3e96eb-b57f-4707-9f41-dd94a38fdeed" >
+			<when expression="#[isEmpty(payload.Bldg_Code)]">
+				<json-logger:logger doc:name="Bldg_Code is blank" doc:id="4db953a5-3871-4dee-a03c-7ae303b0ca9f" message='"Bilding code from system is empty"'>
+					<json-logger:content ><![CDATA[#[output application/json -&#45;&#45;
+{
+ 	payload: payload.Bldg_Code
+}]]]></json-logger:content>
+				</json-logger:logger>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="get-bld-code-matched-projectId" doc:id="f2532a6b-78a5-400f-89fe-f52c62316504" name="get-bld-code-matched-projectId" />
+			</otherwise>
+		</choice> -->
+		<!-- <set-variable value='#[payload.Attributes_5 ++ ";" ++ payload.Attributes_8 ++ ";" ++ payload.Attributes_9 ++ ";" ++ payload.Attributes_10 ++ (if(payload.Attributes_2 == "True") ";Wheelchair Accessible" else "")]' doc:name="Build features " doc:id="e6324ab6-b2c2-4009-a3bc-32487a556696" variableName="features"/> -->
+		<ee:transform doc:name="Transform Message" doc:id="edc95aa0-6e03-4a18-aadc-fea250017f83" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[payload]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Build features" doc:id="b790af40-ea8b-4886-8e01-ff4bc9c74cef" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="features" ><![CDATA[%dw 2.0
+output application/json
+---
+(if(!isEmpty(payload[0].Attributes_5)) (payload[0].Attributes_5 default "" ++ ";") else "")
+++
+(if(!isEmpty(payload[0].Attributes_8)) (payload[0].Attributes_8 default "" ++ ";") else "")
+++ 
+(if(!isEmpty(payload[0].Attributes_9)) (payload[0].Attributes_9 default "" ++ ";") else "") 
+++ 
+(if(!isEmpty(payload[0].Attributes_10)) (payload[0].Attributes_10 default "" ++ ";") else "") 
+++
+if(payload[0].Attributes_2 == "True") "Wheelchair Accessible" else ""]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="product payload" doc:id="bafc0fa5-a79a-48c6-8f8c-c9af381d35dc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+fun updateCountry(cont) = if(cont == "UK") "United Kingdom" else cont
+---
+{
+	Name:payload[0]."Unit_Code",
+	CAStockID__c: (payload[0]."Property_Code" ++ "_" ++ payload[0]."Unit_Code"),
+	BTR_StatusChangeDateStart__c: (payload[0]."StartDate" as Date{format: 'dd/MM/yyyy'} as Date{format: 'yyyy-MM-dd'}  default ""),
+	BTR_StatusChangeDateEnd__c: (payload[0]."EndDate" as Date{format: 'dd/MM/yyyy'} as Date{format: 'yyyy-MM-dd'} default ""),
+	Dwelling_Status__c: trim(payload[0]."sStatus"),
+	BTR_VacantDate__c: (payload[0]."VacantDate" as Date{format: 'dd/MM/yyyy'} as Date{format: 'yyyy-MM-dd'} default ""),
+	BTR_OccupancyReadyDate__c: (payload[0]."ReadyDate" as Date {format: 'dd/MM/yyyy'} as Date{format: 'yyyy-MM-dd'} default ""),
+	PLM_EntranceFloor__c: payload[0]."Floor_Code",
+	Country__c: updateCountry(payload[0]."Country") ,
+	(Project__r: {
+		"type": "Project__c",
+		SYS_ProjectCode__c: payload[0]."Bldg_Code"
+	}) if( !isEmpty(payload[0]."Bldg_Code")),	
+	Street_Number__c: trim(payload[0]."Street_Number"),
+	Street_Name__c: trim(payload[0]."Street_Name"),
+	BTR_Address3__c: payload[0]."Address_3",
+	BTR_Address4__c: payload[0]."Address_4",
+	Property_Suburb__c: payload[0]."City",
+	Postcode__c: payload[0]."Zip_Code",
+	List_Price__c: payload[0].Rent,
+	Internal_Area__c: payload[0].SQFT, 
+	BTR_Ready__c: payload[0].Rent_Ready as Boolean default false,
+	ProductCode: trim(payload[0].Unit_Type), 
+	No_of_Bedrooms__c: payload[0].Bedrooms,
+	No_of_Bathrooms__c: payload[0].Baths,
+	Wheelchair_Accessible__c: payload[0].Attributes_2 as Boolean default false,
+	BTR_Features__c: vars.features as String,
+	Land_Area__c: payload[0].Attributes_6,
+	BTR_Furnished__c: (if(payload[0].Attributes_5 == "Not Furnished") false else true) as Boolean
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="65520aa9-20a5-4e8e-b5df-6767ae1cbd92" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+output application/java
+---
+[
+	payload mapObject ((($$): $) if ($ != null)) ++
+    	"fieldsToNull": valueSet(payload mapObject (( key: $$ ) if(($ == null) or (isEmpty($))) )  )
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:upsert doc:name="Upsert Product" doc:id="41a1f026-3958-4e62-850d-9ed351e54575" config-ref="Salesforce_Config" externalIdFieldName="CAStockID__c" type="Product2"/>
+		<!-- <salesforce:upsert doc:name="Upsert Product" doc:id="b4c99dbb-6709-4bbb-a582-5d27df67cfe2" config-ref="Salesforce_Config" externalIdFieldName="CAStockID__c" type="Product2"/> -->
+		<json-logger:logger doc:name="After upsert unit Logger" doc:id="e48cd543-6b72-48c4-b9a2-62e51d916127" tracePoint="AFTER_REQUEST" message='"After upsert unit record"'/>
+		<choice doc:name="Choice" doc:id="3dd862e1-a495-4445-b14c-5e8c4cf8b761" >
+			<when expression="#[payload[0].id != null]">
+				<flow-ref doc:name="update-product-related-marketing-collateral" doc:id="77f216fa-f7f2-42d2-9886-79957101d75b" name="update-product-related-marketing-collateral"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Product upsert response" doc:id="bd3bddb0-4edb-4272-8b6d-cbb1500063a8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json  skipNullOn="everywhere"
+
+var status = payload[0].success as Boolean 
+---
+{
+	"correlationId" : correlationId,
+	"status": status,
+	 ("data":payload) if (!status)
+	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<json-logger:logger doc:name="Logger" doc:id="6ae01ae0-b3c5-437d-b1f0-20a048f4a4aa" message='#["Unit record insert/update in Salesforce"]' tracePoint="AFTER_TRANSFORM"/>
+	</sub-flow>
+	<sub-flow name="update-product-related-marketing-collateral" doc:id="eefa971d-ab34-436f-9ec7-eb62aadbb189" >
+		<salesforce:query doc:name="Query Product related Marketing Collateral" doc:id="c3d72b85-45f9-44c5-8d15-8d9c52c38dca" config-ref="Salesforce_Config" target="marketColleteralId" targetValue="#[payload.Id]">
+			<salesforce:salesforce-query ><![CDATA[SELECT Id, PLM_Features__c FROM PLM_MarketingCollateral__c WHERE PLM_Product__c = ':prodId']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"prodId" : payload[0].Id
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<json-logger:logger doc:name="After Marketing Collateral Logger" doc:id="8f36da8b-999b-485a-b290-aebd95670e2d" message='"Product matched Marketing Collateral"'/>
+		<choice doc:name="Choice" doc:id="e31d2617-eeb0-451b-92a2-7d6896db5a30" >
+			<when expression="#[isEmpty(vars.marketColleteralId)]">
+				<json-logger:logger doc:name="Logger" doc:id="a82b92d2-4942-464b-8d2a-cafd67ccafda" message='#["Product related Marketing Collateral record not found for product"]'/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Marketting Colleteral payload" doc:id="98e1bee1-52ff-429c-a5b6-5964ed7154b1">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	"Id": vars.marketColleteralId[0] as String,
+	"PLM_Features__c": vars.features
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<json-logger:logger doc:name="Before update Marketing Collateral Logger" doc:id="519d701e-e13a-41e9-9143-b20886a88006" tracePoint="BEFORE_REQUEST" message='"Before update Marketing Collateral"' />
+				<salesforce:update type="PLM_MarketingCollateral__c" doc:name="Update Marketing Collateral" doc:id="3547620f-13ea-4aca-8968-e910298d2a83" config-ref="Salesforce_Config" target="updateMarketingCollateralResponse" />
+				<json-logger:logger doc:name="Logger" doc:id="2809529a-3ce8-4b81-b7d6-8a2336559572" message='"vars.updateMarketingCollateralResponse"'>
+					<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: vars.updateMarketingCollateralResponse
+}]]]></json-logger:content>
+				</json-logger:logger>
+				<ee:transform doc:name="Transform Message" doc:id="b6a44145-c905-47bc-8aae-2ca9b9749b0f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json 
+var statusFlag = if(!(vars.updateMarketingCollateralResponse[0].success contains 'failed')) 'success' else 'failed'
+---
+{
+	correlationId: correlationId,
+	//productId: vars.productId,
+	status: statusFlag,
+	data: vars.updateMarketingCollateralResponse
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<json-logger:logger doc:name="After update Marketing Collateral Logger" doc:id="8490da96-fb94-4575-ab0b-dec8f7cf2660" message='#["After update Marketing Collateral"]' />
+			
+</otherwise>
+		</choice>
+	</sub-flow>	
+</mule>

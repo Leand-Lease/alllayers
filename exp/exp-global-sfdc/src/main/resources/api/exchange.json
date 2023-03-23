@@ -1,0 +1,1 @@
+{"main":"exp-global-sfdc.raml","name":"exp-global-sfdc","classifier":"raml","tags":[],"groupId":"a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d","assetId":"exp-global-sfdc","version":"1.0.0","apiVersion":"1.0.0","dependencies":[{"groupId":"a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d","assetId":"common-api-fragments","version":"1.0.3"}],"originalFormatVersion":"1.0"}

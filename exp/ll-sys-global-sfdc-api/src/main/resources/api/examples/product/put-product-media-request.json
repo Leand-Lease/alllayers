@@ -1,0 +1,41 @@
+{
+  "photos": [
+    {
+      "sfId": "a1FN0000001yCfiMAE",
+      "collateralId": "abcd123",
+      "mediaType": "Photo",
+      "collateralAssociation": "product",
+      "order": 2.0,
+      "url": "www.besttest.com",
+      "projectId": "a0dN000000CnRd3IAF",
+      "productId": "01tN0000006z3LPIAY",
+      "isDeleted": true
+    }
+  ],
+  "floorplans": [
+    {
+      "sfId": "a1FN0000001yCfnMAE",
+      "collateralId": "abcd123",
+      "mediaType": "Floorplan",
+      "collateralAssociation": "project",
+      "order": 1.0,
+      "url": "www.myfloorplan.com",
+      "projectId": "a0dN000000CnRd3IAF",
+      "isDeleted": true
+    }
+  ],
+  "brochures": [
+    {
+      "sfId": "a1FN0000001yCfxMAE",
+      "collateralId": "abcd123",
+      "phId": "project-124-brochure",
+      "mediaType": "Brochure",
+      "collateralAssociation": "project",
+      "order": 1.0,
+      "url": "www.project-brochure.com",
+      "projectId": "a0dN000000CnRd3IAF",
+      "isDeleted": true,
+      "description": "some text"
+    }
+  ]
+}

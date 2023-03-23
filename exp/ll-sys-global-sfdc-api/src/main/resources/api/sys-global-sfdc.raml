@@ -1,0 +1,182 @@
+#%RAML 1.0
+title: sys-global-sfdc
+description: System API for interacting with Global Salesforce Instance
+version: 1.2.0
+
+# traits:
+#   client-id-required:
+#     headers:
+#       client_id: string
+#       client_secret: string
+
+uses:
+  caf: exchange_modules/a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d/common-api-fragments/1.0.2/common-fragments.raml
+  cdm: exchange_modules/a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d/cdm-library/2.2.30/cdm-library.raml
+
+/projects:
+  is: [caf.client-id-auth, caf.compliant]
+  description: This API Path is meant to be used when interacting with Salesforce and collect the Project records
+
+  get:
+    description: get the collection of project records from Salesforce
+    responses:
+      200:
+        body:
+          application/json:
+            type: !include local_modules/project-response.raml
+            example: !include examples/project/get-project-response-example.raml
+      404:
+        body:
+          application/json:
+
+  /{projectId}:
+    is: [caf.client-id-auth, caf.compliant]
+    get:
+      description: get details of specific project from Salesforce    
+      responses:
+          200:
+            body:
+              application/json:
+                type:  cdm.project-op
+                example: !include examples/project/get_projects_id_response.json
+          
+                
+    patch:
+      description: to update existing project
+      body:
+        application/json:
+      responses:
+          200:
+            body:
+              application/json:
+    /units:
+      is: [caf.client-id-auth, caf.compliant]
+      description: API path interact with Salesforce and get the collection of unit(Product2) details 
+
+      get:
+        description: get the collection of units(product2) from salesfoce
+        responses:
+          200:
+            body:
+              application/json:
+                type: !include local_modules/project-unit-response.raml
+                example: !include examples/project/get-project-id-units-example.raml          
+          404:
+            body:
+              application/json:
+                
+/products:
+  is: [caf.client-id-auth]
+  # post:
+  #   description: to create new property
+  #   body:
+  #     application/json:
+  #   responses:
+  #     201:
+  #       body:
+  #         application/json:
+  /{productId}:
+    is: [caf.client-id-auth]
+    get:
+      description: get details of specific property
+      responses:
+          200:
+            body:
+              application/json:
+                type: cdm.property
+                example: !include examples/product/get-product-by-id-response.json
+                  
+          404:
+            body:
+              application/json:
+    patch:
+      description: to update existing property
+      body:
+        application/json:
+          type: !include local_modules/product/product-update.raml
+      responses:
+        200:
+          body:
+            application/json:
+
+    /inspection-times:
+      is: [caf.client-id-auth]
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                type: cdm.inspectionTime[]
+                example: !include examples/product/get-product-inspection-time-response.json                  
+          404:
+            body:
+              application/json:
+      put:
+        body:
+          application/json:
+            type: array 
+            items: !include local_modules/product/inspection-time-update.raml 
+        responses:
+          200:
+            body:
+              application/json:
+
+    /features:
+      is: [caf.client-id-auth]
+      get:
+        responses:
+          200:
+            body:
+              application/json:                
+                type: cdm.feature
+                example:
+                  !include examples/product/get-product-features-response.json
+          404:
+            body:
+              application/json:
+    /media:
+      is: [caf.client-id-auth]
+      get:      
+          queryParameters:            
+            projectId: 
+              type: string
+              required: false
+              description: If provided, returns products media as well as the parent project media
+          responses:
+            200:
+              body:
+                application/json:
+                  type: cdm.media
+                  example: !include examples/product/get-product-media-response.json
+            404:
+              body:
+                application/json:
+      put:
+        body:
+          application/json:
+            type: !include local_modules/product/media-update.raml
+        responses:
+          200:
+            body:
+              application/json:
+    /listings:
+      is: [caf.client-id-auth]
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                type: cdm.listing[]
+      patch:
+        body:
+          application/json:
+            type: cdm.listing[]
+            example: !include examples/product/update-product-id-listing-request.json
+        responses:
+          200:
+            body:
+              application/json:          
+                examples:
+                  success: !include examples/product/update-product-id-listing-success-response.json
+                  failure: !include examples/product/update-product-id-listing-fail-response.json
+     

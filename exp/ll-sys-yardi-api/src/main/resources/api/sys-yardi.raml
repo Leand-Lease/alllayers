@@ -1,0 +1,53 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/98130c99-09d8-4107-a2b7-949bfa4b8ecb/ # 
+title: sys-yardi
+description: This API send data to Yardi's RENTCafe Web Service
+version: 1.0.0
+
+uses:
+  cdm: exchange_modules/a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d/cdm-library/2.2.31/cdm-library.raml
+  caf: exchange_modules/a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d/common-api-fragments/1.0.3/common-fragments.raml
+
+/lead:
+  is: [caf.client-id-auth, caf.compliant] 
+  displayName: Lead
+  description: This API Path is meant to be used when interacting with Leads within the Yardi RENTCafe Web Service
+
+  post:
+    description: This method accepts lead data attributes in the payload, sends it to Yardi RENTCafe and returns a success/failure as a payload in the response.
+    body:
+      application/json:
+        type: cdm.lead
+        example: !include examples/lead-example.raml
+          
+    responses:
+      201:
+        body:
+          application/json:
+            type: !include types/lead-response-dataType.raml
+            example: !include examples/lead-response-example.raml     
+      404:
+        body:
+          application/json:
+
+/apartment-availability:
+  is: [caf.client-id-auth, caf.compliant] 
+  displayName: Apartment Availability
+  description: This API Path is fetch the Apartment Availability and returns a collection
+  
+  get:
+    description: This method accepts propertyCode as queryparam and send it to Yardi RentCafe. Return the collection of Apartment availability
+    queryParameters:            
+      propertyCode: 
+        type: string
+        required: true
+        description: If provided, returns apartment details with matching property code
+    responses:
+      200:
+        body:
+          application/json: 
+            type: !include types/apartment-availability-response.raml
+            example: !include examples/apartment-availability-response-example.raml
+      404:
+        body:
+          application/json:    

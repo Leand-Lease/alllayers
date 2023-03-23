@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sys-global-sfdc="http://www.mulesoft.org/schema/mule/sys-global-sfdc" xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns:sys-yardi="http://www.mulesoft.org/schema/mule/sys-yardi"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/sys-yardi http://www.mulesoft.org/schema/mule/sys-yardi/current/mule-sys-yardi.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/sys-global-sfdc http://www.mulesoft.org/schema/mule/sys-global-sfdc/current/mule-sys-global-sfdc.xsd">
+	
+	<sub-flow name="units-availability-get-projects-sub-flow" doc:id="e907a1ca-ea46-4547-a978-a4ced84ecd36" >
+		<!-- <http:request method="GET" doc:name="Get Projects" doc:id="d3103878-9219-4c95-853b-66d651a8d56b" config-ref="HTTP_Request_configuration" path="/api/projects">
+			<http:headers ><![CDATA[#[output application/java
+-&#45;&#45;
+{
+	"client_secret" : p('secure::sys-global-sfdc.client.secret'),
+	"client_id" : p('secure::sys-global-sfdc.client.id')
+}]]]></http:headers>
+		</http:request> -->
+		<sys-global-sfdc:get-projects doc:name="Get projects" doc:id="8157ccad-e2f1-4172-8959-1d33e1c633be" client-id="${secure::sys-global-sfdc.client.id}" client-secret="${secure::sys-global-sfdc.client.secret}" config-ref="Sys_global_sfdc_Config"/>
+		<json-logger:logger doc:name="Logger" doc:id="c3693984-5961-4d53-aba4-40f40cd83cc6" message='"projects "'/>
+		<choice doc:name="if any projects found?" doc:id="aed952c8-987d-4053-a687-5fcaa0bb6c70" >
+			<when expression="#[isEmpty(payload) or (sizeOf(payload) &lt; 1)]">
+				<ee:transform doc:name="propertyCode details" doc:id="9c2e3af0-3fd1-4982-b08d-ab3f25b3eaba" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json  skipNullOn="everywhere"
+---
+{
+	"correlationId" : correlationId,
+	"projectId" : payload.propertyCode,
+	"data":payload	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<foreach doc:name="For Each" doc:id="9cf2237f-cfd7-4afb-bf44-25ddf4e9ac6e" collection="#[payload.projects]">
+					<flow-ref doc:name="units-availability-get-apartments-sub-flow" doc:id="d614f576-3ea7-43fc-b366-ed8a5b4befb3" name="units-availability-get-apartments-sub-flow"/>
+				</foreach>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="units-availability-get-apartments-sub-flow" doc:id="914ba20a-82eb-49df-82b0-bd4fc86a6d62" >
+		<json-logger:logger doc:name="payload Logger" doc:id="e43b628b-87b3-4364-8dcf-311cc402c98a" message='"Project record with PropertyCode and CAStockId"'/>
+		<ee:transform doc:name="projectId and propertyCode variables" doc:id="447c32da-8b96-4cf6-84b0-51cfa99e02a1">
+						<ee:message>
+						</ee:message>
+						<ee:variables>
+				<ee:set-variable variableName="unitAvailabilityProductId"><![CDATA[%dw 2.0
+output application/json
+---
+payload.projectId]]></ee:set-variable>
+				<ee:set-variable variableName="unitAvailabilityPropertyCode"><![CDATA[%dw 2.0
+output application/json
+---
+payload.propertyCode]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+		<try doc:name="Try" doc:id="72c6f622-5adb-43da-a6fe-28cd17c6078d" >
+			<sys-yardi:get-apartment-availabilities doc:name="Get apartment availabilities" doc:id="2e614c97-79f6-4ab0-bfe4-5135d1ac38dd" config-ref="Sys_yardi_Config" client-id="#[p('secure::sys-yardi.client.id')]" property-code="#[vars.unitAvailabilityPropertyCode]" client-secret="#[p('secure::sys-yardi.client.secret')]" target="apartmentAvailabilities"/>
+			<flow-ref doc:name="units-availability-get-units-sub-flow" doc:id="3748fe76-0273-4628-a113-d993fefd4e2c" name="units-availability-get-units-sub-flow" />
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="49343c10-06f9-4504-94d3-cbfe29fc5e62" >
+					<ee:transform doc:name="error response" doc:id="6990613a-abfb-4f68-aa08-b69eb3e78925">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"correlationId" : correlationId,
+	"projectId" : payload.unitAvailabilityPropertyCode,
+	"error":error.description	
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<!-- <ee:transform doc:name="Transform Message" doc:id="23745e6d-2659-40c6-913f-aca02fb63ef2">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="apartmentAvailabilities"><![CDATA[%dw 2.0
+output application/json
+-&#45;&#45;
+{
+	"apartments":[
+		{	"productId": "",
+			"phProductId": "",
+			"caStockId": "",
+			"projectId": "",
+			"phProjectId": "",
+			"status": "",
+		  	"type": "",
+		  	"propertyType": "Other",
+		  	"headline": "",
+		  	"description": "",
+		  	"address": {
+				"unitNumber": "",
+				"streetNumber": "",
+				"streetName": "",
+				"suburb": "",
+				"postcode": "",
+				"state": "",
+				"country": ""
+		  	},
+		  	"displayAddress": false,
+		  	"price": 0,
+		  	"priceLimit": 0,
+		  	"priceText": "hundred",
+		  	"displayPrice": "None",
+		  	"soldDate": "",
+		  	"dateAvailable": "2020-01-01",
+		  	"underOffer": true,
+		  	"pricePeriod": "Weekly",
+		  	"bondDeposit": 0,
+		  	"soldPrice": 0,
+		  	"showSoldPrice": false,
+		  	"firstAgentId": 0,
+		  	"builtYear": "",
+		  	"carportSpaces": 0,
+		  	"garageSpaces": 0,
+		  	"offStreetSpaces": 0,
+		  	"bedrooms": 0,
+		  	"halfBedroom": false,
+		  	"bathrooms": 0,
+		  	"halfBathroom": false,
+		  	"ensuites": 0,
+		  	"landArea": 0,
+		  	"landAreaMetric": "Square Metres",
+		  	"floorArea": 0,
+		  	"floorAreaMetric": "Square Metres",
+		  	"landFrontage": 0,
+		  	"landFrontageMetric": "",
+		  	"energyEfficiencyRating": "",
+		  	"entranceFloor": "",
+		  	"productCode": "",
+		  	"numberOfFloors": 0,
+		  	"newConstruction": false,
+		  	"propertyUrl": "",
+		  	"virtualTourUrl": "",
+		  	"extLink1": "",
+		  	"extLink2": "",
+		  	"videoUrl": "",
+		  	"auctionPlace": "",
+		  	"auctionDate": null,
+		  	"auctionTime": "",
+		  	"forthcomingAuction": false,
+		  	"developmentName": "",
+		  	"authority": "",
+		  	"methodOfSale": "",
+		  	"propertyId": "44400002",
+		  	"apartmentId": "A-0101",
+		  	"specials": "test special"
+		}
+	]
+}	
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform> -->
+	</sub-flow>
+	<sub-flow name="units-availability-get-units-sub-flow" doc:id="58fd416f-23b3-4bd3-8eef-8d05d8c6594e" >
+		<try doc:name="Try" doc:id="e44fac85-af6e-4519-ada8-a5c91dbad5ac">
+			<!-- <http:request method="GET" doc:name="Get Units" doc:id="b9f7429e-ffbb-4237-a814-c0fdfc2bd335" config-ref="HTTP_Request_configuration" path="/api/projects/{projId}/units" target="units">
+			<http:headers><![CDATA[#[output application/java
+-&#45;&#45;
+{
+	"client_secret" : p('secure::sys-global-sfdc.client.secret'),
+	"client_id" : p('secure::sys-global-sfdc.client.id')
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[output application/java
+-&#45;&#45;
+{
+	"projId" : vars.unitAvailabilityProductId
+}]]]></http:uri-params>
+		</http:request>  -->
+			<sys-global-sfdc:get-units-by-project-id doc:name="Get units by project id" doc:id="fb8da66f-246e-4d9e-bad3-13200982458c" client-id="${secure::sys-global-sfdc.client.id}" client-secret="${secure::sys-global-sfdc.client.secret}" project-id="#[vars.unitAvailabilityProductId]" target="units" config-ref="Sys_global_sfdc_Config"/>
+			<flow-ref doc:name="units-availability-publish-units-sub-flow" doc:id="6f38f589-f446-4b67-a792-0f4cdd3ffdd9" name="units-availability-publish-units-sub-flow" />
+			<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="41a701d1-5326-41a6-bea1-c26e356f7177">
+					<ee:transform doc:name="error response" doc:id="587735f9-62d4-4fe1-bb2a-95f0ed1e7cfb">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"correlationId" : correlationId,
+	"projectId" : vars.unitAvailabilityProductId,
+	"error":error.description	
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="units-availability-publish-units-sub-flow" doc:id="a4b9a559-d6dd-4709-a96f-01c749b02fdd" >
+		<json-logger:logger doc:name="Units Logger" doc:id="04c7fa74-7833-446b-882d-82b4df225da4" tracePoint="AFTER_REQUEST" message='"Units details"'>
+			<json-logger:content><![CDATA[#[output application/json ---
+{
+ 	Units: vars.units,
+ 	attributes: attributes
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<ee:transform doc:name="Update Units with Apartment Availability data" doc:id="58369314-144c-4179-8700-80913c6ef695">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/json
+
+var joinedData = leftJoin(vars.units.units, vars.apartmentAvailabilities.apartments, (obj) -> obj.caStockId as String default "", (obj) -> ((obj.voyagerPropertyCode as String default "") ++ "_" ++ obj.apartmentName as String default ""))
+---
+joinedData
+     reduce ((item, prod = []) ->
+        prod ++ [{
+	        		"productId":item.l.productId,
+	                "dateAvailable" : if(item.r?) (item.r.dateAvailable as Date{format: 'M/d/yyyy'} as String{format:'yyyy-MM-dd'}) else null,
+	                "offerDescription": if(item.r?) item.r.specials else "",
+	                "underOffer": if(item.r?) (if(isEmpty(item.r.specials)) false else true) else false,
+	                "isAvailable":if(item.r?) true else false
+                }]	
+    ) ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="81109bb5-8fd4-4b5a-984b-ca8e4bf4829d">
+			<when expression="#[payload != null and sizeOf(payload) &gt; 0]">
+				<foreach doc:name="For Each" doc:id="3262b67c-c96f-40db-a8c6-383005210aed" collection="#[payload]">
+					<ee:transform doc:name="Publish data" doc:id="9e522269-c5a4-4657-b41d-bcb413ca6b4e">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					<try doc:name="Try" doc:id="3c336cd8-c8f6-4d24-8197-ede11464ddc0" >
+						<anypoint-mq:publish doc:name="Publish" doc:id="1c4fb17e-e406-44a5-8009-358b2bcaae0f" config-ref="Anypoint_MQ_Config" destination="${unit.availability.publish.q}" />
+						<error-handler >
+							<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f364c505-c460-4efe-9773-bb11b0387c1e" >
+								<anypoint-mq:publish doc:name="Publish poison" doc:id="8c553951-5a76-4c92-93e3-673d9a3d9509" config-ref="Anypoint_MQ_Config" destination="${unit.availability.publish.poison.q}"/>
+							</on-error-continue>
+						</error-handler>
+					</try>
+				</foreach>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="response" doc:id="0c394308-46ac-4498-a893-a3e37bc57b36">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"correlationId" : correlationId,
+	"projectId" : payload.propertyCode,
+	"data":payload	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	
+</mule>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="main-listings:\get-listings" doc:id="f7f7f338-6927-4685-aa6e-81ca76819574" >
+		<json-logger:logger doc:name="Start" doc:id="ccecbb6a-5ee2-43e6-ae22-cecf4650c55e" config-ref="JSON_Logger_Config" message='#["correlationId:" ++ correlationId ++ " - start processing request to get product listings"]'>
+			<json-logger:content><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebuger" doc:id="2dc5dfca-cd67-447b-a02f-dcb41c4b334f" config-ref="JSON_Logger_Config" priority="DEBUG" message='#["correlationId:" ++ correlationId ++ " - start processing request to get product listings"]'>
+			<json-logger:content><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	"payload" : payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<salesforce:query doc:name="Query Listings" doc:id="d29f50b2-8b9a-4e46-afc0-47dd235376d0" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query >SELECT Id, PLM_LastConfirmedDate__c, PLM_LastExportDate__c, PLM_LastSentDate__c, PLM_LastStatusMessage__c, PLM_ListingSite__c, 
+PLM_Product__c, PLM_Status__c, SystemModstamp, LastModifiedById, LastModifiedDate, Name 
+FROM PLM_ListingStatus__c
+WHERE PLM_Product__c = ':productId'</salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"productId" : vars.productId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<json-logger:logger doc:name="SFDC Response" doc:id="e8bf1aee-214c-4f4e-8b92-a93fe7f79e70" priority="DEBUG" tracePoint="AFTER_REQUEST" message='#["Request to get product listings of productId:" ++ (vars.productId default "") ++ " correlationId:" ++ correlationId]' config-ref="JSON_Logger_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="637452a1-c6a8-4ca6-b006-be81a4a6db6a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( item , index ) -> {
+	sfId: item.Id,
+	listingSite: item.PLM_ListingSite__c,
+	listingStatus: item.PLM_Status__c,
+	(lastSent: item.PLM_LastSentDate__c as DateTime) if item.PLM_LastSentDate__c != null,
+	(lastConfirmed: item.PLM_LastConfirmedDate__c as DateTime) if item.PLM_LastConfirmedDate__c != null,
+	lastStatus: item.PLM_LastStatusMessage__c
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="endDebuger" doc:id="8ae102e8-f94e-4dce-898c-da4ebfb75590" config-ref="JSON_Logger_Config" priority="DEBUG" message='#["correlationId:" ++ correlationId ++ " - complete processing request to get product listings"]' >
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	"payload": payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="b074b42b-91c6-4eaa-9566-a48d4ee856c6" config-ref="JSON_Logger_Config" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - complete processing request to get product listings"]' >
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+	<sub-flow name="main-listings:\\patch-product-listings" doc:id="9b5a1099-74e9-4c52-9e20-3a85802bef84" >
+		<json-logger:logger doc:name="Start" doc:id="9e02d7dd-8419-4406-90f5-e8b76aa01ad6" config-ref="JSON_Logger_Config" message='#["correlationId:" ++ correlationId ++ " - start processing request to update product listings"]'>
+			<json-logger:content><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="startDebuger" doc:id="9de97e81-dcdd-43da-81b3-db06cab82752" config-ref="JSON_Logger_Config" priority="DEBUG" message='#["correlationId:" ++ correlationId ++ " - start processing request to update product listings"]'>
+			<json-logger:content><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	"payload" : payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<validation:is-not-blank-string doc:name="Is not blank string" doc:id="d649ff6f-0b5e-4383-9b53-c629f3c18c82" config-ref="Validation_Config" value="#[vars.productId]" message="#[p('validation.messages.product.id')]"/>
+		<ee:transform doc:name="prepareListingSFObject" doc:id="a98afe8f-1737-4b64-b183-8d8f5277ec95" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+message.payload map (listing, index) -> {
+	(Id : listing.sfId) if (listing.sfId != null and sizeOf(listing.sfId) > 0),
+	(PLM_Product__c: vars.productId) if (vars.productId != null),
+	(PLM_ListingSite__c: listing.listingSite) if (listing.listingSite != null and sizeOf(listing.listingSite) > 0), 
+	(PLM_Status__c: listing.listingStatus) if (listing.listingStatus != null and sizeOf(listing.listingStatus) > 0), 
+	
+	(PLM_LastExportDate__c: listing.lastExport as DateTime) if (listing.lastExport != null and sizeOf(listing.lastExport) > 0),
+	(PLM_LastSentDate__c: listing.lastSent as DateTime) if (listing.lastSent != null and sizeOf(listing.lastSent) > 0), 
+	(PLM_LastConfirmedDate__c: listing.lastConfirmed as DateTime) if (listing.lastConfirmed != null and sizeOf(listing.lastConfirmed) > 0), 
+	(PLM_LastStatusMessage__c : listing.lastStatus) if (listing.lastStatus != null and sizeOf(listing.lastStatus) > 0)
+	
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:upsert doc:name="UpdateGlobalOrgListings" doc:id="8a7a00f9-6d45-4280-bd87-82e3aef1be5a" config-ref="Salesforce_Config" externalIdFieldName="Id" type="PLM_ListingStatus__c"/>
+		<ee:transform doc:name="ListingUpdateResponse" doc:id="c7ac7353-3a2d-4e81-a738-09594df231c6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+//var status = !(payload.success contains (false)) 
+var success = !(payload.success contains (false)) 
+var status = if(success == true) "success" else "failed"
+---
+{
+	"correlationId" : correlationId,
+	"productId" : vars.productId,
+	"status": status,
+	"data":payload	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="endDebuger" doc:id="e90b1739-bf72-46f2-ba69-c09ad1aaece2" config-ref="JSON_Logger_Config" priority="DEBUG" message='#["correlationId:" ++ correlationId ++ " - complete processing request to update product listings"]'>
+			<json-logger:content><![CDATA[#[output application/json ---
+{
+ 	productId: vars.productId default "",
+ 	"payload": payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="End" doc:id="37bab1d3-2bb9-4391-a04f-2c295019b13a" config-ref="JSON_Logger_Config" message='#["correlationId:" ++ correlationId ++ " - complete processing request to update product listings"]' tracePoint="END">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+</mule>

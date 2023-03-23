@@ -1,0 +1,32 @@
+[
+  {
+    "PLM_URL__c": "www.project-brochure.com",
+    "PLM_Project__c": "a0dN000000CnRd3IAF",
+    "PLM_Order__c": "1.0",
+    "PLM_Product__c": null,
+    "PLM_Description__c": "hello",
+    "PLM_MediaType__c": "Brochure",
+    "Id": "a1FN0000001yCfxMAE",
+    "type": "PLM_MarketingCollateral__c"
+  },
+  {
+    "PLM_URL__c": "www.myfloorplan.com",
+    "PLM_Project__c": "a0dN000000CnRd3IAF",
+    "PLM_Order__c": "1.0",
+    "PLM_Product__c": null,
+    "PLM_Description__c": null,
+    "PLM_MediaType__c": "Floorplan",
+    "Id": "a1FN0000001yCfnMAE",
+    "type": "PLM_MarketingCollateral__c"
+  },
+  {
+    "PLM_URL__c": "www.project-photo.com",
+    "PLM_Project__c": "a0dN000000CnRd3IAF",
+    "PLM_Order__c": "1.0",
+    "PLM_Product__c": null,
+    "PLM_Description__c": null,
+    "PLM_MediaType__c": "Photo",
+    "Id": "a1FN0000001yCfsMAE",
+    "type": "PLM_MarketingCollateral__c"
+  }
+]

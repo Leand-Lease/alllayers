@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	
+	
+	<sub-flow name="put-inspection-times-impl" doc:id="29ad63f2-a783-4d64-9156-b4ff3d18fb59" >
+		<ee:transform doc:name="Split and Transform to CDM" doc:id="21fc2044-7813-40e5-b907-50421faebead">
+			<ee:message>
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+import * from modules::functions
+---
+(payload filter $.collateralAssociation == 'product') map(item,index) -> {
+		Id: item.sfId,		
+		(PLM_InspectionDate__c: item.date as Date) if item.date != null,
+		(PLM_StartTime__c: item.startTime) if item.startTime != null,
+		(PLM_EndTime__c: item.endTime) if item.endTime != null
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+			</ee:variables>
+		</ee:transform>
+		<salesforce:upsert doc:name="Upsert Marketing Collaterals" doc:id="0f2c881f-8a51-4522-9492-a3c65922e338" config-ref="Salesforce_Config" externalIdFieldName="Id" type="PLM_MarketingCollateral__c" target="sfdcResponse">
+		</salesforce:upsert>
+		<logger level="TRACE" doc:name="Upsert MC Results" doc:id="ef9ce02b-5497-4208-afd6-97d4b3d70392" category='"AFTER_REQUEST"' message='#["correlationId:" ++ correlationId ++ " - SFDC response for update product opentimes"]' />
+		<logger level="INFO" doc:name="Upsert MC Results1" doc:id="8adde8f3-6690-4578-8493-5cf85086a36d" message='#[output application/json&#10; ---&#10;{&#10; 	productId: vars.productId default ""&#10;}]' />
+		<ee:transform doc:name="Set response" doc:id="36ee3ba4-997d-428c-bfc5-181ec906f195" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var statusFlag = if(!(vars.sfdcResponse.success contains 'failed')) 'success' else 'failed'
+---
+{
+	correlationId: correlationId,
+	productId: vars.productId,
+	status: statusFlag,
+	data: vars.sfdcResponse
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+
+</mule>

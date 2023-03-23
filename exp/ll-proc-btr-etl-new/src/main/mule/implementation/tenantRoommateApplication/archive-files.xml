@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="file-move-to-archieve-sub-flow" doc:id="e056cc9a-ae71-4502-98dd-0f6581d851e0" >
+		<json-logger:logger doc:name="Before Move to Archive Directory" doc:id="afd2f7b7-d194-4329-b906-265242e3b473" message='"Before Move to Archive Directory"'/>
+		<ee:transform doc:name="Transform Message" doc:id="b123a146-460e-4d24-ade3-802708e49b0d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[vars.tenant_archive_file_path,vars.prospect_archive_file_path,vars.roommate_archive_file_path,vars.lease_archive_file_path,vars.appinfo_archive_file_path]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="e72c791f-be9c-4c3f-80a5-74b849594f3f" collection="#[payload]">
+			<choice doc:name="Choice" doc:id="a1f47777-31b9-4bc1-8ad4-40a8f71f697e" >
+				<when expression="#[!isEmpty(payload)]">
+					<sftp:move doc:name="Move File Test directory to Archive" doc:id="f64a849e-ec33-4361-8fa7-fa7110535f54" config-ref="sftp" sourcePath="#[payload.sourcePath]" targetPath="#[payload.targetPath]" renameTo="#[payload.renameTo]" createParentDirectories="false" />
+				</when>
+			</choice>
+		</foreach>
+		<json-logger:logger doc:name="After Move to Archive Directory" doc:id="a5587650-40d1-45dd-bac7-3a13c36e7e12" tracePoint="END" message='#["After Move to Archive Directory"]'/>
+	
+</sub-flow>	
+</mule>

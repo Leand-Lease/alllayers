@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="get-product-opentimes" doc:id="6e58b35e-d78e-47ea-839e-a70ed789b87a" >
+		<salesforce:query doc:name="Query property opentimes" doc:id="f21e6b21-74a2-4919-a093-33875ad06541" config-ref="Salesforce_Config" target="sfdcProdResp">
+			<salesforce:salesforce-query>SELECT Id, PLM_InspectionDate__c, PLM_StartTime__c, PLM_EndTime__c, PLM_Project__c, PLM_Product__c
+FROM PLM_MarketingCollateral__c 
+WHERE RecordType.name = 'Inspection Time' AND PLM_Product__c = ':productId'</salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"productId" : vars.productId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<logger level="INFO" doc:name="SFDC Response" doc:id="8bccba7b-41ba-4d95-a517-e1767fd5c295" message='#["Request to get open times detail for productId:" ++ (vars.productId default "")]' config-ref="JSON_Logger_Config" />
+		<logger level="INFO" doc:name="SFDC Response1" doc:id="0a524f2e-bf41-476e-b4a5-1288263637c1" message="#[output application/json&#10; ---&#10;{&#10; 	payload: vars.sfdcProdResp&#10;}]" />
+	
+</sub-flow>
+	<sub-flow name="get-project-opentimes" doc:id="c94c9ecb-8496-4f33-894a-8b721f49ad5c" >
+		<salesforce:query doc:name="Query project opentimes" doc:id="b048c7b5-922d-4147-bbd3-414c43417e66" config-ref="Salesforce_Config" target="sfdcProjectOpentimesResp">
+					<salesforce:salesforce-query>SELECT Id, PLM_InspectionDate__c, PLM_StartTime__c, PLM_EndTime__c, PLM_Project__c, PLM_Product__c
+FROM PLM_MarketingCollateral__c 
+WHERE RecordType.name = 'Inspection Time' AND PLM_Project__c = ':projectId' AND PLM_Product__c = null</salesforce:salesforce-query>
+					<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"projectId" : vars.projectId,
+	"productId" : vars.productId
+}]]]></salesforce:parameters>
+				</salesforce:query>
+		<logger level="INFO" doc:name="SFDC Response" doc:id="50fb4e8a-2cea-43a8-8c61-8a1d27cfbe5e" message='#["Request to get open times detail for productId from project:" ++ (vars.productId default "")]' />
+		<logger level="INFO" doc:name="SFDC Response1" doc:id="1d9458b8-9080-4005-9f11-6920e2ee7d27" message="#[output application/json &#10;---&#10;{&#10; 	payload: vars.sfdcProjectOpentimesResp&#10;}]" />
+		<ee:transform doc:name="Transform Message" doc:id="57fd2067-778b-4574-80f6-a5358ec62c6d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import * from modules::functions
+---
+vars.sfdcProjectOpentimesResp map ( item , index ) -> {
+	collateralId: item.Id,
+	date: item.PLM_InspectionDate__c,
+	startTime: item.PLM_StartTime__c, 
+	endTime: item.PLM_EndTime__c,
+	projectId: item.PLM_Project__c,
+	collateralAssociation: setCollateralAssociation("")
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+			</ee:variables>
+		</ee:transform>
+	</sub-flow>
+	<flow name="inspection-times-implFlow1" doc:id="dccb126c-cde2-4b8a-9000-d3dfc3e93f70">
+	</flow>
+	<sub-flow name="get-project-id" doc:id="c102cf98-828c-498d-84e1-4a6418d6a159" >
+		<salesforce:query-single doc:name="Get project Id" doc:id="e1f0e290-659f-4149-a8d0-5d695cae2767" config-ref="Salesforce_Config" target="sfdcGetProjectResp">
+					<salesforce:salesforce-query>SELECT Project__r.Id FROM Product2 WHERE Id = ':productId' </salesforce:salesforce-query>
+					<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"productId" : vars.productId
+}]]]></salesforce:parameters>
+				</salesforce:query-single>
+		<logger level="TRACE" doc:name="SFDC Response" doc:id="99514e03-2c68-40f2-90ab-c7f8afd92b7c" message='#["Request to get projectId of productId:" ++ (vars.productId default "")]' category='"AFTER_REQUEST"' />
+		<logger level="INFO" doc:name="SFDC Response1" doc:id="9eb0c276-06df-45b0-8fdf-cf523f70f5bc" message="#[output application/json &#10;---&#10;{&#10; 	payload: vars.sfdcGetProjectResp&#10;}]" />
+		<set-variable value="#[vars.sfdcGetProjectResp.Project__r.Id]" doc:name="Set project id" doc:id="1d1eeb50-2872-421b-bb35-5474adbba305" variableName="projectId" />
+		<validation:is-not-null doc:name="projectId Is not null" doc:id="8d06e4a0-d49a-4ac5-b554-0bbd521001da" value="#[vars.projectId]" message='#["correlationId:" ++ correlationId ++ "No projectId found for productId: " ++ (vars.productId default "")]'/>
+	</sub-flow>
+	<sub-flow name="get-opentimes-impl" doc:id="e1406b12-0a74-489a-b8b6-b8851403d94f" >
+		<flow-ref doc:name="Get product opentimes" doc:id="0eb4db9b-bc5a-4a6a-925a-2eea4453e39d" name="get-product-opentimes"/>
+		<choice doc:name="Choice" doc:id="6a005e54-011f-4e8e-b7ad-f8e11043bd0f">
+			<when expression="#[vars.sfdcProdResp == null or sizeOf(vars.sfdcProdResp) &lt; 1]">
+				<try doc:name="Try" doc:id="912870d4-24ff-49cb-bfdc-5b9b47962fda">
+					<flow-ref doc:name="Get project Id" doc:id="185dacc4-9e25-4f82-87ed-a80bdf8fe977" name="get-project-id" />
+					<flow-ref doc:name="Get project opentimes" doc:id="73f1064d-5ac8-4282-b53c-903d13712be4" name="get-project-opentimes" />
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="153b5065-db5b-4b54-8c83-7ed84d1286b9" >
+							<logger level="TRACE" doc:name="Logger" doc:id="fc09dc2a-e6e7-4527-9680-a3ca737a3c5d" message='#[" correlationId:" ++ correlationId ++ " Request to get project opentimes:" ++ (vars.productId default "")]' category='"EXCEPTION"' />
+						
+</on-error-continue>
+					</error-handler>
+				</try>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Insection Time CDM" doc:id="5262bb52-b0d4-4865-a17e-238c054b674a">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere"
+import * from modules::functions
+var result =  vars.sfdcProdResp map(v,i) -> {
+	sfId: v.Id,
+	collateralId: v.Id,
+	date: v.PLM_InspectionDate__c,
+	startTime: v.PLM_StartTime__c,
+	endTime: v.PLM_EndTime__c,
+	projectId: v.PLM_Project__c ,
+	productId: v.PLM_Product__c,
+	collateralAssociation: setCollateralAssociation(vars.productId)
+}
+---
+if (result != null)
+	result
+else
+	[]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+	</sub-flow>
+
+</mule>

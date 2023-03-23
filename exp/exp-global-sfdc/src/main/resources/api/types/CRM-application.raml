@@ -1,0 +1,117 @@
+#%RAML 1.0 DataType
+description: datatype that represents a Application and its relevant attributes
+
+properties:
+  unitCode:
+    type: string
+    required: true
+    minLength: 1
+    displayName: Unit Code
+    description: Unit Code
+  agentFullName:
+    type: string
+    required: true
+    minLength: 1
+    displayName: Agent Full Name
+    description: Agent Full Name
+  tenantType:
+    enum:
+      - Individual
+      - Business
+    required: true
+    displayName: Tenant Type
+    description: Tenant Type
+  contactFirstName: 
+    type: string
+    required: true
+    maxLength: 40
+    minLength: 1
+    displayName: Contact First Name
+    description: Contact First Name
+  contactLastName: 
+    type: string
+    required: true
+    maxLength: 40
+    minLength: 1
+    displayName: Contact Last Name
+    description: Contact Last Name
+  contactEmail: 
+    type: string
+    required: true
+    maxLength: 80
+    minLength: 1
+    displayName: Contact Email
+    description: Contact Email
+  contactMobilePhone:
+    type: string
+    maxLength: 17
+    pattern: "^[0-9]*$"
+    required: true  
+    minLength: 1
+    displayName: Contact Mobile Phone
+    description: Contact Mobile Phone
+  contactAddress1:
+    type: string
+    required: true
+    maxLength: 40
+    minLength: 1
+    displayName: Contact Address1
+    description: Contact StreetName and StreetNumber
+  contactAddress2:
+    type: string
+    required: true
+    maxLength: 40
+    minLength: 1
+    displayName: Contact Address2 
+    description: Unit Number
+  contactAddressState:
+    type: string
+    required: true
+    maxLength: 4
+    minLength: 1
+    displayName: Contact Address State 
+    description: Contact Address State
+  contactZipcode:
+    type: string
+    required: true
+    maxLength: 12
+    minLength: 1
+    displayName: Contact Address Zipcode 
+    description: Contact Address Zipcode 
+  campaignSource:
+    type: string
+    required: false
+    maxLength: 30
+    minLength: 1
+    displayName: Campaign Source
+    description: Campaign Source
+  projectPropertyCode:
+    type: string
+    required: true
+    minLength: 1
+    displayName: Project Property Code
+    description: Project Property Code  
+  leaseStartDate:
+    type: date-only
+    required: true
+    displayName: Lease StartDate
+    description: Lease StartDate
+  leaseEndDate:  
+    type: date-only
+    required: true
+    displayName: Lease EndDate
+    description: Lease EndDate  
+  SFOpportunityId:
+    type: string
+    required: true
+    maxLength: 18
+    minLength: 1
+    displayName: SF Opportunity ID
+    description: SF Opportunity ID
+  SFContactId:  
+    type: string
+    required: true
+    maxLength: 18
+    minLength: 1
+    displayName: SF Contact ID
+    description: SF Contact ID

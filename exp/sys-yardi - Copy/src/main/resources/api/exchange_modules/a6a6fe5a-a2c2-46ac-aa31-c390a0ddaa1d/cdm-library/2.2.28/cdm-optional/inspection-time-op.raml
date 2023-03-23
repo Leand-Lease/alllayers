@@ -1,0 +1,27 @@
+#%RAML 1.0 DataType
+description: inspection time of property from MarketingCollaterals, under MarketingCollaterals we have 3 recordTypes (Feature, Media, InspectionTime).
+
+properties:
+  sfId: 
+    type: string 
+    required: false
+    description: salesforce recordId
+  phId:
+    type: string
+    required: false
+    description: ID of the collateral in the external publisher system (Property Hub)  
+  collateralId?: string
+  collateralAssociation?: 
+    description: if it has productId its related to product otherwise its related to project
+    type: !include common/collateral-association-op.raml
+  date?: date-only
+  startTime?: string
+  endTime?: string
+  projectId?:
+    type: string
+    required: true
+  productId?:
+    type: string
+    required: false
+  
+  markDeleteFlag?: boolean

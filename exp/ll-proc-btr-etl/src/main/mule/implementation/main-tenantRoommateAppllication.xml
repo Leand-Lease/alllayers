@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="main-tenantRoommateAppllication:\tenant-roommate-appllication-sync-sub-flow" doc:id="90910f65-f07b-4545-aae8-a70c7d9c530f" >
+		<json-logger:logger doc:name="Start Logger" doc:id="f7390145-54cb-45c5-b022-5cc2b74f9c84" message='#["start processing request to update contacts"]'>
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="Start Debug Logger" doc:id="93b54270-303d-4f62-b3b4-7ad03c458816" priority="DEBUG" message='#["start debug processing request to update contacts"]'/>
+		<flow-ref doc:name="get-tenants-from-ftp-sub-flow" doc:id="ff22dafa-253b-4161-9821-7f8b16edd1fb" name="get-tenants-from-ftp-sub-flow"/>
+		<json-logger:logger doc:name="End Debug Logger" doc:id="ccd9cf52-eaae-4397-b53f-79c6d1d7eb0c" priority="DEBUG" tracePoint="END" message='#["End debug processing request to update contacts"]'/>
+		<json-logger:logger doc:name="End Logger" doc:id="36853c9e-57fc-4e45-8a00-ec64837921ea" tracePoint="END" message='#["End processing request to update contacts"]'>
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+</mule>

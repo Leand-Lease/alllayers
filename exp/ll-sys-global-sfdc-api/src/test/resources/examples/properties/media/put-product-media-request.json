@@ -1,0 +1,41 @@
+{
+  "photos": [
+    {
+      "sfId": "a1FN0000001yCfiMAE",
+      "collateralId": "a1FN0000001yCfiMAE",
+      "phId": "Test-PropertyHubId-123",
+      "mediaType": "Photo",
+      "collateralAssociation": "product",
+      "order": 2,
+      "url": "www.besttest5.com",
+      "projectId": "a0dN000000CnRd3IAF",
+      "productId": "01tN0000006z3LPIAY",
+      "isDeleted": false
+    },
+    {
+      "sfId": "a1HN0000004KEVCMA4",
+      "collateralAssociation": "project",
+      "order": 2,
+      "url": "www.besttest5.com",
+      "isDeleted": false
+    }
+  ],
+  "floorplans": [
+    {
+      "sfId":"a1HN0000004KEVDMA4",
+      "collateralAssociation": "project",
+      "order": 2,
+      "url": "www.besttest5.com",
+      "isDeleted": false
+    }
+  ],
+  "brochures": [
+    {
+      "sfId":"a1HN0000004KEVEMA4",
+      "collateralAssociation": "project",
+      "order": 2,
+      "url": "www.besttest5.com",
+      "isDeleted": false
+    }
+  ]
+}

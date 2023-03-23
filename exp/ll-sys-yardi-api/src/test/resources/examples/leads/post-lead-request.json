@@ -1,0 +1,37 @@
+{
+  "extLeadId": "TESTOPP00000000001",
+  "contact": {
+    "firstName": "Paul",
+    "lastName": "Martinez",
+    "email": "gean.martinez@silverlinecrm.com",
+    "phone": "9175832783",
+    "address": {
+      "streetNumber": "860",
+      "streetName": "Broadway",
+      "unitNumber": "5th Floor",
+      "state": "NY",
+      "country": "USA",
+      "suburb": "New York",
+      "postcode": "10003"
+    },
+    "extContactId": "TESTCON00000000001"
+  },
+  "campaign": {
+    "source": "Seminar"
+  },
+  "project": {
+    "propertyCode": "p0193213"
+  },
+  "agent": {
+    "agentType": "Unit",
+    "fullName": "Emma Beaver"
+  },
+  "property": {
+    "productCode": "UNIT-109"
+  },
+  "lease": {
+    "startDate": "2020-08-01",
+    "endDate": "2021-08-01",
+    "tenantType": "Individual"
+  }
+}

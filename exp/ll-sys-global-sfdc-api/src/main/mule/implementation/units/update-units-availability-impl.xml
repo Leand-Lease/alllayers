@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<sub-flow name="update-apartment-units-in-sf" doc:id="81d579d4-f080-4065-9e93-d5c74ee2dc43" >
+		<logger level="INFO" doc:name="Start" doc:id="7880ac29-5aeb-400b-bf4e-09dfc4ead58f" message='#["Unit record update in Salesforce"]' />
+		<logger level="INFO" doc:name="Start1" doc:id="fd79b85e-aa29-4232-a937-9de734c65af1" message="#[{}]" />
+		<ee:transform doc:name="Transform Message" doc:id="0f0a1ac7-ac50-4d77-b71c-c73510ac3f48" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"productId":"01tN0000007tXMNIA2",
+    "dateAvailable" : null,
+    "offerDescription": "",
+    "underOffer": true,
+    "isAvailable":true
+}]]></ee:set-payload>
+			</ee:message> 
+		</ee:transform>
+		<ee:transform doc:name="product payload" doc:id="f79f1aff-c92b-41dd-8743-51343b19a717" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+output application/java
+---
+[{
+	"Id":payload.productId,
+    Date_Available__c: if(!isEmpty(payload."dateAvailable" )) (payload."dateAvailable" as Date{format: 'yyyy-MM-dd'}) else null,
+    Offer_Description__c: payload."offerDescription",
+    In_Offer__c: payload."underOffer",
+    "BTR_Available__c": payload."isAvailable",
+    ( fieldsToNull: valueSet({'Date_Available__c': payload."dateAvailable", 'Offer_Description__c': payload."offerDescription"} mapObject (( key: $$ ) if(($ == null) or (isEmpty($)))  )))
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:update doc:name="Product Update" doc:id="e76653cc-46aa-4e37-b661-bff9535e6a37" config-ref="Salesforce_Config" type="Product2"/>
+		<logger level="INFO" doc:name="Logger" doc:id="0d61ee6f-ddf0-4c2a-8a5a-9a082f87c0e9" message="#[payload[0]]"/>
+		<ee:transform doc:name="Product update response" doc:id="c2ce31fe-9794-4302-8152-132728dcc2c4">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/json  skipNullOn="everywhere"
+
+var status = if(!(payload[0].success contains 'failed')) true else false 
+---
+{
+	"correlationId" : correlationId,
+	"productId" : payload[0].Id,
+	"status": status,
+	 ("data":payload) if (!status)
+	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+		<logger level="TRACE" doc:name="Product updated" doc:id="62e6aadb-aed6-4c62-a00d-0916ed1d773f" message='#["Unit record update in Salesforce"]' category='"AFTER_REQUEST"' />
+	</sub-flow>
+</mule>

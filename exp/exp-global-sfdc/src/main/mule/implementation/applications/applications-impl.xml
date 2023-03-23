@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:sys-yardi="http://www.mulesoft.org/schema/mule/sys-yardi"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/sys-yardi http://www.mulesoft.org/schema/mule/sys-yardi/current/mule-sys-yardi.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="post-application-validate-request-sub-flow" doc:id="54466c23-370c-4e56-b3f5-82a48bf026f6" >
+
+		<json-logger:logger doc:name="Payload Request" doc:id="2c448761-28f7-4f5b-a302-0ab9036199a9" message='"correlationId:" ++ correlationId ++ " - validate request"' tracePoint="BEFORE_TRANSFORM">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<ee:transform doc:name="Validate request" doc:id="134cf6c2-8bad-4954-97eb-77de2183407b" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="validate_payload" ><![CDATA[%dw 2.0
+output application/json
+---
+
+	if(isEmpty(payload.unitCode))  "Unit code is required" 
+	else if(isEmpty(payload.agentFullName))  "Agent fullname is required" 
+	else if(isEmpty(payload.tenantType)) "Tenant type should be 'Individual' or 'Bussiness'" 
+	else if(isEmpty(payload.contactFirstName)) "Contact FirstName is required" 
+	else if(isEmpty(payload.contactLastName)) "Contact LastName is required" 
+	else if(isEmpty(payload.contactEmail)) "Contact Email is required" 
+	else if(isEmpty(payload.contactMobilePhone)) "Contact Phone is required" 
+	else if(isEmpty(payload.contactAddress1)) "Contact Address1 is required"
+	else if(isEmpty(payload.contactAddress2)) "Contact Address2 is required" 
+	else if(isEmpty(payload.contactAddressState)) "Contact Address State is required" 
+	else if(isEmpty(payload.contactZipcode)) "Contact Address Zipcode is required" 
+	else if(isEmpty(payload.campaignSource)) "Campaign source is required" 
+	else if(isEmpty(payload.projectPropertyCode)) "Property Code is required" 
+	else if(isEmpty(payload.leaseStartDate)) "Lease Start Date is required" 
+	else if(isEmpty(payload.leaseEndDate)) "Lease End Date is required" 
+	else if(isEmpty(payload.SFOpportunityId)) "Opportunity Id is required" 
+	else if(isEmpty(payload.SFContactId)) "Contact Id is required" 	
+	else "true"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="payload validation" doc:id="a8ee4331-bf78-4470-9963-abb4c1e381bc" >
+			<when expression='#[vars.validate_payload == "true"]'>
+				<flow-ref doc:name="post-appilcation-sys-yardi-request_sub_flow" doc:id="d95851f9-f3e7-4b4b-b841-6ee6c3b2720a" name="post-appilcation-sys-yardi-request-sub-flow"/>
+			</when>
+			<otherwise>
+				<!-- <ee:transform doc:name="Transform Message" doc:id="e023e36d-e663-46a9-8a67-ca972806c248" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+-&#45;&#45;
+{
+	correlationId: correlationId,
+	errorCode: "INVALID_DATA",
+	errorMessage: (vars.validate_payload default "")
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[%dw 2.0
+output application/java
+-&#45;&#45;
+400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform> -->
+				<raise-error doc:name="Raise error" doc:id="0b438d5b-3b56-4500-aa86-a500f180ab51" description='#[vars.validate_payload default ""]' type="ORDER:INVALID_DATA"/>
+			
+</otherwise>
+		
+</choice>
+		
+	</sub-flow>
+	
+	<sub-flow name="post-appilcation-sys-yardi-request-sub-flow" doc:id="fb3de084-6262-4ffd-842f-0fbdc8d0ff37" >
+		<json-logger:logger doc:name="Before sys-yardi request" doc:id="f42d6c48-fe37-4930-aa88-724692f701b6" tracePoint="BEFORE_REQUEST" message="Before sys-yardi request"/> 
+		
+		<ee:transform doc:name="Create lead request data" doc:id="4cd65d7c-5d48-4166-931b-70a679f8797c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var address1 = (payload.contactAddress1 splitBy(" "))
+var address2 = payload.contactAddress1 replace (address1[0]) with("")
+---
+{
+	"extLeadId": payload.SFOpportunityId,
+	"contact": {
+	    "firstName": payload.contactFirstName  as String,
+	    "lastName": payload.contactLastName as String,
+	    "email": payload.contactEmail,
+	    "phone": payload.contactMobilePhone,
+	    "address": {
+	      "streetNumber": address1[0], 
+	      "streetName": address2, 
+	      "unitNumber": payload.contactAddress2  as String,
+	      "state": (payload.contactAddressState as String default ""),
+	      "country": "UK" default "",
+	      "suburb": "New York",
+	      "postcode": payload.contactZipcode
+	    },
+	    "extContactId": payload.SFContactId
+	  },
+	  "campaign": {
+	    "source": payload.campaignSource as String
+	  },
+	  "project": {
+	    "propertyCode": payload.projectPropertyCode as String
+	  },
+	  "agent": {
+	  	"agentType": "Unit",
+	    "fullName": payload.agentFullName as String
+	  },
+	  "property": {
+	    "productCode": payload.unitCode as String
+	  },
+	  "lease": {
+	    "startDate": payload.leaseStartDate,
+	    "endDate": payload.leaseEndDate,
+	    "tenantType": payload.tenantType
+	  }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<try doc:name="Try" doc:id="41dd81aa-f8cb-4e69-b0a0-ce15ee505ab6" >
+			<sys-yardi:create-lead doc:name="sys-yardi api" doc:id="fcbdf167-77c1-403f-b49b-9ec77b6b7b99" client-secret="${secure::sys-yardi.client.secret}" config-ref="Sys_yardi_Config" client-id="${secure::sys-yardi.client.id}">
+			<error-mapping targetType="sys-yardi:ANY" />
+		</sys-yardi:create-lead>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9bbe4723-ff52-4b01-bb4e-02849d9a188a" >
+					<raise-error doc:name="Raise error" doc:id="f5a9e6ad-d0f7-4821-8b51-53959a4be706" type="RESPONSE:NOT_FOUND" description="Internal Server Error"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Handle Response" doc:id="42843250-bd83-4541-9786-24a4411b6da3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>		
+	</sub-flow>
+</mule>

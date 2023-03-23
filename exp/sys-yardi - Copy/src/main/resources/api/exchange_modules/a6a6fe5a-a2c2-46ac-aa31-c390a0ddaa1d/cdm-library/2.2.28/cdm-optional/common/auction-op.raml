@@ -1,0 +1,21 @@
+#%RAML 1.0 DataType
+
+properties:
+  
+  auctionDate:
+    type: date-only
+    example: 2015-05-23
+    required: false
+    displayName: Auction Date 
+    description: The date of the auction for all properties for this Project. Note that this can be overwritten at Product level.
+  auctionPlace:
+    type: string
+    displayName: Auction Place
+    required: false
+    description: Place of auction for all properties for this Project. Note that this can be overwritten at Product level.
+  auctionTime: 
+    type: time-only
+    example: 12:30:00
+    required: false
+    displayName: Auction Time
+    description: The start time for the auction for all properties for this Project. Note that this can be overwritten at Product level.

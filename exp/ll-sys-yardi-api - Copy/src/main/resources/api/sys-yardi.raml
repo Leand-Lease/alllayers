@@ -1,0 +1,31 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/4aeed489-20b1-4b94-8a7b-f92714ff65fc/ # 
+title: sys-yardi
+description: This API send data to Yardi's RENTCafe Web Service
+version: 1.0.0
+
+traits:
+  common-error-responses: !include traits/common-error-responses.raml
+
+uses:
+  cdm: exchange_modules/a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d/cdm-library/2.2.28/cdm-library.raml
+  caf: exchange_modules/a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d/common-api-fragments/1.0.3/common-fragments.raml
+
+/Lead:
+  is: [common-error-responses, caf.client-id-auth, caf.compliant] 
+  displayName: Yardi System API
+  description: This API Path is meant to be used when interacting with Leads within the Yardi RENTCafe Web Service
+
+  post:
+    description: This method accepts lead data attributes in the payload, sends it to Yardi RENTCafe and returns a success/failure as a payload in the response.
+    body:
+      application/json:
+        type: cdm.lead
+        example: !include examples/lead-example.raml
+          
+    responses:
+      201:
+        body:
+          application/json:
+            type: !include types/lead-response-dataType.raml
+            example: !include examples/lead-response-example.raml     

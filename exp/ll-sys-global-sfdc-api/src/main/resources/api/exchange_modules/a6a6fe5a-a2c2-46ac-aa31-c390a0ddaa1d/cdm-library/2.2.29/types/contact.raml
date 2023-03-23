@@ -1,0 +1,36 @@
+#%RAML 1.0 DataType
+description: datatype that represents a Contact and its relevant attributes
+
+properties:
+  firstName: 
+    type: string
+    maxLength: 40
+    required: true
+    displayName: First Name
+    description: First Name
+  lastName: 
+    type: string
+    maxLength: 40
+    required: true
+    displayName: Last Name
+    description: Last Name
+  email: 
+    type: string
+    maxLength: 80
+    required: true
+    displayName: Email
+    description: Email
+  phone: 
+    type: string
+    maxLength: 17
+    pattern: "^[0-9]*$"
+    required: true  
+    displayName: Phone
+    description: Phone
+  address: !include common/address.raml
+  extContactId: 
+    type: string
+    required: true
+    maxLength: 18
+    displayName: External Contact ID
+    description: External Contact ID

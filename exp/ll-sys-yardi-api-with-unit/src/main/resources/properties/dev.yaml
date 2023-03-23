@@ -1,0 +1,25 @@
+https:
+  port: "8082"
+  host: "0.0.0.0"
+  key:
+    alias: "lendlease"
+
+http:
+  port: "8081"
+  host: "0.0.0.0"
+  key:
+    alias: "lendlease"
+        
+json.logger.application:
+  version: 1.1.0
+  name: ll-sys-yardi-project
+
+rentCafe:    
+  username: "BTRLeadsAPI@lendlease.com"
+  path: "api.rentcafe.com"
+  pathUS: "api.rentcafe.com"
+  basePath: "rentcafeapi.aspx"
+  
+apartmentAvailability:
+  apiToken: ODAxNw==-0DHk4ex+pOU=  
+        

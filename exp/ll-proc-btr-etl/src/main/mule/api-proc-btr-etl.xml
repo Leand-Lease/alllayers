@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+
+	<flow name="api-proc-btr-etl:\units-sync-flow" doc:id="aefc6b3a-1d31-4936-8351-0723970f5ced">
+		
+		<http:listener config-ref="HTTP_Listener_config" path="/api/units">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+		<!-- <scheduler doc:name="Scheduler" doc:id="3017d7ff-a7d9-4aba-82af-17cc2f375acb" >
+			<scheduling-strategy >
+				<cron expression="${cron-expression.units}" timeZone="UTC" />
+			</scheduling-strategy>
+		</scheduler> -->
+		<flow-ref doc:name="main-units:\units-sync-sub-flow" doc:id="403b362b-2631-44e5-84b2-adae5b2cccd2" name="main-units:\units-sync-sub-flow" />
+		<error-handler ref="sync-error-handler" />
+	</flow>
+	<flow name="api-proc-btr-etl:\units-availability-sync-flow" doc:id="037c54e0-7ff3-4750-93a3-09abc4618163" >
+		<http:listener doc:name="Listener" doc:id="cb93456a-696e-4f4c-8e34-069ee58e0d88" config-ref="HTTP_Listener_config" path="/api/unit-availability"/>
+		<!-- <scheduler doc:name="Scheduler" doc:id="f2ce627c-2b21-4d50-be5a-5186e4687943" >
+			<scheduling-strategy >
+				<cron expression="0 */15 * ? * *" timeZone="UTC" />
+			
+</scheduling-strategy>
+		</scheduler> -->
+		<flow-ref doc:name="main-unitsAvailability:\units-availability-sync" doc:id="b7abc764-bdd2-43a5-a0de-fb11aa6ad598" name="main-unitsAvailability:\units-availability-sync-sub-flow"/>
+	</flow>
+	<flow name="api-proc-btr-etlFlow:\tenant-roommate-application-sync-flow" doc:id="02096f42-0efa-47b8-84d8-44a1eef75b84" >
+		<http:listener doc:name="Listener" doc:id="d091eb72-6a23-446e-ac10-f4fba34fe637" config-ref="HTTP_Listener_config" path="/api/tenants"/>
+		<!-- <scheduler doc:name="Scheduler" doc:id="c6870b3a-65dd-44e1-a9c9-f3963d66bff2" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="20" timeUnit="MINUTES"/>
+				<cron expression="${cron-expression.tenants}" timeZone="UTC" />
+			</scheduling-strategy>
+		</scheduler> -->
+		<json-logger:logger doc:name="Logger" doc:id="822a5306-3d14-4f33-9e17-3cf7e82ae61e" message='#["test"]'>
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: "test"
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<flow-ref doc:name="main-tenantRoommateAppllication:\tenant-roommate-appllication-sync-sub-flow" doc:id="dda755cf-7ef2-4ad1-88cc-150eb509343e" name="get-tenants-from-ftp-sub-flow"/>
+	</flow>
+	<flow name="api-proc-btr-etlFlow" doc:id="c14be4eb-54f5-4771-9a1d-dbeb972f574e" >
+		<http:listener doc:name="Listener" doc:id="cc6e3867-a41c-4922-9b71-0d8a24524bcc" config-ref="HTTP_Listener_config" path="/api/file_read"/>
+		<sftp:read doc:name="Read Tenants file" doc:id="8c164553-fd77-483f-bfd4-10d736f2fc2e" config-ref="sftp" path="#[p('sftp.tenant.directory.path') ++ '/ResTenant_020920202004_dup.csv']" outputMimeType="text/plain" outputEncoding="UTF-16"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c5062fbb-be62-4a81-81a7-af6d2680b316" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="ccfb0f56-976e-4f17-8b15-23ceaecc8dd5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+var csvString = trim((payload as String) replace('ResTenants') with(''))
+---
+read(csvString,"application/csv",{"header":true})]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="9bb0ebc3-1913-4d28-ab57-6c27ba787355" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (item,index) -> {
+	Ext_Ref_Tenant_Id: item.Ext_Ref_Tenant_Id,
+	First_Name: item.First_Name,
+	Last_Name: item.Last_Name,
+	Middle_Name: item.Middle_Name,
+	Salutation: item.Salutation,
+	Address1 : item.Address1,
+	Address2: item.Address2,
+	City : item.City,
+	State : item.State,
+	Zipcode : item.Zipcode,
+	Email : item.Email,
+	Phone_Number_4 : item.Phone_Number_4,
+	General_Info_11:item."General_Info_11",
+	Status:item.Status	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="16125999-75aa-4d92-9fc9-ceadfc40eab8" message="#[payload]"/>
+	
+</flow>
+	<!-- <flow name="api-proc-btr-etlFlow" doc:id="fcf784ad-d967-4727-a3a4-ea9fd7c7f8e1" >
+		<http:listener doc:name="Listener" doc:id="58867d39-74ec-44de-b6c6-08f766c8a496" config-ref="HTTP_Listener_config" path="/api/test"/>
+		<ee:transform doc:name="Transform Message" doc:id="018ec808-f795-4a93-9102-9f01fcbcf614" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+-&#45;&#45;
+[{
+  "productId": "01tN0000007tXMNIA2",
+  "dateAvailable": null,
+  "offerDescription": "",
+  "underOffer": false,
+  "isAvailable": false
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<anypoint-mq:publish doc:name="Publish" doc:id="65f1fa33-3f73-4c85-af6f-f3ea662a6d47" config-ref="Anypoint_MQ_Config" destination="${unit.availability.publish.q}" target="pubTest"/>
+		<logger level="INFO" doc:name="Logger" doc:id="636b1da1-0faa-4431-9cab-a09b019c75cb" message="#[vars.pubTest]"/>
+	</flow> -->
+	<!-- <flow name="template-api-console">
+		<http:listener config-ref="HTTP_Listener_config" path="/console/*">
+			<http:response statusCode="#[vars.httpStatus default 200]">
+				<http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+			</http:response>
+			<http:error-response statusCode="#[vars.httpStatus default 500]">
+				<http:body><![CDATA[#[payload]]]></http:body>
+				<http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+			</http:error-response>
+		</http:listener>
+		
+		<apikit:console doc:name="APIkit Console" doc:id="adaa5b6d-9d25-48da-a53a-65509f812dc1" config-ref="template-api-config"/>
+		<error-handler ref="apikit-error-handler" />
+	</flow> -->
+
+</mule>

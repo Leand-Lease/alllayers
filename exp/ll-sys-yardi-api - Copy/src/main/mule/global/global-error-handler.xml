@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+
+	<error-handler name="apikit-error-handler" doc:id="ce6ab585-b91f-4baa-a270-60e55f4ebd7c">
+		<on-error-propagate type="APIKIT:BAD_REQUEST"
+			enableNotifications="true" logException="true">
+			<set-variable value="400" doc:name="Set httpStatus" doc:id="d8addb9a-f4e5-4b25-9c22-80dac41023fc" variableName="httpStatus" />
+			<flow-ref doc:name="error-handler:genaral" doc:id="f75b504b-47b6-4cea-920e-c4a49627610a" name="error-handler:response"/>
+            </on-error-propagate>
+		<on-error-propagate type="APIKIT:NOT_FOUND">
+			<set-variable value="404" doc:name="Set httpStatus" doc:id="9ba74856-a7c1-4fa3-ad0c-6bcb00e5fec7" variableName="httpStatus" />
+			<flow-ref doc:name="error-handler:genaral" doc:id="a2393aa3-01a4-406e-8744-e84ef2c04eed" name="error-handler:response" />
+            </on-error-propagate>
+        <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+			<set-variable value="405" doc:name="Set httpStatus" doc:id="5374d980-7079-4752-ac75-2f8feb5a6153" variableName="httpStatus" />
+			<flow-ref doc:name="error-handler:genaral" doc:id="73dcf174-f52d-403c-a04d-1c6c0ba08257" name="error-handler:response" />
+            </on-error-propagate>
+        <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+			<set-variable value="406" doc:name="Set httpStatus" doc:id="94b43c8f-d71d-4714-aa0a-5003f9446010" variableName="httpStatus" />
+			<flow-ref doc:name="error-handler:genaral" doc:id="a5d28d38-bb39-4e86-9a9e-d3787f7cd6b3" name="error-handler:response" />
+            </on-error-propagate>
+        <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+			<set-variable value="415" doc:name="Set httpStatus" doc:id="522319b0-9450-465b-89cc-d1a3911775fb" variableName="httpStatus" />
+			<flow-ref doc:name="error-handler:genaral" doc:id="90f8c1a8-6103-4bd0-b55c-5a0bc1559b05" name="error-handler:response" />
+            </on-error-propagate>
+        <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+			<set-variable value="501" doc:name="Set httpStatus" doc:id="da5ba81a-e35f-479e-8168-88d979862a87" variableName="httpStatus" />
+			<flow-ref doc:name="error-handler:genaral" doc:id="e0e303f8-8f5b-4ecf-97fd-7152cbd7b8e8" name="error-handler:response" />
+            </on-error-propagate>
+		<on-error-propagate doc:name="On Error Propagate" doc:id="db50fcfc-c7a2-42f3-adf7-a88ef51678c7" enableNotifications="true" logException="true">
+			<set-variable value="500" doc:name="Set httpStatus" doc:id="746511ec-553c-4e5f-8c53-52d1dd61037e" variableName="httpStatus" />
+			<flow-ref doc:name="error-handler:genaral" doc:id="19373b5d-ca9a-4d83-ad62-96fda385f86a" name="error-handler:response" />
+		</on-error-propagate>
+    </error-handler>
+    <sub-flow name="error-handler:response" doc:id="4d211dd6-bd8b-4008-8973-22bc9d2a14f8">
+		<ee:transform doc:name="Build Error Response" doc:id="6e3d017e-e5d1-4d96-8111-1976dce1743b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json skipNullOn="everywhere"
+---
+{
+	Success: false,
+    CorrelationId: correlationId,
+    ErrorCode: error.errorType.identifier,
+    ErrorMessage: error.description
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<error-handler name="sync-error-handler" doc:id="8d52bed2-2e8b-4374-8d36-f720a6cc461f" >
+		<!-- <on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4324eed5-ff80-4f33-a05b-7eafa3561965" type="RESPONSE:NOT_FOUND">
+			<set-variable value="404" doc:name="Set httpStatus" doc:id="a29709ab-86e3-4060-840c-1827869447f4" variableName="httpStatus" />
+			<flow-ref doc:name="Flow Reference" doc:id="37737abe-09a0-4f4d-a865-a68c17f1f585" name="error-handler:response" />
+		</on-error-continue>  -->
+		
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2e999b17-5698-448c-9cfe-1c4da1787e88" type="HTTP:CONNECTIVITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, STREAM_MAXIMUM_SIZE_EXCEEDED">
+			<ee:transform doc:name="Set httpStatus" doc:id="e8173dba-ba3d-4fd9-a5cf-01ae340c6356">
+				<ee:message>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0
+output application/java
+---
+if(error.muleMessage.attributes.statusCode != null ) 
+	error.muleMessage.attributes.statusCode 
+else 
+	500]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="ef943583-70e6-49fd-8e41-63d418bed51a" name="error-handler:response" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="41400856-270a-4fa4-b824-ed23f1073353" >
+			<ee:transform doc:name="Set httpStatus" doc:id="bba701ae-fb9b-440e-aa5c-f5e78014db8d">
+				<ee:message>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus"><![CDATA[%dw 2.0
+output application/java
+---
+if(error.muleMessage.attributes.statusCode != null ) 
+	error.muleMessage.attributes.statusCode 
+else 
+	500]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="84d5efd0-f91e-42d7-ad59-d6291557bf61" name="error-handler:response" />
+		</on-error-continue>
+	
+</error-handler>
+</mule>

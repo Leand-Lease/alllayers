@@ -1,0 +1,25 @@
+https:
+  port: "8082"
+  host: "0.0.0.0"
+  key:
+    alias: "lendlease"
+
+anypoint.api.id: "15991210"
+
+salesforce:
+  username: "msapi@lendlease.com.sit01"
+  token.endpoint: "https://test.salesforce.com/services/oauth2/token"
+  api.version: "47.0"
+  
+  
+
+json.logger.application:
+  version: 1.0.0-SNAPSHOT
+  name: sys-global-sfdc-api
+
+globalOrg:
+  listings.update.objectName: "PLM_ListingStatus__c"
+
+validation.messages:
+  product.id: "Invalid Product"
+    

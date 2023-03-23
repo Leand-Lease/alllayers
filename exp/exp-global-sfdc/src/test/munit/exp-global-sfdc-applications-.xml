@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="main-applications-suite.xml" />
+	<munit:test name="main-applications:\post-application-test" doc:id="b0cec317-ca30-46d0-b7f9-438d0985f262" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock sys-yardi api" doc:id="6a6c5194-d660-42eb-ab8b-992802616ccb" processor="sys-yardi:create-lead">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="90ff2b88-e89a-48fa-b4cb-2f03b3ac4a7e" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://examples/application/post-application-response.json')]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit:set-event doc:name="Set Input" doc:id="7b8b2528-e2c1-474f-acc7-36904076f93e" >
+				<munit:payload value="#[output application/json --- readUrl('classpath://examples/application/post-application-request.json')]" encoding="UTF-8" mediaType="application/json" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to main-applications:\post-application" doc:id="a87b246a-7e62-4683-b629-30267d029316" name="main-applications:\post-application-sub-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="0909c888-e801-43f8-8e06-3f2628fed9e4" actual="#[payload]" expected='#["success": true]' message="Lead created"/>
+			<!-- <munit-tools:assert doc:name="Assert payload" doc:id="86a0539f-2031-432c-bcae-9e66b8e36149" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import mainapplicationspostapplicationtest::assert_expression_payload
+-&#45;&#45;
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert> -->
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

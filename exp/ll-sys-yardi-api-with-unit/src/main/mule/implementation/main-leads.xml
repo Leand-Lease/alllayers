@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<sub-flow name="main-leads:\post-lead" doc:id="baf1f36f-e3b0-432e-95af-275e8e78bec1" >
+		<logger level="INFO" doc:name="Start Logger" doc:id="9833c57e-2322-4088-a6a0-30075f59d0f2" message='#["correlationId:" ++ correlationId ++ " - start processing create lead"]' />
+		<logger level="INFO" doc:name="Start Logger1" doc:id="5296431e-bcf9-4ec8-81fd-bc26cce02739" message="#[{}]" />
+		<logger level="DEBUG" doc:name="Start Debug Logger" doc:id="e5cd2a07-08e7-4016-9af8-cc6f712141de" message='#["correlationId:" ++ correlationId ++ " - start processing request to create lead"]' />
+		<flow-ref doc:name="Flow Reference" doc:id="9e9e2c1c-0250-4f9f-800f-e348eb090f02" name="post-lead-validate-request"/>
+		<logger level="TRACE" doc:name="End Debug Logger" doc:id="6fd9b4ca-f26d-4bfc-a18d-3c6c93941f94" message='#["correlationId:" ++ correlationId ++ " - finish processing request to create lead"]' category='"End"' />
+		<logger level="INFO" doc:name="End Logger" doc:id="522a7901-116a-462e-83b9-267327778de9" message='#["correlationId:" ++ correlationId ++ " - finish processing create Lead"]' />
+		<logger level="INFO" doc:name="End Logger1" doc:id="7d55addd-cdd5-4d2e-93dd-45b297aa5f48" message="#[{}]" />		
+	</sub-flow>
+</mule>

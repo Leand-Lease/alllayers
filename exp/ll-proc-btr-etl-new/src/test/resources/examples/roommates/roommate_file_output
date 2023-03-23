@@ -1,0 +1,5 @@
+ResRoommates
+Tenant_Code,Ext_Ref_Tenant_Id,Roommate_PhoneNumber1,Roommate_PhoneNumber2,Roommate_PhoneNumber3,Roommate_PhoneNumber4,Roommate_UserDefined0,Roommate_UserDefined1,Roommate_UserDefined2,Roommate_UserDefined3,Roommate_UserDefined4,Roommate_UserDefined5,Roommate_UserDefined6,Roommate_UserDefined7,Roommate_UserDefined8,Roommate_UserDefined9,Roommate_SSN,Property_Code,Ref_Property_ID,Unit_Code,Ref_Unit_Id,Ext_Ref_Roommate_Id,Roommate_Salutation,Roommate_LastName,Roommate_FirstName,Roommate_Email,Roommate_ALTEmail,Roommate_MoveIn,Roommate_MoveOut,Occupant_Type,Roommate_Occupant,Roommate_ACHOptOut,Roommate_Relationship,Roommate_Notes,Roommate_Code
+"t0000002",,,,,,,,,,,,,,,,,"rc_test",,"RCUNIT02",,,,"McCartney","Paul","claireluoto+paulmccartney@gmail.com",,,,0,0,0,"Roommate",,"r0000001"
+"t0000002",,,,,,,,,,,,,,,,,"rc_test",,"RCUNIT02",,,"Ms.","Ono","Yoko",,,,,2,-1,0,"Daughter",,"r0000002"
+"t0000003",,,,,"07737864321",,,,,,,,,,,,"rc_test",,"RCUNIT10",,,"Mrs.","Beckham","Victoria","claireluoto+victoriabeckham@gmail.com",,01/08/2020,,1,0,0,"Spouse",,"r0000003"

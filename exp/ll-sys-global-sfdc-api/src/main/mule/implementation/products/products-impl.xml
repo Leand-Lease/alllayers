@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="patch-product-by-id-impl" doc:id="db8acf99-a228-47e4-adde-7fc27827e06c">
+		<ee:transform doc:name="Transform Message"
+			doc:id="e5a7bf05-c1a6-42cb-8085-d1c6515fd281">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+import * from modules::functions
+---
+[
+  {
+  Id: vars.productId,
+  (PLM_PublisherID__c: payload.phProductId) if payload.phProductId != null,
+  (CAStockId__c: payload.caStockId) if payload.caStockId != null,
+  // (Dwelling_Status__c: payload.status) if payload.status != null, need to be reviewed as when PLM_ListingPublishStatus__c is not Published, what should be the value of Dwelling_Status__c 
+  (PLM_MarketingHeadline__c: payload.headline) if payload.headline != null,
+  (PLM_MarketingDescription__c: payload.description) if payload.description != null,
+  // (PLM_SYS_ShowAddress__c: transformFromBooloanToSFDC(payload.displayAddress)) if payload.displayAddress != null,
+  (List_Price__c: payload.price) if payload.price != null,
+  (PLM_PriceTo__c: payload.priceLimit) if payload.priceLimit != null,
+  (PLM_PriceText__c: payload.priceText) if payload.priceText != null,
+  (PLM_PriceDisplay__c: payload.displayPrice) if payload.displayPrice != null,
+  (Sold_Date__c: payload.soldDate as Date) if payload.soldDate != null,
+  (PLM_SoldPrice__c: payload.soldPrice) if payload.soldPrice != null,
+  (PLM_ShowSoldPrice__c: payload.showSoldPrice) if payload.showSoldPrice != null,
+  // Project__r.PLM_ListingAgentID__c:payload.firstAgentId,
+  // Project__r.PLM_YearBuilt__c:payload.builtYear,
+  (No_of_Parking_Spaces__c: payload.carportSpaces) if payload.carportSpaces != null,
+  (Garage_Area__c: payload.garageSpaces) if payload.garageSpaces != null,
+  (PLM_NoOfOffStreetParking__c: payload.offStreetSpaces) if payload.offStreetSpaces != null,
+  (No_of_Bedrooms__c: payload.bedrooms) if payload.bedrooms != null,
+  (PLM_HalfBedroom__c: payload.halfBedrooms) if payload.halfBedrooms != null,
+  (No_of_Bathrooms__c: payload.bathrooms) if payload.bathrooms != null,
+  (PLM_HalfBathroom__c: payload.halfBathroom) if payload.halfBathroom != null,
+  (PLM_NoOfEnsuites__c: payload.ensuites) if payload.ensuites != null,
+  (Land_Area__c: payload.landArea) if payload.landArea != null,
+  (Internal_Area__c: payload.floorArea) if payload.floorArea != null,
+  (Road_Frontage__c: payload.landFrontage) if payload.landFrontage != null,
+  //(PLM_SYS_EnergyEfficiencyRating__c: payload.energyEfficiencyRating) if payload.energyEfficiencyRating != null,
+  (No_of_Levels__c: payload.numberOfFloors) if payload.numberOfFloors != null,
+  // Project__r.PLM_NewConstruction__c:payload.newConstruction,
+  //(PLM_SYS_PropertyURL__c: payload.propertyUrl) if payload.propertyUrl != null,
+  //(PLM_SYS_VirtualTourURL__c: payload.virtualTourUrl) if payload.virtualTourUrl != null,
+  //(PLM_SYS_ExternalLink1__c : payload.extLink1) if payload.extLink1 != null,
+  //(PLM_SYS_ExternalLink2__c: payload.extLink2) if payload.extLink2 != null,
+  //(PLM_SYS_VideoURL__c : payload.videoUrl) if payload.videoUrl != null,
+  //(PLM_SYS_AuctionPlace__c : payload.auctionPlace) if payload.auctionPlace != null,
+  //(PLM_SYS_AuctionDate__c : payload.auctionDate) if payload.auctionDate != null,
+  //(PLM_SYS_AuctionTime__c : payload.auctionTime) if payload.auctionTime != null,
+  //(PLM_SYS_UpcomingAuction__c: transformFromBooloanToSFDC(payload.forthcomingAuction)) if payload.forthcomingAuction != null,
+  //(PLM_SYS_SaleAuthority__c : payload.authority) if payload.authority != null,
+  //(PLM_SYS_MethodOfSale__c : payload.methodOfSale) if payload.methodOfSale != null,
+  (Name:  payload.address.unitNumber) if payload.address.unitNumber != null,
+  (Street_Number__c: payload.address.streetNumber) if payload.address.streetNumber != null,
+  (Street_Name__c: payload.address.streetName) if payload.externalId != null,
+  (Property_Suburb__c: payload.address.suburb) if payload.address.suburb != null,
+  (Postcode__c: payload.address.postcode) if payload.address.postcode != null,
+  (State__c: payload.address.state) if payload.address.state != null,
+  (Country__c: payload.address.country) if payload.address.country != null,
+  (PLM_AddressGeolocation__Latitude__s: payload.address.latitude) if payload.address.latitude != null,
+  (PLM_AddressGeolocation__Longitude__s: payload.address.longitude) if payload.address.longitude != null,
+  (PLM_SYS_ListingLastSyncDateTime__c : payload.lastSyncTime as DateTime) if payload.lastSyncTime != null,
+  (PLM_SYS_ListingLastSyncStatus__c: payload.lastSyncStatus) if payload.lastSyncStatus != null,
+  PLM_SYS_ListingLastSyncMessage__c: getSyncMessage(payload.lastSyncMessage)
+  }
+]
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:upsert doc:name="Upsert Product"
+			doc:id="c815c28e-7013-47c9-a659-cf30128e251d" config-ref="Salesforce_Config"
+			externalIdFieldName="Id" type="Product2">
+		</salesforce:upsert>
+		<logger level="TRACE" doc:name="SFDC Response" doc:id="39af2e2e-668f-4623-87ae-56881d758fc8" message='#["Request to patch product by productId:" ++ (vars.productId default "")]' category='"AFTER_REQUEST"' />
+		<validation:is-true doc:name="Updates successfully?"
+			doc:id="7b52698f-d67f-4ada-8455-282d43e10e81" expression="#[payload[0].success == true]"
+			message='#["Failed to update the productId: " ++ vars.productId]' />
+		<ee:transform doc:name="Transform Message"
+			doc:id="24ec9076-835b-4d3c-bc66-c4addaeed153">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var status = !(payload.success contains (false))
+---
+{
+	correlationId: correlationId,
+	productId: vars.productId,
+	status: status,
+	data: payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="get-product-by-id-impl" doc:id="fb006886-28f6-4928-bafd-98cdfcf24874">
+		<salesforce:query doc:name="Query Product Details"
+			doc:id="59fe4269-d9c7-470a-a5be-b7954c61b605" config-ref="Salesforce_Config"
+			targetValue="#[output application/json --- payload]">
+			<salesforce:salesforce-query>SELECT Id,
+	PLM_PublisherID__c,
+	Project__r.Id,
+	Project__r.PLM_PublisherID__c,
+	CAStockId__c,
+	PLM_ListingPublishStatus__c,
+	Dwelling_Status__c,
+	RecordType.Name,
+	PLM_SYS_PropertyType__c,
+	PLM_MarketingHeadline__c,
+	PLM_MarketingDescription__c,
+	Name,
+	Street_Number__c,
+	Street_Name__c,
+	Property_Suburb__c,
+	Postcode__c,
+	State__c,
+	PLM_Region__c,
+	Country__c,
+	PLM_SYS_ShowAddress__c,
+	List_Price__c, 
+	PLM_PriceTo__c,
+	PLM_PriceText__c,
+	PLM_PriceDisplay__c,
+	Sold_Date__c,
+	Date_Available__c,
+    In_Offer__c,
+	PLM_SYS_PricePeriod__c,
+	PLM_SYS_BondDeposit__c,
+	PLM_SoldPrice__c,
+	PLM_ShowSoldPrice__c,
+	Project__r.PLM_ListingAgentID__c,
+	Project__r.PLM_YearBuilt__c,
+	No_of_Parking_Spaces__c,
+	Garage_Area__c,
+	PLM_NoOfOffStreetParking__c,
+	No_of_Bedrooms__c,
+	PLM_HalfBedroom__c,
+	No_of_Bathrooms__c,
+	PLM_HalfBathroom__c,
+	PLM_NoOfEnsuites__c,
+	Land_Area__c,
+	Internal_Area__c,
+	Road_Frontage__c,
+	PLM_SYS_EnergyEfficiencyRating__c,
+	PLM_EntranceFloor__c,
+	ProductCode,
+	No_of_Levels__c,
+	Project__r.PLM_NewConstruction__c,
+	PLM_SYS_PropertyURL__c,
+	PLM_SYS_VirtualTourURL__c,
+	PLM_SYS_ExternalLink1__c,
+	PLM_SYS_ExternalLink2__c,
+	PLM_SYS_VideoURL__c,
+	PLM_SYS_AuctionPlace__c,
+	PLM_SYS_AuctionDate__c,
+	PLM_SYS_AuctionTime__c,
+	PLM_SYS_UpcomingAuction__c,
+	Project__r.Name,
+	PLM_SYS_SaleAuthority__c,
+	PLM_SYS_MethodOfSale__c ,
+	PLM_SYS_ListingLastSyncDateTime__c,
+	PLM_SYS_ListingLastSyncStatus__c,
+	Project__r.PLM_InternalAreaUoM__c,
+	Project__r.PLM_LandAreaUoM__c,
+	PLM_AddressGeolocation__Latitude__s,
+	PLM_AddressGeolocation__Longitude__s
+FROM Product2
+WHERE Id = ':productId'</salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"productId" : vars.productId
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<logger level="TRACE" doc:name="SFDC Response" doc:id="ead7eddf-8230-4ae8-9167-3f9b9f96bd09" message='#["Request to get product details for productId:" ++ (vars.productId default "")]' category='"AFTER_REQUEST"' />
+		<choice doc:name="Choice" doc:id="09a7f5fa-52ba-4d20-819f-9f40da5062ac">
+			<when expression="#[sizeOf(payload) &lt; 1]">
+				<raise-error doc:name="Raise error"
+					doc:id="5b879c0a-da4a-46e0-a98d-5a649fb86ba5" description="No product found"
+					type="RESPONSE:NOT_FOUND" />
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Product CDM"
+					doc:id="7efed101-0a09-46f4-b99b-a8e74f542bf2">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import * from modules::functions
+var metricSystem= "Square Metres"
+fun setStatus(listingPublishStatus, dwellingStatus) =
+	if(listingPublishStatus == "Published")
+		dwellingStatus
+	else
+		listingPublishStatus
+---
+{
+	productId: payload.Id,
+	phProductId: payload.PLM_PublisherID__c,
+	projectId: payload.Project__r.Id,
+	phProjectId: payload.Project__r.PLM_PublisherID__c,
+	caStockId: payload.CAStockID__c,
+	status: setStatus(payload.PLM_ListingPublishStatus__c ,payload.Dwelling_Status__c),
+	"type": payload.RecordType.Name,
+	propertyType: payload.PLM_SYS_PropertyType__c,
+	headline: payload.PLM_MarketingHeadline__c,
+	description: payload.PLM_MarketingDescription__c,
+
+	address: {
+		unitNumber: payload.Name,
+		streetNumber: payload.Street_Number__c,
+		streetName: payload.Street_Name__c,
+		suburb: payload.Property_Suburb__c,
+		postcode: payload.Postcode__c,
+		state: payload.State__c,
+		region: payload.PLM_Region__c,
+		country: payload.Country__c,
+		latitude: payload.PLM_AddressGeolocation__Latitude__s,
+		longitude: payload.PLM_AddressGeolocation__Longitude__s
+	},
+	   
+	(displayAddress: transformSFDCtoBoolean(payload.PLM_SYS_ShowAddress__c)) if payload.PLM_SYS_ShowAddress__c != null,
+	(price: payload.List_Price__c as Number) if payload.List_Price__c != null,
+	(priceLimit: payload.PLM_PriceTo__c as Number) if payload.PLM_PriceTo__c != null,
+	priceText: payload.PLM_PriceText__c,
+	displayPrice: payload.PLM_PriceDisplay__c,
+	soldDate: payload.Sold_Date__c,
+	(dateAvailable: payload.Date_Available__c as Date) if payload.Date_Available__c != null ,
+	(underOffer: payload.In_Offer__c as Boolean) if payload.In_Offer__c != null,
+	pricePeriod: payload.PLM_SYS_PricePeriod__c,
+	(bondDeposit: payload.PLM_SYS_BondDeposit__c as Number) if payload.PLM_SYS_BondDeposit__c != null,
+	(soldPrice: payload.PLM_SoldPrice__c as Number) if payload.PLM_SoldPrice__c != null,
+	(showSoldPrice: payload.PLM_ShowSoldPrice__c as Boolean) if payload.PLM_ShowSoldPrice__c != null,
+	(firstAgentId: payload.Project__r.PLM_ListingAgentID__c as Number) if payload.Project__r.PLM_ListingAgentID__c != null,
+	builtYear: payload.Project__r.PLM_YearBuilt__c,
+	(carportSpaces: payload.No_of_Parking_Spaces__c as Number) if payload.No_of_Parking_Spaces__c != null,
+	(garageSpaces: payload.Garage_Area__c as Number) if payload.Garage_Area__c != null,
+	(offStreetSpaces: payload.PLM_NoOfOffStreetParking__c as Number) if payload.PLM_NoOfOffStreetParking__c != null,
+	(bedrooms: payload.No_of_Bedrooms__c as Number) if payload.No_of_Bedrooms__c != null,
+	(halfBedrooms: payload.PLM_HalfBedroom__c as Boolean) if payload.PLM_HalfBedroom__c != null,
+	(bathrooms: payload.No_of_Bathrooms__c as Number) if payload.No_of_Bathrooms__c != null,
+	(halfBathroom: payload.PLM_HalfBathroom__c as Boolean) if payload.PLM_HalfBathroom__c != null,
+	(ensuites: payload.PLM_NoOfEnsuites__c as Number) if payload.PLM_NoOfEnsuites__c != null,
+	(landArea: payload.Land_Area__c as Number) if payload.Land_Area__c != null,
+	landAreaMetric: payload.Project__r.PLM_LandAreaUoM__c,
+	(floorArea: payload.Internal_Area__c as Number) if payload.Internal_Area__c != null,
+	floorAreaMetric: payload.Project__r.PLM_InternalAreaUoM__c,
+	(landFrontage: payload.Road_Frontage__c as Number) if payload.Road_Frontage__c != null,
+	landFrontageMetric: metricSystem,
+	energyEfficiencyRating: payload.PLM_SYS_EnergyEfficiencyRating__c,
+	entranceFloor: payload.PLM_EntranceFloor__c,
+	productCode: payload.ProductCode,
+	(numberOfFloors: payload.No_of_Levels__c as Number) if payload.No_of_Levels__c != null,
+	(newConstruction: payload.Project__r.PLM_NewConstruction__c as Boolean) if payload.Project__r.PLM_NewConstruction__c != null,
+	propertyUrl: payload.PLM_SYS_PropertyURL__c,
+	virtualTourUrl: payload.PLM_SYS_VirtualTourURL__c,
+	extLink1: payload.PLM_SYS_ExternalLink1__c,
+	extLink2: payload.PLM_SYS_ExternalLink2__c,
+	videoUrl: payload.PLM_SYS_VideoURL__c,
+	auctionPlace: payload.PLM_SYS_AuctionPlace__c,
+	auctionDate: payload.PLM_SYS_AuctionDate__c,
+	auctionTime: payload.PLM_SYS_AuctionTime__c,
+	(forthcomingAuction: transformSFDCtoBoolean(payload.PLM_SYS_UpcomingAuction__c)) if payload.PLM_SYS_UpcomingAuction__c != null,
+	developmentName: payload.Project__r.Name,
+	authority: payload.PLM_SYS_SaleAuthority__c,
+	methodOfSale: payload.PLM_SYS_MethodOfSale__c
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</sub-flow>
+
+</mule>

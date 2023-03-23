@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:sys-yardi="http://www.mulesoft.org/schema/mule/sys-yardi"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/sys-yardi http://www.mulesoft.org/schema/mule/sys-yardi/current/mule-sys-yardi.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+
+<!-- 	Global and secure properties -->
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="1699ef9f-c667-4398-ac60-6cb065a5609a" file="secure-properties/secure-${mule.env}.yaml" key="${enc.key}" /> 
+	<configuration-properties doc:name="Configuration properties" doc:id="d7168ee8-9ed7-492d-85fe-0b743dac975a" file="properties/${mule.env}.yaml" />
+
+<!-- 	HTTP Config and API router -->
+	<http:listener-config name="exp-global-sfdc-httpListenerConfig">
+        <http:listener-connection host="${https.host}" port="${https.port}" />
+    </http:listener-config>
+    <apikit:config name="exp-global-sfdc-config" api="api\exp-global-sfdc.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	
+<!-- 	Salesforce Connector Configuration -->
+	<!-- <salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="5f8b8829-8fe7-49ef-8da5-31ee4bb5ef75" >
+		<salesforce:cached-oauth-user-pass-connection consumerKey="${salesforce.consumer.key}" consumerSecret="${salesforce.consumer.secret}" username="${salesforce.username}" password="${salesforce.password}" securityToken="${salesforce.security.token}" tokenEndpoint="${salesforce.token.endpoint}" disableSessionInvalidation="true" apiVersion="${salesforce.api.version}">
+			<reconnection >
+				<reconnect frequency="5000" count="10" />
+			</reconnection>
+		</salesforce:cached-oauth-user-pass-connection>
+	</salesforce:sfdc-config> 
+	<anypoint-mq:config name="Anypoint_MQ_Config" doc:name="Anypoint MQ Config" doc:id="b8b02a3a-9c73-48a3-a5d4-04431c196d89" >
+		<anypoint-mq:connection url="${anypoint.mq.url}" clientId="${secure::anypoint.mq.client.id}" clientSecret="${secure::anypoint.mq.client.secret}" />
+	</anypoint-mq:config> --> 
+	<global-property doc:name="Global Property" doc:id="834007c8-8485-4870-a009-a201dcd8cbcd" name="mule.env" value="dev" />
+	<global-property doc:name="Global Property" doc:id="1d3de3f2-791f-435f-bd53-b6499930ef96" name="enc.key" value="1234567890123456" />
+	<configuration doc:name="Configuration" doc:id="e1cbce14-cab6-4bf6-8352-5d7cc84b8979" defaultErrorHandler-ref="sync-error-handler" />
+	
+	<!-- sys-yardi api config -->
+	<sys-yardi:config name="Sys_yardi_Config" doc:name="Sys-yardi Config" doc:id="bf7952e1-dd53-4064-b703-98e1d8672685" property_host="${sys-yardi.host}" property_port="${sys-yardi.port}" property_protocol="HTTPS" property_basePath="/${sys-yardi.basePath}" property_responseTimeout="90000"/>
+	<!-- <api-gateway:autodiscovery apiId="${anypoint.api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="a3a95028-0989-4b94-84bb-5fa5c9be4faa" flowRef="exp-global-sfdc-main" /> -->
+	
+</mule>

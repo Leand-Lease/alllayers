@@ -1,0 +1,19 @@
+#%RAML 1.0 DataType
+
+properties:
+  sfId?: string
+  phId?: string
+  collateralAssociation: !include ../../exchange_modules/a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d/cdm-library/2.2.30/types/common/collateral-association.raml
+  mediaType:
+    required: false
+    enum:
+      - Brochure
+      - Floorplan
+      - Photo
+  order?: integer
+  collateralId?: string
+  url?: string
+  projectId?: string
+  productId?: string
+  isDeleted?: boolean
+  description?: string

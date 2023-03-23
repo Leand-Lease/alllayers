@@ -1,0 +1,58 @@
+https:
+  port: "8083"
+  host: "0.0.0.0"
+  key:
+    alias: "lendlease"
+    
+json.logger.application:
+  version: 1.1.0
+  name: ll-template-project
+
+anypoint.mq:
+  url: "https://mq-us-west-2.anypoint.mulesoft.com/api/v1"
+
+unit.publish.q: "ll.yardi.unit.upsert.q"      
+unit.publish.poison.q: "ll.yardi.unit.upsert.poison.q"
+unit.availability.publish.q: "ll.unit.availability.update.q"
+unit.availability.publish.poison.q: "ll.unit.availability.update.poison.q"
+                  
+sftp:
+  host: "ftp.lendlease.com"
+  port: "22"
+  username: "sftpBtRTest"
+  directory.path: "/upload/test/unit_yexport"
+  move.file.target.path: "/upload/archive/unit_yexport"
+  tenant.directory.path: "/upload/archive/restenants"
+  move.file.restenant.path: "/upload/archive/restenants"
+  roommate.directory.path: "/upload/archive/resroommates"
+  move.file.resroommate.path: "/upload/archive/resroommates"
+  prospect.directory.path: "/upload/archive/resprospects"
+  move.file.resprospect.path: "/upload/archive/resprospects"
+  lease.directory.path: "/upload/test/moveoutreason"
+  move.file.moveoutreason.path: "/upload/archive/moveoutreason"
+  appinfo.directory.path: "/upload/test/appinfo"
+  move.file.appinfo.path: "/upload/archive/appinfo"
+  
+sys-global-sfdc:
+  host: "ll-sys-global-sfdc-st.us-w2.cloudhub.io"
+  port: "443"
+  basePath: "api" 
+  
+sys-yardi:
+  host: "ll-sys-yardi-st.us-w2.cloudhub.io"
+  port: "443"
+  basePath: "api"      
+  
+cron-expression:
+  units: "0 0 6 * * ?"
+  unit.availability: "0 */5 * ? * *"  
+  tenants: "0 */15 * ? * *" 
+  
+salesforce:
+  username: "msapi@lendlease.com.imst"
+  token.endpoint: "https://test.salesforce.com/services/oauth2/token"
+  api.version: "47.0"
+  consumer.key: "3MVG9e2mBbZnmM6kAwiWpvN5lAeZd.Wm.dzruEHCyV4d09QfiIr6.nek1MkCzBQ4n0BGSJPtkxa5eAMmfbDfN"
+  consumer.secret: "218A6517F2520513577B3B74BD8621930F6323DA71B492D6FDE32618CADF1D03"
+  password: "Mule$ofT2020"
+  security.token: "pVV201BpNLYrko2bvS4Dz6niJ"  

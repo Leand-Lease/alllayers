@@ -1,0 +1,412 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="inspection-time-cdm" format="json">
+      <types:shape format="weave" example="api/examples/get-product-inspection-time-response.json"><![CDATA[%dw 2.0
+
+type inspection_time_cdm = Array<{|  sfId: String,   phId: String,   collateralId: String,   collateralAssociation: String,   date: String,   startTime: String,   endTime: String,   projectId: String,   productId: String,   markDeleteFlag: Boolean|}> {"example": "[{\\\"sfId\\\":\\\"123abc\\\",\\\"phId\\\":\\\"123\\\",\\\"collateralId\\\":\\\"123abc\\\",\\\"collateralAssociation\\\":\\\"product\\\",\\\"date\\\":\\\"2020-11-01\\\",\\\"startTime\\\":\\\"11:00:00\\\",\\\"endTime\\\":\\\"12:00:00\\\",\\\"projectId\\\":\\\"123\\\",\\\"productId\\\":\\\"456\\\",\\\"markDeleteFlag\\\":true}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="feature-cdm" format="json">
+      <types:shape format="weave" example="api/examples/get-product-features-response.json"><![CDATA[%dw 2.0
+
+type feature_cdm = Array<String> {"example": "[\\\"Balcony\\/Patio\\/Terrace\\\",\\\"Basement\\\",\\\"Bath\\\",\\\"Fireplace(s)\\\"]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="media-cdm" format="json">
+      <types:shape format="weave" example="api/examples/get-product-media-response.json"><![CDATA[%dw 2.0
+
+type media_cdm = {|
+  photos: Array<{|    sfId: String,     phId: String,     collateralId: String,     mediaType: String,     collateralAssociation: String,     order: Number {"typeId": "int"},     url: String,     projectId: String,     productId: String,     markDeleteFlag: Boolean  |}>, 
+  brochures: Array<{|    sfId: String,     phId: String,     collateralId: String,     mediaType: String,     collateralAssociation: String,     order: Number {"typeId": "int"},     url: String,     projectId: String,     productId: String,     markDeleteFlag: Boolean  |}>, 
+  floorplans: Array<{|    sfId: String,     phId: String,     collateralId: String,     mediaType: String,     collateralAssociation: String,     order: Number {"typeId": "int"},     url: String,     projectId: String,     productId: String,     markDeleteFlag: Boolean  |}>
+|} {"example": "{\\\"photos\\\":[{\\\"sfId\\\":\\\"124ghrt6x\\\",\\\"phId\\\":\\\"01tN0000006wYvxIAE\\\",\\\"collateralId\\\":\\\"124ghrt6x\\\",\\\"mediaType\\\":\\\"Photo\\\",\\\"collateralAssociation\\\":\\\"product\\\",\\\"order\\\":1,\\\"url\\\":\\\"file:\\/\\/\\/tmp\\/test.jpg\\\",\\\"projectId\\\":\\\"123\\\",\\\"productId\\\":\\\"234\\\",\\\"markDeleteFlag\\\":true}],\\\"brochures\\\":[{\\\"sfId\\\":\\\"124ghrt6x\\\",\\\"phId\\\":\\\"01tN0000006wYvxIAE\\\",\\\"collateralId\\\":\\\"124ghrt6x\\\",\\\"mediaType\\\":\\\"Brochure\\\",\\\"collateralAssociation\\\":\\\"product\\\",\\\"order\\\":1,\\\"url\\\":\\\"file:\\/\\/\\/tmp\\/test.jpg\\\",\\\"projectId\\\":\\\"123\\\",\\\"productId\\\":\\\"234\\\",\\\"markDeleteFlag\\\":true}],\\\"floorplans\\\":[{\\\"sfId\\\":\\\"124ghrt6x\\\",\\\"phId\\\":\\\"01tN0000006wYvxIAE\\\",\\\"collateralId\\\":\\\"124ghrt6x\\\",\\\"mediaType\\\":\\\"Floorplan\\\",\\\"collateralAssociation\\\":\\\"product\\\",\\\"order\\\":1,\\\"url\\\":\\\"file:\\/\\/\\/tmp\\/test.jpg\\\",\\\"projectId\\\":\\\"123\\\",\\\"productId\\\":\\\"234\\\",\\\"markDeleteFlag\\\":true}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="product-by-id-cdm" format="json">
+      <types:shape format="weave" example="api/examples/get-product-by-id-response.json"><![CDATA[%dw 2.0
+
+type product_by_id_cdm = {|
+  productId: String, 
+  phProductId: String, 
+  projectId: String, 
+  phProjectId: String, 
+  caStockId: String, 
+  status: String, 
+  "type": String, 
+  propertyType: String, 
+  headline: String, 
+  description: String, 
+  address: {|
+    unitNumber: String, 
+    streetNumber: String, 
+    streetName: String, 
+    suburb: String, 
+    postcode: String, 
+    state: String, 
+    country: String
+  |}, 
+  displayAddress: Boolean, 
+  price: Number {"typeId": "int"}, 
+  priceLimit: Number {"typeId": "int"}, 
+  priceText: String, 
+  displayPrice: String, 
+  soldDate: String, 
+  soldPrice: Number {"typeId": "int"}, 
+  showSoldPrice: Boolean, 
+  firstAgentId: Number {"typeId": "int"}, 
+  builtYear: String, 
+  carportSpaces: Number {"typeId": "int"}, 
+  garageSpaces: Number {"typeId": "int"}, 
+  offStreetSpaces: Number {"typeId": "int"}, 
+  bedrooms: Number {"typeId": "int"}, 
+  halfBedroom: Boolean, 
+  bathrooms: Number {"typeId": "int"}, 
+  halfBathroom: Boolean, 
+  ensuites: Number {"typeId": "int"}, 
+  landArea: Number {"typeId": "int"}, 
+  landAreaMetric: String, 
+  floorArea: Number {"typeId": "int"}, 
+  floorAreaMetric: String, 
+  landFrontage: Number {"typeId": "int"}, 
+  landFrontageMetric: String, 
+  energyEfficiencyRating: String, 
+  numberOfFloors: Number {"typeId": "int"}, 
+  newConstruction: Boolean, 
+  propertyUrl: String, 
+  virtualTourUrl: String, 
+  extLink1: String, 
+  extLink2: String, 
+  videoUrl: String, 
+  auctionPlace: String, 
+  auctionDate: String, 
+  auctionTime: String, 
+  forthcomingAuction: Boolean, 
+  developmentName: String, 
+  authority: String, 
+  methodOfSale: String
+|} {"example": "{\\\"productId\\\":\\\"124ghrt6x\\\",\\\"phProductId\\\":\\\"01tN0000006wYvxIAE\\\",\\\"projectId\\\":\\\"1234567\\\",\\\"phProjectId\\\":\\\"123abcd\\\",\\\"caStockId\\\":\\\"123abcd\\\",\\\"status\\\":\\\"Released\\\",\\\"type\\\":\\\"Residential\\\",\\\"propertyType\\\":\\\"Residential\\\",\\\"headline\\\":\\\"Healine\\\",\\\"description\\\":\\\"Description\\\",\\\"address\\\":{\\\"unitNumber\\\":\\\"Test2211\\\",\\\"streetNumber\\\":\\\"123\\\",\\\"streetName\\\":\\\"Street Name\\\",\\\"suburb\\\":\\\"Sub\\\",\\\"postcode\\\":\\\"2134\\\",\\\"state\\\":\\\"NSW\\\",\\\"country\\\":\\\"Australia\\\"},\\\"displayAddress\\\":true,\\\"price\\\":123,\\\"priceLimit\\\":2345,\\\"priceText\\\":\\\"hundred\\\",\\\"displayPrice\\\":\\\"dollar price\\\",\\\"soldDate\\\":\\\"\\\",\\\"soldPrice\\\":0,\\\"showSoldPrice\\\":false,\\\"firstAgentId\\\":123,\\\"builtYear\\\":\\\"2009\\\",\\\"carportSpaces\\\":0,\\\"garageSpaces\\\":0,\\\"offStreetSpaces\\\":2,\\\"bedrooms\\\":0,\\\"halfBedroom\\\":false,\\\"bathrooms\\\":0,\\\"halfBathroom\\\":false,\\\"ensuites\\\":0,\\\"landArea\\\":0,\\\"landAreaMetric\\\":\\\"Square Metres\\\",\\\"floorArea\\\":0,\\\"floorAreaMetric\\\":\\\"Square Metres\\\",\\\"landFrontage\\\":0,\\\"landFrontageMetric\\\":\\\"Square Metres\\\",\\\"energyEfficiencyRating\\\":\\\"\\\",\\\"numberOfFloors\\\":0,\\\"newConstruction\\\":true,\\\"propertyUrl\\\":\\\"\\\",\\\"virtualTourUrl\\\":\\\"\\\",\\\"extLink1\\\":\\\"\\\",\\\"extLink2\\\":\\\"\\\",\\\"videoUrl\\\":\\\"\\\",\\\"auctionPlace\\\":\\\"\\\",\\\"auctionDate\\\":\\\"2019-12-01\\\",\\\"auctionTime\\\":\\\"\\\",\\\"forthcomingAuction\\\":true,\\\"developmentName\\\":\\\"development name\\\",\\\"authority\\\":\\\"\\\",\\\"methodOfSale\\\":\\\"\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="get-product-media-response" format="json">
+      <types:shape format="weave" example="api/examples/get-product-media-response.json"><![CDATA[%dw 2.0
+
+type get_product_media_response = {|
+  photos: Array<{|    sfId: String,     phId: String,     collateralId: String,     mediaType: String,     collateralAssociation: String,     order: Number {"typeId": "int"},     url: String,     projectId: String,     productId: String,     markDeleteFlag: Boolean  |}>, 
+  brochures: Array<{|    sfId: String,     phId: String,     collateralId: String,     mediaType: String,     collateralAssociation: String,     order: Number {"typeId": "int"},     url: String,     projectId: String,     productId: String,     markDeleteFlag: Boolean  |}>, 
+  floorplans: Array<{|    sfId: String,     phId: String,     collateralId: String,     mediaType: String,     collateralAssociation: String,     order: Number {"typeId": "int"},     url: String,     projectId: String,     productId: String,     markDeleteFlag: Boolean  |}>
+|} {"example": "{\\\"photos\\\":[{\\\"sfId\\\":\\\"124ghrt6x\\\",\\\"phId\\\":\\\"01tN0000006wYvxIAE\\\",\\\"collateralId\\\":\\\"124ghrt6x\\\",\\\"mediaType\\\":\\\"Photo\\\",\\\"collateralAssociation\\\":\\\"product\\\",\\\"order\\\":1,\\\"url\\\":\\\"file:\\/\\/\\/tmp\\/test.jpg\\\",\\\"projectId\\\":\\\"123\\\",\\\"productId\\\":\\\"234\\\",\\\"markDeleteFlag\\\":true}],\\\"brochures\\\":[{\\\"sfId\\\":\\\"124ghrt6x\\\",\\\"phId\\\":\\\"01tN0000006wYvxIAE\\\",\\\"collateralId\\\":\\\"124ghrt6x\\\",\\\"mediaType\\\":\\\"Brochure\\\",\\\"collateralAssociation\\\":\\\"product\\\",\\\"order\\\":1,\\\"url\\\":\\\"file:\\/\\/\\/tmp\\/test.jpg\\\",\\\"projectId\\\":\\\"123\\\",\\\"productId\\\":\\\"234\\\",\\\"markDeleteFlag\\\":true}],\\\"floorplans\\\":[{\\\"sfId\\\":\\\"124ghrt6x\\\",\\\"phId\\\":\\\"01tN0000006wYvxIAE\\\",\\\"collateralId\\\":\\\"124ghrt6x\\\",\\\"mediaType\\\":\\\"Floorplan\\\",\\\"collateralAssociation\\\":\\\"product\\\",\\\"order\\\":1,\\\"url\\\":\\\"file:\\/\\/\\/tmp\\/test.jpg\\\",\\\"projectId\\\":\\\"123\\\",\\\"productId\\\":\\\"234\\\",\\\"markDeleteFlag\\\":true}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="listing-cdm" format="json">
+      <types:shape format="weave" example="api/examples/get-product-listing-response.json"><![CDATA[%dw 2.0
+
+type listing_cdm = Array<{|  sfId: String,   phId: String,   listingSite: String,   listingStatus: String,   lastSent: String,   lastConfirmed: String,   lastStatus: String|}> {"example": "[{\\\"sfId\\\":\\\"123\\\",\\\"phId\\\":\\\"acc123\\\",\\\"listingSite\\\":\\\"test feed\\\",\\\"listingStatus\\\":\\\"Pending Export | Exported | Pending Disable | Disabled\\\",\\\"lastSent\\\":\\\"2019-11-11 11:11:00\\\",\\\"lastConfirmed\\\":\\\"2019-11-11 11:11:00\\\",\\\"lastStatus\\\":\\\"updated\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="put-media-request" format="json">
+      <types:shape format="weave" example="api/examples/product/put-product-media-request.json"><![CDATA[%dw 2.0
+
+type put_media_request = {|
+  photos: Array<{|    sfId: String,     collateralId: String,     mediaType: String,     collateralAssociation: String,     order: Number {"typeId": "double"},     url: String,     projectId: String,     productId: String,     isDeleted: Boolean  |}>, 
+  floorplans: Array<{|    sfId: String,     collateralId: String,     mediaType: String,     collateralAssociation: String,     order: Number {"typeId": "double"},     url: String,     projectId: String,     isDeleted: Boolean  |}>, 
+  brochures: Array<{|    sfId: String,     collateralId: String,     phId: String,     mediaType: String,     collateralAssociation: String,     order: Number {"typeId": "double"},     url: String,     projectId: String,     isDeleted: Boolean  |}>
+|} {"example": "{\\\"photos\\\":[{\\\"sfId\\\":\\\"a1FN0000001yCfiMAE\\\",\\\"collateralId\\\":\\\"abcd123\\\",\\\"mediaType\\\":\\\"Photo\\\",\\\"collateralAssociation\\\":\\\"product\\\",\\\"order\\\":2.0,\\\"url\\\":\\\"www.besttest.com\\\",\\\"projectId\\\":\\\"a0dN000000CnRd3IAF\\\",\\\"productId\\\":\\\"01tN0000006z3LPIAY\\\",\\\"isDeleted\\\":true}],\\\"floorplans\\\":[{\\\"sfId\\\":\\\"a1FN0000001yCfnMAE\\\",\\\"collateralId\\\":\\\"abcd123\\\",\\\"mediaType\\\":\\\"Floorplan\\\",\\\"collateralAssociation\\\":\\\"project\\\",\\\"order\\\":1.0,\\\"url\\\":\\\"www.myfloorplan.com\\\",\\\"projectId\\\":\\\"a0dN000000CnRd3IAF\\\",\\\"isDeleted\\\":true}],\\\"brochures\\\":[{\\\"sfId\\\":\\\"a1FN0000001yCfxMAE\\\",\\\"collateralId\\\":\\\"abcd123\\\",\\\"phId\\\":\\\"project-124-brochure\\\",\\\"mediaType\\\":\\\"Brochure\\\",\\\"collateralAssociation\\\":\\\"project\\\",\\\"order\\\":1.0,\\\"url\\\":\\\"www.project-brochure.com\\\",\\\"projectId\\\":\\\"a0dN000000CnRd3IAF\\\",\\\"isDeleted\\\":true}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="product-update-general-response" format="json">
+      <types:shape format="weave" example="examples/update-product-general-response.json"><![CDATA[%dw 2.0
+
+type product_update_general_response = {|
+  correlationId: String, 
+  productId: String, 
+  status: Boolean, 
+  data: Array<Any>
+|} {"example": "{\\\"correlationId\\\":\\\"f5a72ce0-3ce6-11ea-9f63-8c8590d44016\\\",\\\"productId\\\":\\\"01tN0000006yliVIAQ\\\",\\\"status\\\":true,\\\"data\\\":[]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="patch-product-by-id-request" format="json">
+      <types:shape format="weave" example="api/examples/product/patch-product-by-id.json"><![CDATA[%dw 2.0
+
+type patch_product_by_id_request = {|
+  productId: String, 
+  phProductId: String, 
+  projectId: String, 
+  phProjectId: String, 
+  caStockId: String, 
+  status: String, 
+  "type": String, 
+  propertyType: String, 
+  headline: String, 
+  description: String, 
+  address: {|
+    unitNumber: String, 
+    streetNumber: String, 
+    streetName: String, 
+    suburb: String, 
+    postcode: String, 
+    state: String, 
+    country: String
+  |}, 
+  displayAddress: Boolean, 
+  priceText: String, 
+  displayPrice: String, 
+  soldDate: String, 
+  showSoldPrice: Boolean, 
+  firstAgentId: Number {"typeId": "int"}, 
+  builtYear: String, 
+  carportSpaces: Number {"typeId": "double"}, 
+  garageSpaces: Number {"typeId": "double"}, 
+  offStreetSpaces: Number {"typeId": "double"}, 
+  bedrooms: Number {"typeId": "double"}, 
+  halfBedrooms: Boolean, 
+  bathrooms: Number {"typeId": "double"}, 
+  halfBathroom: Boolean, 
+  ensuites: Number {"typeId": "double"}, 
+  landArea: Number {"typeId": "double"}, 
+  landAreaMetric: String, 
+  floorArea: Number {"typeId": "double"}, 
+  floorAreaMetric: String, 
+  landFrontage: Number {"typeId": "double"}, 
+  landFrontageMetric: String, 
+  energyEfficiencyRating: String, 
+  numberOfFloors: Number {"typeId": "double"}, 
+  newConstruction: Boolean, 
+  propertyUrl: String, 
+  virtualTourUrl: String, 
+  extLink1: String, 
+  extLink2: String, 
+  videoUrl: String, 
+  auctionDate: String, 
+  auctionPlace: String, 
+  auctionTime: String, 
+  forthcomingAuction: Boolean, 
+  developmentName: String, 
+  authority: String, 
+  methodOfSale: String, 
+  lastSyncStatus: String, 
+  lastSyncTime: String
+|} {"example": "{\\\"productId\\\":\\\"01tN0000006z3LPIAY\\\",\\\"phProductId\\\":\\\"MANI-TEST-PUBID\\\",\\\"projectId\\\":\\\"a0dN000000CnRd3IAF\\\",\\\"phProjectId\\\":\\\"343434\\\",\\\"caStockId\\\":\\\"Mani-TEST-StockId\\\",\\\"status\\\":\\\"Pipeline\\\",\\\"type\\\":\\\"Apartment\\\",\\\"propertyType\\\":\\\"Apartment\\\",\\\"headline\\\":\\\"no opentimes we do not sell\\\",\\\"description\\\":\\\"Marketing Desciption\\\",\\\"address\\\":{\\\"unitNumber\\\":\\\"Mani Test Unit with no open times\\\",\\\"streetNumber\\\":\\\"4\\\",\\\"streetName\\\":\\\"Mani Test street name\\\",\\\"suburb\\\":\\\"North Sydney\\\",\\\"postcode\\\":\\\"2060\\\",\\\"state\\\":\\\"NSW\\\",\\\"country\\\":\\\"Australia\\\"},\\\"displayAddress\\\":true,\\\"priceText\\\":\\\"Hundred thousand\\\",\\\"displayPrice\\\":\\\"Dollar Price\\\",\\\"soldDate\\\":\\\"1980-12-20\\\",\\\"showSoldPrice\\\":true,\\\"firstAgentId\\\":308762,\\\"builtYear\\\":\\\"8.0\\\",\\\"carportSpaces\\\":14.0,\\\"garageSpaces\\\":120.0,\\\"offStreetSpaces\\\":5.0,\\\"bedrooms\\\":3.0,\\\"halfBedrooms\\\":true,\\\"bathrooms\\\":4.0,\\\"halfBathroom\\\":true,\\\"ensuites\\\":3.0,\\\"landArea\\\":2.0,\\\"landAreaMetric\\\":\\\"Square Metres\\\",\\\"floorArea\\\":1.0,\\\"floorAreaMetric\\\":\\\"Square Metres\\\",\\\"landFrontage\\\":1.0,\\\"landFrontageMetric\\\":\\\"Square Metres\\\",\\\"energyEfficiencyRating\\\":\\\"10.0\\\",\\\"numberOfFloors\\\":2.0,\\\"newConstruction\\\":false,\\\"propertyUrl\\\":\\\"www.no-opentimes-url.com\\\",\\\"virtualTourUrl\\\":\\\"www.no-opentimes-virtual.com\\\",\\\"extLink1\\\":\\\"www.ext-noOpentimes1.com\\\",\\\"extLink2\\\":\\\"www.ext-noOpentimes2.com\\\",\\\"videoUrl\\\":\\\"www.no-opentimes-video.com\\\",\\\"auctionDate\\\":\\\"2020-01-31\\\",\\\"auctionPlace\\\":\\\"Mani's Home\\\",\\\"auctionTime\\\":\\\"10:20:00\\\",\\\"forthcomingAuction\\\":true,\\\"developmentName\\\":\\\"Mani Test Project\\\",\\\"authority\\\":\\\"For Lease\\\",\\\"methodOfSale\\\":\\\"Exclusive\\\",\\\"lastSyncStatus\\\":\\\"Successful\\\",\\\"lastSyncTime\\\":\\\"2020-01-11T11:22:26.936+11:00\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="put-inspection-times-request" format="json">
+      <types:shape format="weave" example="api/examples/product/put-product-opentimes-request.json"><![CDATA[%dw 2.0
+
+type put_inspection_times_request = Array<{|  sfId: String,   collateralId: String,   phId: String,   date: String,   startTime: String,   endTime: String,   projectId: String,   productId: String,   collateralAssociation: String,   isDeleted: Boolean|}> {"example": "[{\\\"sfId\\\":\\\"abcd\\\",\\\"collateralId\\\":\\\"abcd123\\\",\\\"phId\\\":\\\"abcd123\\\",\\\"date\\\":\\\"20\\/12\\/1980\\\",\\\"startTime\\\":\\\"10:00am\\\",\\\"endTime\\\":\\\"12:00pm\\\",\\\"projectId\\\":\\\"abcd123\\\",\\\"productId\\\":\\\"abcd1234\\\",\\\"collateralAssociation\\\":\\\"product\\\",\\\"isDeleted\\\":true}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="unit-sync-input" format="json">
+      <types:shape format="weave" example="examples/unit_output_payload-2.json"><![CDATA[%dw 2.0
+
+type unit_sync_input = {|
+  Property_Code: String, 
+  Unit_Code: String, 
+  StartDate: String, 
+  EndDate: String, 
+  sStatus: String, 
+  VacantDate: String, 
+  ReadyDate: String, 
+  Floor_Code: String, 
+  Country: String, 
+  Bldg_Code: String, 
+  "csv.Address_1": String, 
+  Address_1: String, 
+  Address_3: String, 
+  Address_4: String, 
+  City: String, 
+  Zip_Code: String, 
+  Rent: String, 
+  SQFT: Number {"typeId": "int"}, 
+  Rent_Ready: String, 
+  Unit_Type: String, 
+  Bedrooms: Number {"typeId": "int"}, 
+  Baths: Number {"typeId": "int"}, 
+  Attributes_2: String, 
+  Attributes_5: String, 
+  Attributes_6: String, 
+  Attributes_8: String, 
+  Attributes_9: String, 
+  Attributes_10: String
+|} {"example": "{\\\"Property_Code\\\":\\\"\\\",\\\"Unit_Code\\\":\\\"\\\",\\\"StartDate\\\":\\\"2020-10-10\\\",\\\"EndDate\\\":\\\"2020-10-10\\\",\\\"sStatus\\\":\\\"\\\",\\\"VacantDate\\\":\\\"2020-10-10\\\",\\\"ReadyDate\\\":\\\"2020-10-10\\\",\\\"Floor_Code\\\":\\\"\\\",\\\"Country\\\":\\\"\\\",\\\"Bldg_Code\\\":\\\"\\\",\\\"csv.Address_1\\\":\\\"\\\",\\\"Address_1\\\":\\\"\\\",\\\"Address_3\\\":\\\"\\\",\\\"Address_4\\\":\\\"\\\",\\\"City\\\":\\\"\\\",\\\"Zip_Code\\\":\\\"\\\",\\\"Rent\\\":\\\"\\\",\\\"SQFT\\\":0,\\\"Rent_Ready\\\":\\\"\\\",\\\"Unit_Type\\\":\\\"\\\",\\\"Bedrooms\\\":0,\\\"Baths\\\":0,\\\"Attributes_2\\\":\\\"\\\",\\\"Attributes_5\\\":\\\"\\\",\\\"Attributes_6\\\":\\\"\\\",\\\"Attributes_8\\\":\\\"\\\",\\\"Attributes_9\\\":\\\"\\\",\\\"Attributes_10\\\":\\\"\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="unit-sync-output" format="json">
+      <types:shape format="weave" example="examples/unit_input_sys_global-1.json"><![CDATA[%dw 2.0
+
+type unit_sync_output = {|
+  CAStockID__c: String, 
+  BTR_StatusChangeDateStart__c: String, 
+  BTR_StatusChangeDateEnd__c: String, 
+  Name: String, 
+  Dwelling_Status__c: String, 
+  BTR_VacantDate: String, 
+  BTR_OccupancyReadyDate: String, 
+  Entrance_Floor__c: String, 
+  Country: String, 
+  "Product2.Project__r.SYS_ProjectCode__c": String, 
+  Street_Number__c: String, 
+  Street_Name__c: String, 
+  Address_3: String, 
+  Address_4: String, 
+  Property_Suburb__c: String, 
+  Postcode__c: String, 
+  List_Price__c: String, 
+  Internal_Area__c: String, 
+  BTR_Ready: String, 
+  ProductCode: String, 
+  No_of_Bedrooms__c: String, 
+  No_of_Bathrooms__c: String, 
+  Wheelchair_Accessible__c: String, 
+  "Product2.Features__c": String, 
+  "PLM_MarketingCollateral__c.PLM_Features__c": String, 
+  BTR_Furnished: String, 
+  Land_Area__c: String
+|} {"example": "{\\\"CAStockID__c\\\":\\\"\\\",\\\"BTR_StatusChangeDateStart__c\\\":\\\"\\\",\\\"BTR_StatusChangeDateEnd__c\\\":\\\"\\\",\\\"Name\\\":\\\"\\\",\\\"Dwelling_Status__c\\\":\\\"\\\",\\\"BTR_VacantDate\\\":\\\"\\\",\\\"BTR_OccupancyReadyDate\\\":\\\"\\\",\\\"Entrance_Floor__c\\\":\\\"\\\",\\\"Country\\\":\\\"\\\",\\\"Product2.Project__r.SYS_ProjectCode__c\\\":\\\"\\\",\\\"Street_Number__c\\\":\\\"\\\",\\\"Street_Name__c\\\":\\\"\\\",\\\"Address_3\\\":\\\"\\\",\\\"Address_4\\\":\\\"\\\",\\\"Property_Suburb__c\\\":\\\"\\\",\\\"Postcode__c\\\":\\\"\\\",\\\"List_Price__c\\\":\\\"\\\",\\\"Internal_Area__c\\\":\\\"\\\",\\\"BTR_Ready\\\":\\\"\\\",\\\"ProductCode\\\":\\\"\\\",\\\"No_of_Bedrooms__c\\\":\\\"\\\",\\\"No_of_Bathrooms__c\\\":\\\"\\\",\\\"Wheelchair_Accessible__c\\\":\\\"\\\",\\\"Product2.Features__c\\\":\\\"\\\",\\\"PLM_MarketingCollateral__c.PLM_Features__c\\\":\\\"\\\",\\\"BTR_Furnished\\\":\\\"\\\",\\\"Land_Area__c\\\":\\\"\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#265cd633-bfb7-4988-b180-e7fcd27ea821">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="product-by-id-cdm"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#5262bb52-b0d4-4865-a17e-238c054b674a">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="inspection-time-cdm"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#863408a0-c5d3-4a5d-9ca6-997673d6033e">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="feature-cdm"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#c40ea18a-1d78-4a5f-b99f-de70f068761c">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="product-by-id-cdm"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f03e7b57-dfba-4625-a3a5-aa2deca9c161">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="get-product-media-response"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#57fd2067-778b-4574-80f6-a5358ec62c6d">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:variables>
+          <types:variable name="sfdcProjectOpentimesResp" type="inspection-time-cdm"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#637452a1-c6a8-4ca6-b006-be81a4a6db6a">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="listing-cdm"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f5adf449-ccf3-4ccc-b7a7-c6b42e2c4e10">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="put-media-request"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#8c621599-b05b-4176-a610-decca09aa6d9">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="put-media-request"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#7efed101-0a09-46f4-b99b-a8e74f542bf2">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="product-by-id-cdm"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#db8acf99-a228-47e4-adde-7fc27827e06c">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="patch-product-by-id-request"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#24ec9076-835b-4d3c-bc66-c4addaeed153">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="product-update-general-response"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#29ad63f2-a783-4d64-9156-b4ff3d18fb59">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="put-inspection-times-request"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#21fc2044-7813-40e5-b907-50421faebead"/>
+  <types:enrichment select="#54cfea9f-6336-4cb9-8590-09ef04832fbe">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="unit-sync-input"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="unit-sync-output"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

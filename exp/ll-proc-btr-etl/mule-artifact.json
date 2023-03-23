@@ -1,0 +1,4 @@
+{
+  "minMuleVersion": "4.2.2",
+  "secureProperties": ["enc.key","anypoint.platform.client_id","secure::https.key.password"]
+}

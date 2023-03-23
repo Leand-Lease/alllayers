@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="main-apartment-availability:\get-apartment-availability" doc:id="a4f8061b-c8df-4a4a-ab77-faca2a82b5ce" >
+		<logger level="TRACE" doc:name="Start Logger" doc:id="f3591998-47e2-48e5-9630-9fe01cbdfdbd" message="Start Logger" />
+		<logger level="INFO" doc:name="Start Logger1" doc:id="0e63a730-424d-4734-a600-2117c4bc8362" message="#[{}]" />
+		<logger level="INFO" doc:name="Start Debug Logger" doc:id="875cfea6-a2d8-46ed-9cb6-b5552063f3e6" message='#["correlationId:" ++ correlationId ++ " - start processing request to collect apartment availability details"]' />
+		<flow-ref doc:name="get-apartmentAvailability-request" doc:id="f72299fa-6f3c-4f56-a1e1-500d5541b98b" name="get-apartmentAvailability-request"/>
+		<logger level="TRACE" doc:name="End Debug Logger" doc:id="874ff975-a527-4f82-8cf7-c89df60e5609" category='"END"' message='#["correlationId:" ++ correlationId ++ " - End processing request to collect apartment availability details"]' />
+		<logger level="INFO" doc:name="End Logger" doc:id="7940659e-54bf-4623-b130-4db16405f228" message="End Logger" />
+		<logger level="INFO" doc:name="End Logger1" doc:id="6338ec75-51b7-422b-be6b-b6fe160c69e7" message="#[{}]" />
+	</sub-flow>
+</mule>

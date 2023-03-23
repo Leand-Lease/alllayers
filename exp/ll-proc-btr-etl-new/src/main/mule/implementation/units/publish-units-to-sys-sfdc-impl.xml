@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+
+	<sub-flow name="read-yExplore-from-ftp-folder-sub-flow" doc:id="802a67f0-fbfa-41c7-9e01-521978fac921" >
+		<try doc:name="Try" doc:id="c298494e-205e-4754-b6a0-7d41997e1adf" >
+			<sftp:list doc:name="FTP Folder files list" doc:id="24ddcc35-4c82-4213-ab41-571d1fd572b7" config-ref="sftp" directoryPath="${sftp.directory.path}">
+			<sftp:matcher />
+		</sftp:list>
+		</try>
+		<json-logger:logger doc:name="Logger" doc:id="87e9596d-f2cb-45e4-94bd-b24168961f96" message='""'/>
+		<choice doc:name="if files found" doc:id="e9738d9f-5e1b-4fb2-a01f-2551c631537f" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="Order Files with lastmodifieddate" doc:id="6566e4bb-e6ce-4665-a67c-223710a9f1f1">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+(payload filter ($.attributes.fileName contains /^Unit_yExport/) orderBy $.attributes.timestamp)[-1 to 0] 
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<json-logger:logger doc:name="First payload from files list logger" doc:id="c7ae0b91-a758-41d9-b471-769242a6f2b4" tracePoint="AFTER_TRANSFORM" message='#["First payload from files list logger"]'>
+					<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload[0],
+ 	attributes: attributes
+}]]]></json-logger:content>
+				</json-logger:logger>
+				<flow-ref doc:name="publish-units-to-sys-sfdc-sf-sub-flow" doc:id="360db2a2-a6e4-43d4-b4a2-72f3d1173e7e" name="publish-units-to-sys-sfdc-sf-sub-flow" />
+			</when>
+			<otherwise>
+				<json-logger:logger doc:name="END" doc:id="3d8583a7-214e-4864-93ce-5513da9c7a36" tracePoint="END" message='"No files found"'>
+					<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+				</json-logger:logger>
+			</otherwise>
+		</choice>
+		<!-- <sftp:read doc:name="FTP folder read" doc:id="c12a123a-42f9-4931-8ec0-0a909dbcd2ce" config-ref="sftp" path="/upload/test/Unit_yExport_10072020065313.csv" /> -->
+	</sub-flow>
+	<sub-flow name="publish-units-to-sys-sfdc-sf-sub-flow" doc:id="652763e8-52df-4cff-92cc-c7cb065e3fc2" >
+		<json-logger:logger doc:name="Payload logger" doc:id="d2450f8f-f585-4f9f-ace0-df3a51ebf68f" tracePoint="AFTER_TRANSFORM" message='"After read files from FTP folder"'>
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload[0],
+ 	attributes: attributes
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<ee:transform doc:name="Lastmodifed CSV data" doc:id="f9d5679b-1413-47b5-a8f3-ee49744e6bad" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/csv
+---
+payload[0].typedValue]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="fileName" ><![CDATA[%dw 2.0
+output application/java
+---
+(payload[0].attributes.fileName as String)]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="4e8fa09e-93a6-4494-8f6e-c28f711815b5" collection="#[payload]">
+			<ee:transform doc:name="data mapping to CDM" doc:id="edd792d1-58db-4ec3-9041-c19f5d44122d">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+import * from modules::functions
+output application/json
+---
+payload map (item,index) -> {
+	Property_Code: trim(item.Property_Code),
+	Unit_Code: trim(item.Unit_Code),
+	StartDate: item.StartDate,
+	EndDate: item.EndDate default "",
+	sStatus: if(item.sStatus != "") dwellingStatus(item.sStatus) else "",
+	VacantDate: item.VacantDate default "",
+	ReadyDate: item.ReadyDate default "",
+	Floor_Code: item.Floor_Code,
+	Country: item.Country default "",
+	Bldg_Code: item.Bldg_Code default "",
+	Street_Number: (item.Address_1 splitBy(" "))[0] default "",
+	Street_Name: (item.Address_1 replace ((item.Address_1 splitBy(" "))[0]) with("")) default "",	
+	Address_3: item.Address_3 default "",
+	Address_4: item.Address_4 default "",
+	City: item.City default "",
+	Zip_Code: item.Zip_Code default "",
+	Rent: item.Rent default "",
+	SQFT: item.SQFT default "",
+	Rent_Ready: if(item.Rent_Ready == "-1") "Ready" else "Not Ready",
+	Unit_Type: item.Unit_Type,
+	Bedrooms: item.Bedrooms default "0",
+	Baths: item.Baths default "0",
+	Attributes_2: if(item.Attributes_2 == "Yes") "true" else "false",
+	Attributes_5: if(item.Attributes_5 != "") furnitureType(item.Attributes_5) else item.Attributes_5,
+	Attributes_6: if(item.Attributes_6 != "") item.Attributes_6 else item.Attributes_6,
+	Attributes_8: if(item.Attributes_8 != "") balconyType(item.Attributes_8) else item.Attributes_8,
+	Attributes_9: if(item.Attributes_9 != "") partOrCityView(item.Attributes_9) else item.Attributes_9,
+	Attributes_10: if(item.Attributes_10 != "") buildingLocation(item.Attributes_10) else item.Attributes_10
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			<json-logger:logger doc:name="Publish payload Logger" doc:id="0789a671-70ac-4c81-acb0-40c80f929870" tracePoint="AFTER_TRANSFORM" message='"Before publish payload"'/>
+			<try doc:name="Try" doc:id="ee973e39-ec51-44f3-88f1-4b218e4a9540" >
+				<anypoint-mq:publish doc:name="Publish" doc:id="83798b50-0cd9-44d7-a7f7-9ceed7fd782d" config-ref="Anypoint_MQ_Config" destination="${unit.publish.q}" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="6b1eaed3-1a57-4e6b-a233-f6c33f6ea511" >
+						<anypoint-mq:publish doc:name="Publish" doc:id="dd4adf30-814b-4d31-bd66-80364c8d984c" config-ref="Anypoint_MQ_Config" destination="${unit.publish.poison.q}"/>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</foreach>
+		<flow-ref doc:name="file-move-to-archive-with-timestamp-sub-flow" doc:id="55575ef9-62e9-4966-845a-cdefbd14be70" name="file-move-to-archive-with-timestamp-sub-flow"/>
+	</sub-flow>
+	<sub-flow name="file-move-to-archive-with-timestamp-sub-flow" doc:id="1d136eb9-3cab-449c-bd73-347784baee55" >
+		<json-logger:logger doc:name="Before Move to Archive Directory" doc:id="d2c18d89-4f38-4133-951a-94128fc159cd" message='"Before Move to Archive Directory"'/>
+		<sftp:move doc:name="Move File Test directory to Archive" doc:id="d0233d1c-cc42-4f6c-8350-b6a370d79bd9" config-ref="sftp" sourcePath="#[p('sftp.directory.path') ++ &quot;/&quot; ++ vars.fileName]" targetPath="#[p('sftp.move.file.target.path')]" renameTo="#[(vars.fileName replace (&quot;.csv&quot;) with &quot;&quot;) ++ '_' ++ now() as String {format: &quot;ddMMyyyyhhmmss&quot;} ++ &quot;.csv&quot;]" createParentDirectories="false"/>
+		<json-logger:logger doc:name="After Move to Archive Directory" doc:id="af8efea3-5cd0-4be6-b07d-fe93ad900089" tracePoint="END" message='#["After Move to Archive Directory"]'/>
+	</sub-flow>
+</mule>

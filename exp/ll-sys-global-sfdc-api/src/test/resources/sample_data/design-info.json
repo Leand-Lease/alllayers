@@ -1,0 +1,17 @@
+{
+  "sampleData": {
+    "8c621599-b05b-4176-a610-decca09aa6d9": {
+      "payload": "sample_data/list_json_1.json"
+    },
+    "88807c33-1f2a-4727-a0dc-b36654f67e2c": {
+      "payload": "sample_data/list_btr_lease__c.dwl"
+    },
+    "54cfea9f-6336-4cb9-8590-09ef04832fbe": {
+      "vars-features": "sample_data/defaultstringtype.dwl",
+      "payload": "sample_data/json_1.json"
+    },
+    "21fc2044-7813-40e5-b907-50421faebead": {
+      "payload": "sample_data/list_json_2.json"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="genericError" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+description: datatype that represents a generic error and its relevant attributes
+type: object
+properties:
+  Success: boolean
+  CorrelationId: string
+  ErrorCode: string
+  ErrorMessage: string]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#338d529c-bf36-4cc4-a670-5488d9b0e15f">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="genericError"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f3ae0660-cc14-4d2c-80ea-77b0647e3059"/>
+</types:mule>

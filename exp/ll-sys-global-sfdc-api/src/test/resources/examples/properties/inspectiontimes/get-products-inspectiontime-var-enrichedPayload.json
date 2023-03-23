@@ -1,0 +1,13 @@
+[
+  {
+    "collateralId": "a1FN0000001yCYbMAM",
+    "date": "2020-03-31",
+    "startTime": "11:00:00",
+    "endTime": "12:00:00",
+    "projectId": "a0dN000000CnRd3IAF",
+    "collateralAssociation": "project",
+    "sfId": null,
+    "externalId": null,
+    "markDeleteFlag": null
+  }
+]

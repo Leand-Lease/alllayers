@@ -1,0 +1,29 @@
+[
+    {
+        "PLM_PublisherID__c": "1a",
+        "PLM_MediaType__c" : "photos",
+        "PLM_URL__c":"url",
+        "PLM_Order__c": 1,        
+        "PLM_Delete__c" : true,
+        "PLM_Product__c": "123abc",
+        "PLM_Project__c" : "345vd"
+    },
+    {
+        "PLM_PublisherID__c": "1b",
+        "PLM_MediaType__c" : "brochures",
+        "PLM_URL__c":"url",
+        "PLM_Order__c": 1,        
+        "PLM_Delete__c" : true,
+        "PLM_Product__c": "123abc",
+        "PLM_Project__c" : "345vd"
+    },
+    {
+        "PLM_PublisherID__c": "2a",
+        "PLM_MediaType__c" : "floorplans",
+        "PLM_URL__c":"url",
+        "PLM_Order__c": 1,        
+        "PLM_Delete__c" : true,
+        "PLM_Product__c": "123abc",
+        "PLM_Project__c" : "345vd"
+    }
+]

@@ -1,0 +1,31 @@
+{
+  "headers": {
+    "host": "localhost:8083",
+    "connection": "keep-alive",
+    "cache-control": "no-cache",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36",
+    "postman-token": "e791f62c-b4a4-8fe1-c551-151146ad1313",
+    "accept": "*/*",
+    "sec-fetch-site": "none",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-dest": "empty",
+    "accept-encoding": "gzip, deflate, br",
+    "accept-language": "en-US,en;q=0.9"
+  },
+  "clientCertificate": null,
+  "method": "GET",
+  "scheme": "http",
+  "queryParams": {},
+  "requestUri": "/api/units",
+  "queryString": "",
+  "version": "HTTP/1.1",
+  "maskedRequestPath": null,
+  "listenerPath": "/api/units",
+  "relativePath": "/api/units",
+  "localAddress": "/127.0.0.1:8083",
+  "uriParams": {},
+  "rawRequestUri": "/api/units",
+  "rawRequestPath": "/api/units",
+  "remoteAddress": "/127.0.0.1:63903",
+  "requestPath": "/api/units"
+}

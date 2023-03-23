@@ -1,0 +1,24 @@
+[
+  {
+    "sfId": "01tN0000006z3LKIAY",
+    "phId": "acc123",
+    "listingSite": "test feed",
+    "listingStatus": "Pending Export | Exported | Pending Disable | Disabled",
+    "lastSent": "2015-07-04T21:00:00",
+    "lastConfirmed": "2015-07-04T21:00:00",
+    "lastExport": "2015-07-04T21:00:00",
+    "productId" : "",
+    "lastStatus": "updated"
+  }, 
+  {
+    "sfId": "01tN0000006z3LKIAY",
+    "phId": "acc123",
+    "listingSite": "test feed",
+    "listingStatus": "Pending Export | Exported | Pending Disable | Disabled",
+    "lastSent": "2015-07-04T21:00:00",
+    "lastConfirmed": "2015-07-04T21:00:00",
+    "lastExport": "2015-07-04T21:00:00",
+    "productId" : "",
+    "lastStatus": "updated"
+  }
+]

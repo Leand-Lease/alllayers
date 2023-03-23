@@ -1,0 +1,19 @@
+[
+  {
+    "sfId": "a1FN0000001yCZeMAM",
+    "phId": "Test-PutMANI-property-Inspectiontime-Mani",
+    "collateralId": "a1FN0000001yCZeMAM",
+    "date": "2001-10-10",
+    "startTime": "10:00:00",
+    "endTime": "12:00:00",
+    "collateralAssociation": "product",
+    "isDeleted": false
+  },
+  {
+    "sfId": "a1HN0000004K5USMA0",
+    "collateralId": "a1FN0000001yCYbMAM",
+    "collateralAssociation":"project",
+    "phId": "Test-Put-Project-Inspectiontime-Mani2",
+    "isDeleted": false
+  }
+]

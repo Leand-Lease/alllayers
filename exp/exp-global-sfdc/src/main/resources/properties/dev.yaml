@@ -1,0 +1,33 @@
+anypoint.mq:
+  url: "https://mq-us-west-2.anypoint.mulesoft.com/api/v1"
+  
+salesforce:
+  username: "mani.hosseini@mulesoft.com.imst"
+  token.endpoint: "https://test.salesforce.com/services/oauth2/token"
+  api.version: "47.0"
+  
+pe:
+  listing.commercial.update.channel: "/event/PLM_ListingCommercialUpdateEvent__e"
+  listing.publish.channel: "/event/PLM_ListingPublishEvent__e"
+  project.publish.channel: "/event/PLM_ProjectPublishEvent__e"
+  
+listing.publish.platform.event.q: "ll.pe.listing.publish.q"
+listing.commercial.update.platform.event.q: "ll.pe.listing.commercial.update.q"
+project.publish.platform.event.q: "ll.pe.project.publish.q"
+
+json.logger.application:
+  name: "exp-global-sfdc"
+  version: "v1.0"
+  
+https:
+  port: "8081"
+  host: "0.0.0.0"
+  key:
+    alias: "lendlease"     
+    
+sys-yardi:
+  host: "ll-sys-yardi-st.us-w2.cloudhub.io"
+  port: "443"
+  basePath: "api"      
+
+anypoint.api.id: "16283781"

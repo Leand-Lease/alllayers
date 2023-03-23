@@ -1,0 +1,13 @@
+#%RAML 1.0 Trait
+responses:
+  500:
+    description: Internal Error
+    body:
+      application/json:
+        type: !include ../types/generic-error.raml
+        example: |
+          {
+            "ErrorCode": "1040",
+            "ErrorMessage": "Invalid User"
+          }
+  

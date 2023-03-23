@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:sys-global-sfdc="http://www.mulesoft.org/schema/mule/sys-global-sfdc"
+	xmlns:sys-yardi="http://www.mulesoft.org/schema/mule/sys-yardi"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" 
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd 
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/sys-yardi http://www.mulesoft.org/schema/mule/sys-yardi/current/mule-sys-yardi.xsd
+http://www.mulesoft.org/schema/mule/sys-global-sfdc http://www.mulesoft.org/schema/mule/sys-global-sfdc/current/mule-sys-global-sfdc.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="153b4d65-c101-4c19-b939-7ab49edc08dd" >
+		<http:listener-connection host="${https.host}" port="${https.port}" protocol="HTTP">
+			<!-- <tls:context >
+				<tls:key-store type="jks" path="keystore/keystore-${mule.env}.jks" alias="${https.key.alias}" keyPassword="${secure::https.key.password}" password="${secure::https.keystore.password}" />
+			</tls:context> -->
+		</http:listener-connection>
+	</http:listener-config>
+	<sftp:config name="sftp">
+	  <sftp:connection username="${sftp.username}" password="${secure::sftp.password}"
+	    host="${sftp.host}" port="${sftp.port}"/>
+	</sftp:config>
+	 <anypoint-mq:config name="Anypoint_MQ_Config" doc:name="Anypoint MQ Config" doc:id="011c1f61-3d7c-4d6a-a093-52157dc1342d" >
+		<anypoint-mq:connection clientId="${secure::anypoint.mq.client.id}" clientSecret="${secure::anypoint.mq.client.secret}" url="${anypoint.mq.url}"/>
+	</anypoint-mq:config> 
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="1699ef9f-c667-4398-ac60-6cb065a5609a" file="secure-properties/secure-${mule.env}.yaml" key="${enc.key}" />
+	<configuration-properties doc:name="Configuration properties" doc:id="d7168ee8-9ed7-492d-85fe-0b743dac975a" file="properties/${mule.env}.yaml" />
+	<global-property doc:name="Global Property" doc:id="0367ea80-bfa6-4bb7-83a4-6e5f4c5315c5" name="enc.key" value="1234567890123456" />
+	<global-property doc:name="Global Property" doc:id="b230f48d-4b0e-4e12-8d73-aa85b5509a02" name="mule.env" value="dev" />
+	<!-- <apikit:config name="template-api-config" api="template-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" /> -->
+	<json-logger:config name="JSON_Logger_Config" doc:name="JSON Logger Config" doc:id="a4888ccd-bc2f-4191-9c1d-674ee3c7b77f" />
+	<configuration doc:name="Configuration" doc:id="051ff959-1390-453b-819e-c67a4362ef77" defaultErrorHandler-ref="sync-error-handler" />
+	<!-- <http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="83725582-61d8-475a-a35e-755e51c97642" >
+		<http:request-connection protocol="HTTPS" host="${sys-global-sfdc.host}" />
+	</http:request-config> -->
+	<sys-yardi:config name="Sys_yardi_Config" doc:name="Sys-yardi Config" doc:id="c141915a-676e-4c1f-930d-92312a5eb5bf" property_host="${sys-yardi.host}" property_port="${sys-yardi.port}" property_protocol="HTTPS" property_basePath="/${sys-yardi.basePath}" property_responseTimeout="90000"/>
+	<sys-global-sfdc:config name="Sys_global_sfdc_Config" doc:name="Sys-global-sfdc Config" doc:id="8f761a76-938c-40b8-972b-b8723aef3cd9" property_host="${sys-global-sfdc.host}" property_port="${sys-global-sfdc.port}" property_basePath="/${sys-global-sfdc.basePath}" />
+	<!-- 	Salesforce Connector Configuration -->
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="5ebc0cab-57f5-4138-8017-a5bdacab7fee" >
+		<salesforce:oauth-user-pass-connection consumerKey="3MVG9e2mBbZnmM6kAwiWpvN5lAeZd.Wm.dzruEHCyV4d09QfiIr6.nek1MkCzBQ4n0BGSJPtkxa5eAMmfbDfN" consumerSecret="218A6517F2520513577B3B74BD8621930F6323DA71B492D6FDE32618CADF1D03" username="msapi@lendlease.com.imst" password="Mule$ofT2021" securityToken="b1WzWdJZFAl5Q4luZa6iaTVcR" tokenEndpoint="https://test.salesforce.com/services/oauth2/token" apiVersion="${salesforce.api.version}"/>
+	</salesforce:sfdc-config>
+</mule>

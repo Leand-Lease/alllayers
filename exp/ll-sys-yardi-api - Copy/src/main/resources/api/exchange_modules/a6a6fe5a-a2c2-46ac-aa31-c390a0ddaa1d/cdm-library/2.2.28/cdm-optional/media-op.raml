@@ -1,0 +1,22 @@
+#%RAML 1.0 DataType
+description: MarketingCollaterals are having 3 recordTypes (Feature, Media, InspectionTime), if the recordType is media then is has one of defined media types (Photo, Floorplan, Brochure). 
+    
+properties:
+  photos:
+    required: false
+    type: array
+    items:
+      type: !include common/media-item-op.raml
+          
+  
+  floorplans:
+    required: false
+    type: array
+    items:
+      type: !include common/media-item-op.raml
+          
+  brochures:
+    required: false
+    type: array
+    items:
+      type: !include common/media-item-op.raml

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="main-units:\upsert-products" doc:id="4b0d2bc5-f75e-4002-9a40-e469fb3e54a3" >
+		<json-logger:logger doc:name="Start" doc:id="cea26379-10b7-4cc0-ab02-dfd56b8e5f21" message='#["Units(product) update based on the Apartment Availability"]'>
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="Start Debug Logger" doc:id="8e07b438-067d-4d2b-b617-fbc3b0c9062d" message='#["Units(product) update based on the Apartment Availability"]'/>
+		<flow-ref doc:name="Flow Reference" doc:id="e4e2851e-e043-4a73-a298-507fd445a7cd" name="upsert-units-in-sf"/>
+		<json-logger:logger doc:name="End Debug Logger" doc:id="2bac531b-7808-43df-ae6d-c84fc65ebd19" tracePoint="END" message='#["Units(product) update based on the Apartment Availability"]'/>
+		<json-logger:logger doc:name="End" doc:id="ab46b325-e6f4-4ff0-bc4c-bb36dd0e2157" message='#["Units(product) update based on the Apartment Availability"]' tracePoint="END">
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+	<sub-flow name="main-units:\update-products" doc:id="abe9a2f9-942c-4e44-b5ff-c4d419a22ba3">
+		<json-logger:logger doc:name="Start" doc:id="134f35db-ca41-422f-b79b-b4ad3895bf3a" message='#["Units(product) upsert"]'>
+			<json-logger:content><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="Start debug logger" doc:id="2656b313-f357-429d-a4a3-ce5c775258e8" priority="WARN" message='#["Units(product) upsert"]' />
+		<flow-ref doc:name="Flow Reference" doc:id="a2bee7d8-f53b-4404-98e2-dbdad8d9fba0" name="update-apartment-units-in-sf" />
+		<json-logger:logger doc:name="End debug logger" doc:id="f4ff4198-23ae-477f-8a92-93cd6dc2dc6c" tracePoint="END" message='"Units(product) upsert "' />
+		<json-logger:logger doc:name="End" doc:id="6cfdbb92-fd0b-4a37-8357-13ff2f811093" tracePoint="END" message='#["Units(product) upsert"]'>
+			<json-logger:content><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+</mule>

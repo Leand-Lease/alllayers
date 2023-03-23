@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<flow name="opportunity-update-flow" doc:id="ddb29698-570f-4f4f-a0a0-6af8a9c72557" >
+		<ee:transform doc:name="opportunity data" doc:id="878234ff-192a-4cdf-bbd0-9b60ea17e30d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+
+fun formattedDate(dt: Date) = (if(!isEmpty(dt)) (dt as Date{format: 'dd/MM/yyyy'} as Date{format: 'yyyy-MM-dd'}) else null)
+---
+vars.prospect_records filter (!isEmpty(item.Ext_Ref_Prospect_Id) and isEmpty(item.Parent_Code)) map (item, index) -> {
+	Id: item.Ext_Ref_Prospect_Id,
+	BTR_ExternalReferenceID__c: item.Prospect_Code,
+	BTR_ApplicationStatus__c: opportunityStatus(item.Status),
+	BTR_FirstSyncedDate__c: formattedDate(item.First_Contacted_On) ,
+	BTR_ExternalOwner__c: item.Agent,
+	BTR_ExternalContractID__c: item.Tenant_Code,
+	BTR_Income__c: item.Income,	
+	BTR_ActualLeaseStartDate__c: formattedDate(item.LeaseFrom),
+	BTR_ActualLeaseEndDate__c: formattedDate(item.LeaseTo),
+	BTR_ExternalSource__c: item.SecondarySource,
+	BTR_Company__c: item.Company,
+	BTR_JobTitle__c: item.Position,
+	BTR_DateApplied__c: formattedDate(item.Date_Applied),
+	BTR_DateApproved__c: formattedDate(item.Date_Approved),
+	BTR_DateCanceled__c: formattedDate(item.Date_Canceled),
+	BTR_DateDenied__c: formattedDate(item.Date_Denied),
+	LeaseTerm__c: item.LeaseTerm,
+	BTR_QuotedRent__c:	item.QuotedRent,
+	BTR_CurrentAddressStartDate__c: formattedDate(item.CurrentAddress_StartDate),
+	BTR_CurrentAddressMonthlyRent__c: item.CurrentAddress_MonthlyRent,
+	BTR_CurrentAddressReasonForMoving__c: item.CurrentAddress_ReasonForMoving,
+	BTR_PreviousAddressStartDate__c: formattedDate(item.PreviousAddress_StartDate),
+	BTR_PreviousAddressMonthlyRent__c: item.PreviousAddress_MonthlyRent,
+	BTR_PrevoiusAddressReasonForMoving__c: item.PreviousAddress_ReasonForMoving, // Field api name 
+	BTR_AdditionalIncome__c: item.CurrentEmployment_AdditionalIncome,
+	BTR_AdditionalIncomeSource__c: item.CurrentEmployment_AdditionalIncomeSource
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="opportunity-update-batch-job" doc:id="50bf8fa5-1087-487d-b9b2-1b7097048e30" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="3ab7d05d-f607-4bc2-95a2-12e6590f6cea" >
+					<ee:transform doc:name="update null fields" doc:id="801237bd-82c6-4c2d-9cfb-3739eea6450a" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+---
+[
+	payload mapObject ((($$): $) if ($ != null)) ++
+    	"fieldsToNull": valueSet(payload mapObject (( key: $$ ) if(($ == null) or (isEmpty($))) )  )
+]]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<salesforce:update doc:name="Opportunity Update" doc:id="ebc3501d-9e1e-431b-8c61-7bebff861999" config-ref="Salesforce_Config" type="Opportunity"/>
+					<json-logger:logger doc:name="After update opportunity" doc:id="3f857ad7-368a-40b1-833f-cfc502aa445b" tracePoint="AFTER_REQUEST" message='"After update the opportunity"'/>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+	</flow>
+	<flow name="opportunity-line-item-sync-flow" doc:id="bcc1d745-b9ee-4a31-b01a-46892ac372cc" >
+		<ee:transform doc:name="OLI data" doc:id="f6f4a061-5b22-4609-bfce-01fd70f5641f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+vars.prospect_records filter (!isEmpty(item.Ext_Ref_Prospect_Id) and isEmpty(item.Parent_Code)) map (item, index) -> {
+	opportunityId: item.Ext_Ref_Prospect_Id,
+	Product_Code: item.Property_Code ++ '_' ++ item.Unit_Code 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="opportunityLineItem-batch-job" doc:id="afd5364f-7d1c-4766-bcb8-967709f65d59" >
+			<batch:process-records >
+				<batch:step name="OpportunityLineItem-batch-step" doc:id="30ea5305-272d-459d-8672-2a61911e2c5b" >
+					<salesforce:query doc:name="Query ProductId" doc:id="f2979c8f-5d34-4856-99f6-556d0c75d7b9" config-ref="Salesforce_Config" target="product2Id" targetValue="#[payload.Id]">
+						<salesforce:salesforce-query ><![CDATA[SELECT Id FROM Product2 WHERE CAStockID__c = ':proCode']]></salesforce:salesforce-query>
+						<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"proCode" : payload.Product_Code
+}]]]></salesforce:parameters>
+					</salesforce:query>
+					<json-logger:logger doc:name="Product Id" doc:id="e7ed691b-e5f2-47b9-8122-8e705996d426" tracePoint="AFTER_REQUEST" message='"Property_code and Unit_code related product Id"'>
+						<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	productId: vars.product2Id
+}]]]></json-logger:content>
+					</json-logger:logger>
+					<ee:transform doc:name="OLI payload" doc:id="1d38ee0d-2629-40c3-8dc2-9b66b6c6f606" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	OpportunityId: payload.OpportunityId,
+	product2Id: vars.product2Id
+}]]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<salesforce:upsert objectType="OpportunityLineItem" externalIdFieldName="Id" doc:name="Upsert" doc:id="3592f311-bb20-47b3-b339-abbf6419b919" config-ref="Salesforce_Config"/>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+	</flow>
+	<flow name="application-syncFlow" doc:id="2ce1e858-90fd-4947-866b-49a5fa20dd7d" >
+		<ee:transform doc:name="Transform Message" doc:id="f6aadbb2-1acb-4469-b489-9688c33701e4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+---
+vars.prospect_records filter (!isEmpty(item.Ext_Ref_Prospect_Id) and !isEmpty(item.Parent_Code)) map (item, index) -> {
+	OpportunityId: item.Ext_Ref_Prospect_Id,
+	Role: contactRole(item.RelationShip),
+	BTR_RoommateCode__c: item.Roommate_Code,
+	ContactId: item.Ext_Ref_Tenant_Id
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<!-- <flow name="opporunity-contac-role-sync-flow" doc:id="7b2cb09b-0edc-420f-a423-bfcdd7db2a96" >
+		<ee:transform doc:name="Transform Message" doc:id="7ca6ab98-f2af-4736-bc53-442424e38e0f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+-&#45;&#45;
+vars.prospect_records filter (!isEmpty(item.Ext_Ref_Prospect_Id)) map (item, index) -> {
+	opportunityId: item.Ext_Ref_Prospect_Id,
+	Product_Code: item.Property_Code ++ '_' ++ item.Unit_Code 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>	 -->
+</mule>

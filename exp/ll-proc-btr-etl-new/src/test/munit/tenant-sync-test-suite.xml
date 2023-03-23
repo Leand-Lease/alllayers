@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="tenant-sync-test-suite.xml" />
+	<munit:test name="tenant-sync-test-suite-get-tenants-from-ftp-sub-flowTest" doc:id="83f70ec5-baf7-40e5-8d93-8d7575fb22c7" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="tenant files list" doc:id="080a4fc7-0975-48d5-8420-ed1b36128179" processor="sftp:list">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="resTenant FTP Folder files list" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/tenants/tenant-file-list-response.json','application/json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="ResTenant file output" doc:id="5e38d650-b500-4977-839f-5970f11f9903" processor="sftp:read">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Read Tenants file" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://examples/tenants/tenant_file_output','text/plain')]" />
+					<munit-tools:attributes value='#[{
+			"symbolicLink": false,        
+			"regularFile": true,        
+			"directory": false,        
+			"path": "/upload/test/ResTenant/ResTenant.csv",        
+			"size": 589,        
+			"fileName": "ResTenant.csv",        
+			"timestamp": "2020-08-26T17:59:45"      
+		} ] ' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="get-prospects-from-ftp-sub-flow" doc:id="6335bf6c-4d79-4e26-ad5a-88bfcbce4d99" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="get-prospects-from-ftp-sub-flow" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#["Success"]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get-tenants-from-ftp-sub-flow" doc:id="1ab69db5-6d50-4e61-9208-0fe189a2ab48" name="get-tenants-from-ftp-sub-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="ba0ae763-7f34-4971-bb68-afccca34bb80" actual='#["Success"]' expected='#["Success"]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="tenant-sync-test-suiteTest" doc:id="2c33da9c-2924-4786-ae4c-e841c862f5fa" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="prospect files list" doc:id="116238a0-066d-4c11-a98d-29810c3773db" processor="sftp:list">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="resProspect FTP folder files list" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[readUrl('classpath://examples/prospects/prospect_file_list_response.json','application/json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="ResProspect csv file output" doc:id="1d996dbd-d890-418a-999e-9adc064053ae" processor="sftp:read">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="Read Prospects file" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[readUrl('classpath://examples/prospects/prospect_file_output','text/plain')]" />
+					<munit-tools:attributes value='#[ {        
+			"symbolicLink": false,        
+			"regularFile": true,        
+			"directory": false,        
+			"path": "/upload/test/ResProspect/ResProspect.csv",        
+			"size": 589,        
+			"fileName": "ResProspect.csv",        
+			"timestamp": "2020-08-26T17:59:45"      
+		}  ]' />
+				</munit-tools:then-return>				
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="tenant-prospect-merge-and-update-contact-flow" doc:id="0a9dd34c-2985-424e-bba4-0bf9fdf58600" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="tenant-prospect-merge-and-update-contact-flow" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value='#["Success"]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="get-prospects-from-ftp-sub-flow" doc:id="beaffcec-e38a-443d-9541-a8b7823b7c5a" name="get-prospects-from-ftp-sub-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="61f428c7-a94b-416e-b045-2698f428b2ec" actual='#["Success"]' expected='#["Success"]'/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="tenant-sync-test-suiteTest1" doc:id="5bbd1c0d-558f-4be8-8121-f7f16957aca2" >
+		<munit:behavior >
+			<set-variable value="#[readUrl('classpath://examples/tenants/tenant_input_response.json','application/json')]" doc:name="tenant_records" doc:id="fffc9cc8-96fe-4a30-8548-344b73f7bfd6" variableName="tenant_records"/>
+			<set-variable value="#[readUrl('classpath://examples/prospects/prospect_input_response.json','application/json')]" doc:name="prospect_records" doc:id="c5edb978-244f-4ed0-b72c-37da72e593bc" variableName="prospect_records"/>
+			<munit-tools:mock-when doc:name="update contact" doc:id="25602af4-2501-4e54-b114-e4d703a4f3ec" processor="salesforce:update">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="Update" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[readUrl('classpath://examples/tenants/tenant_sfdc_update_response.json','application/json')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="get-roommates-from-ftp-sub-flow" doc:id="a41c95b4-b6c1-4c98-9ff2-a68b606307bc" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="get-roommates-from-ftp-sub-flow" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[readUrl('classpath://gettenantsfromftpsubflowtest\mock_variable_2.dwl')]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="tenant-prospect-merge-and-update-contact-flow" doc:id="f3aaf578-183c-4d00-b147-b4b430ccfd03" name="tenant-prospect-merge-and-update-contact-flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="db25a6f8-0a3b-4455-8b8d-5d5b2528a854" actual='#["Success"]' expected='#["Success"]'/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<flow name="opportunity-update-flow" doc:id="ddb29698-570f-4f4f-a0a0-6af8a9c72557" >
+		<json-logger:logger doc:name="prospect info" doc:id="85e9b654-9d28-4775-a4df-26cc46adc0cc" message='"Prospect info"'>
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	prospect: vars.prospect_records,
+ 	roommate: vars.roommate_recors
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<ee:transform doc:name="Opportunities" doc:id="878234ff-192a-4cdf-bbd0-9b60ea17e30d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+import * from modules::functions
+output application/java
+
+fun formattedDate(dt) = (if(!isEmpty(dt)) (dt as Date{format: 'dd/MM/yyyy'} as Date{format: 'yyyy-MM-dd'}) else null)
+var joinedData = outerJoin(vars.prospect_records filter (!isEmpty($.Ext_Ref_Prospect_Id) and isEmpty($.Parent_Code)), vars.tenant_records filter (!isEmpty($.Ref_Prospect_Id)), (obj) -> obj.Ext_Ref_Prospect_Id as String default "", (obj) -> obj.Ref_Prospect_Id as String default "")
+---
+joinedData
+     reduce ((item, cont = []) ->        
+        if((item.l? and item.r?) or (item.l? and not item.r?))
+            cont ++ [{			
+				Id: item.l.Ext_Ref_Prospect_Id,
+				BTR_ExternalReferenceID__c: item.l.Prospect_Code,
+				BTR_ApplicationStatus__c: opportunityStatus(item.l.Status),
+				BTR_FirstSyncedDate__c: formattedDate(item.l.First_Contacted_On) ,
+				BTR_ExternalOwner__c: item.l.Agent,
+				BTR_ExternalContractID__c: item.l.Tenant_Code,
+				BTR_Income__c: item.l.Income,	
+				BTR_ActualLeaseStartDate__c: formattedDate(item.l.LeaseFrom),
+				BTR_ActualLeaseEndDate__c: formattedDate(item.l.LeaseTo),
+				BTR_ExternalSource__c: item.l.SecondarySource,
+				BTR_Company__c: item.l.Company,
+				BTR_JobTitle__c: item.l.Position,
+				BTR_DateApplied__c: formattedDate(item.l.Date_Applied),
+				BTR_DateApproved__c: formattedDate(item.l.Date_Approved),
+				BTR_DateCanceled__c: formattedDate(item.l.Date_Canceled),
+				BTR_DateDenied__c: formattedDate(item.l.Date_Denied),
+				LeaseTerm__c: item.l.LeaseTerm,
+				BTR_QuotedRent__c:	item.l.QuotedRent,
+				BTR_CurrentAddressStartDate__c: formattedDate(item.l.CurrentAddress_StartDate),
+				BTR_CurrentAddressMonthlyRent__c: item.l.CurrentAddress_MonthlyRent,
+				BTR_CurrentAddressReasonForMoving__c: item.l.CurrentAddress_ReasonForMoving,
+				BTR_PreviousAddressStartDate__c: formattedDate(item.l.PreviousAddress_StartDate),
+				BTR_PreviousAddressMonthlyRent__c: item.l.PreviousAddress_MonthlyRent,
+				BTR_PreviousAddressReasonForMoving__c: item.l.PreviousAddress_ReasonForMoving, // Field api name 
+				BTR_AdditionalIncome__c: item.l.CurrentEmployment_AdditionalIncome,
+				BTR_AdditionalIncomeSource__c: item.l.CurrentEmployment_AdditionalIncomeSource,
+				(BTR_MoveInDate__c: item.r.Move_In_Date) if(item.r? and not isEmpty(item.r.Move_In_Date)),
+				(StageName: "Won") if(item.r? and not isEmpty(item.r.Move_In_Date)),
+			}]
+        else
+            cont ++ []
+     )      ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="Opportunites Logger" doc:id="abf7f2b9-da0c-41e8-92e3-5be29a0107b8" tracePoint="AFTER_TRANSFORM" message='"Prospects related Opportunity details"'/>
+		<batch:job jobName="opportunity-update-batch-job" doc:id="50bf8fa5-1087-487d-b9b2-1b7097048e30" >
+			<batch:process-records >
+				<batch:step name="Opportunity-update-batch-step" doc:id="3ab7d05d-f607-4bc2-95a2-12e6590f6cea" >
+					<ee:transform doc:name="update null fields" doc:id="801237bd-82c6-4c2d-9cfb-3739eea6450a" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+---
+
+	payload mapObject ((($$): $) if ($ != null)) ++
+    	"fieldsToNull": valueSet(payload mapObject (( key: $$ ) if(($ == null) or (isEmpty($))) )  )
+]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="0c006f85-39d2-42bb-80c3-7b85726a8a79" size="10">
+						<salesforce:update doc:name="Opportunity Update" doc:id="ebc3501d-9e1e-431b-8c61-7bebff861999" config-ref="Salesforce_Config" type="Opportunity" />
+						<json-logger:logger doc:name="After update opportunity" doc:id="3f857ad7-368a-40b1-833f-cfc502aa445b" tracePoint="AFTER_REQUEST" message='"After update the opportunity"' />
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<flow-ref doc:name="application-update-flow" doc:id="21802069-4b94-4922-b6d2-4b44f35fd3c7" name="application-update-flow"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+	<!-- <flow name="opportunity-line-item-sync-flow" doc:id="bcc1d745-b9ee-4a31-b01a-46892ac372cc" >
+		<ee:transform doc:name="OpportunityLineItems" doc:id="f6f4a061-5b22-4609-bfce-01fd70f5641f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+-&#45;&#45;
+vars.prospect_records filter (!isEmpty($.Ext_Ref_Prospect_Id) and isEmpty($.Parent_Code)) map (item, index) -> {
+	opportunityId: item.Ext_Ref_Prospect_Id,
+	Product_Code: item.Property_Code ++ '_' ++ item.Unit_Code 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="OLI Logger" doc:id="1462ec84-39d7-4eb6-bd7a-cc06b2325ecb" tracePoint="AFTER_TRANSFORM" message='"Prospect related OpportunityLineItem record details"'/>
+		<batch:job jobName="opportunityLineItem-batch-job" doc:id="afd5364f-7d1c-4766-bcb8-967709f65d59" >
+			<batch:process-records >
+				<batch:step name="opportunityLineItem-batch-step" doc:id="30ea5305-272d-459d-8672-2a61911e2c5b" >
+					<salesforce:query doc:name="Query ProductId" doc:id="f2979c8f-5d34-4856-99f6-556d0c75d7b9" config-ref="Salesforce_Config" target="product2Id" targetValue="#[payload.Id]">
+						<salesforce:salesforce-query ><![CDATA[select id from pricebook where pricebookentry = (SELECT Id FROM Product2 WHERE CAStockID__c = ':proCode')]]></salesforce:salesforce-query>
+						<salesforce:parameters ><![CDATA[#[output application/java
+-&#45;&#45;
+{
+	"proCode" : payload.Product_Code
+}]]]></salesforce:parameters>
+					</salesforce:query>
+					<json-logger:logger doc:name="Product Id" doc:id="e7ed691b-e5f2-47b9-8122-8e705996d426" tracePoint="AFTER_REQUEST" message='"Property_code and Unit_code related product Id"'>
+						<json-logger:content ><![CDATA[#[output application/json -&#45;&#45;
+{
+ 	productId: vars.product2Id
+}]]]></json-logger:content>
+					</json-logger:logger>
+					<ee:transform doc:name="OLI payload" doc:id="1d38ee0d-2629-40c3-8dc2-9b66b6c6f606" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+-&#45;&#45;
+[{
+	OpportunityId: payload.OpportunityId,
+	product2Id: vars.product2Id
+}]]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<salesforce:upsert objectType="OpportunityLineItem" externalIdFieldName="Id" doc:name="Upsert OpportunityLineItem" doc:id="3592f311-bb20-47b3-b339-abbf6419b919" config-ref="Salesforce_Config"/>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+	</flow> -->
+	<flow name="application-update-flow" doc:id="91d5e06d-290c-4067-80b3-b4ea8c19309e" >
+		<flow-ref doc:name="get-appinfo-from-ftp-sub-flow" doc:id="e823a04d-c60c-4f1f-ad0e-ac6a192b2b60" name="get-appinfo-from-ftp-sub-flow"/>
+		<ee:transform doc:name="Opportunities" doc:id="5b88c9df-73eb-48d4-8d3c-eb0f34283d0e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/java
+
+---
+vars.appinfo_records map (item,index) -> {
+	Id: item.ProspectExtRef,
+	BTR_ScreeningResult__c: item.ScreenResult,
+	BTR_ContentsInsuranceAccepted__c: if(item.ContentsIns == "Yes") true else false,
+	BTR_DepositSupportAccepted__c: if(item.DepositAlt == "Yes") true else false,
+	BTR_UKGuarantorService__c: if(item.Guarantor == "Yes") true else false
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="Opportunites Logger" doc:id="cae65163-c63f-470e-aa8e-d028ce47934d" tracePoint="AFTER_TRANSFORM" message='"Prospects related Opportunity details"'/>
+		<batch:job jobName="application-update-batch-job" doc:id="8170241d-86ac-4617-bba8-02759ffd112b" >
+			<batch:process-records >
+				<batch:step name="appilcation-update-batch-step" doc:id="cd669d53-f2c7-4ec7-9b12-faccee1c9702" >
+					<ee:transform doc:name="update null fields" doc:id="aa4fa46e-96b5-473b-846f-5259a061e023" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Objects
+---
+
+	payload mapObject ((($$): $) if ($ != null)) ++
+    	"fieldsToNull": valueSet(payload mapObject (( key: $$ ) if(($ == null) or (isEmpty($))) )  )
+]]></ee:set-payload>
+						</ee:message>
+					</ee:transform> 
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="8ac1a532-fcee-46d1-bc01-7e0580e8f76e" size="10">
+						<salesforce:update doc:name="Opportunity Update" doc:id="cd8ce2cc-38fc-49bb-ad38-f7a8be47a7bf" config-ref="Salesforce_Config" type="Opportunity" />
+						<json-logger:logger doc:name="After update opportunity" doc:id="ede36e6c-2c3f-48be-97ef-a6a282c12f68" tracePoint="AFTER_REQUEST" message='"After update the opportunity"' />
+					</batch:aggregator>
+				
+</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<flow-ref doc:name="tenant-opportunityContactRole-update-flow" doc:id="c0ffa364-bc45-4220-ac5e-5ae91d9797c3" name="tenant-opportunityContactRole-update-flow"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+	<flow name="tenant-opportunityContactRole-update-flow" doc:id="27833f1e-cc61-40c0-af7d-edad5b44a2a9" >
+		<ee:transform doc:name="Tenant OCR" doc:id="dffdb9d7-7df4-4430-b6f9-a7d94b878e43" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+---
+vars.prospect_records filter (!isEmpty($.Ext_Ref_Prospect_Id) and !isEmpty($.Parent_Code)) map (item, index) -> {
+	// After Testing add this code in filter  " and !isEmpty($.Parent_Code)"
+	Ext_Ref_Prospect_Id: item.Ext_Ref_Prospect_Id,
+	RelationShip: item.RelationShip,
+	Roommate_Code: item.Roommate_Code,
+	Ext_Ref_Tenant_Id: item.Ext_Ref_Tenant_Id,
+	Notes: item.Notes,
+	Tenant_Code: item.Tenant_Code,
+	Roommate_code: item.Roommate_Code
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="Tenant Prospect Logger" doc:id="ed335382-e25f-4049-bc52-7d84dd0e8911" tracePoint="BEFORE_REQUEST" message='"Tenant Prospect record details"'>
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger>
+		<batch:job jobName="tenant-OCR-batch-job" doc:id="482cc324-81df-4b8a-ac35-43cdc5241476" maxFailedRecords="-1" blockSize="1000">
+			<batch:process-records >
+				<batch:step name="tenant-batch" doc:id="53ea18ec-846d-45f3-a809-c63b3134c4b9">
+					<ee:transform doc:name="contactId" doc:id="f6a549de-72cc-4f34-8808-390819984ee2" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="oppContactId" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.Ext_Ref_Tenant_Id]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<salesforce:query doc:name="Query Opportunity Contact Role" doc:id="96a6cd16-223f-47da-bc09-9597b3341ea9" config-ref="Salesforce_Config" target="oppContactRoleId">
+						<salesforce:salesforce-query ><![CDATA[SELECT Id FROM OpportunityContactRole WHERE OpportunityId = ':ProspectExtId' AND ContactId = ':ContactId']]></salesforce:salesforce-query>
+						<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"ProspectExtId" : payload.Ext_Ref_Prospect_Id,
+	"ContactId" : vars.oppContactId
+}]]]></salesforce:parameters>
+					</salesforce:query>
+					<!-- <json-logger:logger doc:name="Prospect match OCR" doc:id="30f2a18d-5949-4479-bbab-152df3ed9cff" message='"Matching OCR with ProspectId"'/> -->
+					<choice doc:name="Choice" doc:id="7bef7085-65a3-412f-85c2-35d084287733" >
+						<when expression="#[!isEmpty(vars.oppContactRoleId)]">
+							<ee:transform doc:name="Tenant OCR Update" doc:id="a93ba41a-dd91-4943-b1d8-4c3d81a7bc07">
+								<ee:message>
+									<ee:set-payload><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+---
+[{
+	id: vars.oppContactRoleId[0].Id,
+	Role: contactRole(payload.RelationShip),
+	BTR_RoommateCode__c: payload.Roommate_Code	
+}]]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+							<salesforce:update doc:name="Update OCR" doc:id="f49ad296-685a-40e2-98af-2dea511b53fd" config-ref="Salesforce_Config" type="OpportunityContactRole"/>
+						</when>
+						<when expression="#[isEmpty(vars.oppContactRoleId)]">
+							<ee:transform doc:name="Tenant OCR Create" doc:id="16cdf7b3-a5df-4ca3-809e-01259a6d79ec">
+								<ee:message>
+									<ee:set-payload><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+---
+[{
+	OpportunityId: payload.Ext_Ref_Prospect_Id,
+	Role: contactRole(payload.RelationShip),
+	BTR_RoommateCode__c: payload.Roommate_Code,
+	ContactId: payload.Ext_Ref_Tenant_Id
+}]]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+							<salesforce:create doc:name="Create OCR" doc:id="60702453-a40a-4bea-8ca0-f5bed51efce9" config-ref="Salesforce_Config" type="OpportunityContactRole"/>
+						</when>
+						<otherwise >
+							<json-logger:logger doc:name="Logger" doc:id="b9861577-104c-4abf-8287-1ea2afd86fa4" message='"OpportunityContactRole not found"'/>
+						</otherwise>
+					</choice>
+					<!-- <json-logger:logger doc:name="Tenant OCR upsert Logger" doc:id="dc7ad38f-5867-42b7-b59f-0beac45f2950" tracePoint="AFTER_REQUEST" message='"Tenant OCR upsert record details"'/> -->
+				
+</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="e57f08fa-2097-4fe6-b4a2-0b8ccdd96036" message="tenant ocr flow"/>
+				<flow-ref doc:name="roommate-opportunityContactRole-update-flow" doc:id="c14cfa26-412a-475d-9519-a1769b628e62" name="roommate-opportunityContactRole-update-flow"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+	<flow name="roommate-opportunityContactRole-update-flow" doc:id="f31b377c-a252-4e0b-9a56-caa4ab0d74a0" >
+		<ee:transform doc:name="roommate OCR" doc:id="d4a68885-9fe1-4477-8ad9-8fe6c35206cd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+
+fun validateNotes(notes) = 
+    if(!isEmpty(notes) and (sizeOf(notes) == 18 or sizeOf(notes) == 15) and startsWith(notes,"003")) true else false
+---
+vars.prospect_records filter (!isEmpty($.Ext_Ref_Prospect_Id) and !isEmpty($.Parent_Code) and validateNotes($.Notes)) map (item, index) -> {
+	// After Testing add this code in filter  " and !isEmpty($.Parent_Code)"
+	Ext_Ref_Prospect_Id: item.Ext_Ref_Prospect_Id,
+	RelationShip: item.RelationShip,
+	Roommate_Code: item.Roommate_Code,
+	Ext_Ref_Tenant_Id: item.Ext_Ref_Tenant_Id,
+	Notes: item.Notes,
+	Tenant_Code: item.Tenant_Code,
+	Roommate_code: item.Roommate_Code
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<json-logger:logger doc:name="Roommate OCR Logger" doc:id="622a3613-eafb-4d68-bc0f-dfb7514af4db" tracePoint="BEFORE_REQUEST" message='"Roomamte OCR record details"' config-ref="JSON_Logger_Config">
+			<json-logger:content ><![CDATA[#[output application/json ---
+{
+ 	payload: payload
+}]]]></json-logger:content>
+		</json-logger:logger> 
+		<batch:job jobName="roommate-OCR-batch-job" doc:id="be21ba94-0aac-4415-8554-703909843fc1" maxFailedRecords="-1" blockSize="1000">
+			<batch:process-records >
+				<batch:step name="roomate-batch-step" doc:id="ae77ed0a-189c-45c2-a64e-664500685025" >
+					<ee:transform doc:name="contactId" doc:id="b6efa5a0-2c31-4bd4-9d7c-9108822ccdad">
+						<ee:message>
+						</ee:message>
+						<ee:variables>
+							<ee:set-variable variableName="oppContactId"><![CDATA[%dw 2.0
+output application/java
+---
+payload.Notes]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<!-- <salesforce:query doc:name="Query Opportunity Contact Role" doc:id="867bc8a1-43c5-4d3c-9c4f-6b44e0e0c501" config-ref="Salesforce_Config" target="oppContactRoleId">
+						<salesforce:salesforce-query><![CDATA[SELECT Id FROM OpportunityContactRole WHERE OpportunityId = ':ProspectExtId' AND ContactId = ':ContactId' ]]></salesforce:salesforce-query>
+						<salesforce:parameters><![CDATA[#[output application/java
+-&#45;&#45;
+{
+	"ProspectExtId" : payload.Ext_Ref_Prospect_Id,
+	"ContactId" : vars.oppContactId
+}]]]></salesforce:parameters>
+					</salesforce:query> -->
+					<!-- <salesforce:query doc:name="Query OCR with contact Ext id" doc:id="ded0aa02-80c8-484d-8298-1a3e4a5409b2" config-ref="Salesforce_Config" target="oppContactRoleId">
+								<salesforce:salesforce-query><![CDATA[SELECT Id FROM OpportunityContactRole WHERE OpportunityId = ':ProspectExtId' AND contact.SYS_ExternalPMSId__c = ':ContactId' ]]></salesforce:salesforce-query>
+								<salesforce:parameters><![CDATA[#[output application/java
+-&#45;&#45;
+{
+	"ProspectExtId" : payload.Ext_Ref_Prospect_Id,
+	"ContactId" : vars.oppContactId
+}]]]></salesforce:parameters>
+							</salesforce:query> -->
+					<salesforce:query doc:name="Query Opportunity Contact Role" doc:id="b5b16be2-b762-414b-9276-9d62997874ca" config-ref="Salesforce_Config" target="oppContactRoleId">
+						<salesforce:salesforce-query><![CDATA[SELECT Id FROM OpportunityContactRole WHERE OpportunityId = ':ProspectExtId' AND ContactId = ':ContactId' ]]></salesforce:salesforce-query>
+						<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"ProspectExtId" : payload.Ext_Ref_Prospect_Id,
+	"ContactId" : vars.oppContactId
+}]]]></salesforce:parameters>
+					</salesforce:query> 
+					<json-logger:logger doc:name="Prospect match OCR" doc:id="b1dc00ee-9558-4d41-9fed-81f78e7e08cc" message='"Matching OCR with ProspectId"' config-ref="JSON_Logger_Config"/>
+					<choice doc:name="Choice" doc:id="76da5daa-aec8-449f-a257-0e3f8c7901c8">
+			<when expression="#[!isEmpty(vars.oppContactRoleId)]">
+				<ee:transform doc:name="Roommate OCR Update" doc:id="9c7307e9-a568-4038-869b-929bf1baa656">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+---
+[{
+	id: vars.oppContactRoleId[0].Id,
+	Role: contactRole(payload.RelationShip),
+	BTR_RoommateCode__c: payload.Roommate_Code	
+}]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:update doc:name="Update OCR" doc:id="6e63bb29-9504-4c0d-a27b-46e4dd860997" config-ref="Salesforce_Config" type="OpportunityContactRole" />
+			
+</when>
+			<when expression="#[isEmpty(vars.oppContactRoleId)]">
+				<ee:transform doc:name="Roommate OCR Create" doc:id="769c0519-8eba-4f0f-a300-abd4760bc38b">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+---
+[{
+	OpportunityId: payload.Ext_Ref_Prospect_Id,
+	Role: contactRole(payload.RelationShip),
+	BTR_RoommateCode__c: payload.Roommate_Code,
+	(ContactId: payload.Notes) if(!isEmpty(payload.Notes)),
+	(ContactId: {
+		"type": "Contact",
+		SYS_ExternalPMSId__c: (payload.Tenant_Code ++ "_" ++ payload.Roommate_Code)
+	}) if(isEmpty(payload.Notes))
+}]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:create doc:name="Create OCR" doc:id="0ffc36e3-382f-457c-be88-389dc952f159" config-ref="Salesforce_Config" type="OpportunityContactRole" />
+			</when>
+						<otherwise >
+							<logger level="INFO" doc:name="Logger" doc:id="f72a3506-95ae-46ab-adcf-3c05aa874552" message="roommate ocr id not match"/>
+						</otherwise>
+		
+</choice> 
+					
+				
+</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<logger level="INFO" doc:name="Logger" doc:id="fc44b9be-10e8-48db-a4ce-9efd75501665" message="roommate ocr flow"/>
+				<flow-ref doc:name="roommate-opportunityContactRole-upsert-flow" doc:id="a569c1a1-df3f-4ace-8688-21f702c4e181" name="roommate-opportunityContactRole-upsert-flow"/>
+			</batch:on-complete>
+		
+</batch:job>
+	</flow>
+	<flow name="roommate-opportunityContactRole-upsert-flow" doc:id="f63d576a-6730-45df-a1d6-dcb977a97dde" >
+		<ee:transform doc:name="roommate ocr" doc:id="0cfced17-fe29-4fb4-a0c5-bbc3a2075527" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+---
+vars.prospect_records filter (!isEmpty($.Ext_Ref_Prospect_Id) and !isEmpty($.Parent_Code) and isEmpty($.Notes)) map (item, index) -> {
+	// After Testing add this code in filter  " and !isEmpty($.Parent_Code)"
+	Ext_Ref_Prospect_Id: item.Ext_Ref_Prospect_Id,
+	RelationShip: item.RelationShip,
+	Roommate_Code: item.Roommate_Code,
+	Ext_Ref_Tenant_Id: item.Ext_Ref_Tenant_Id,
+	Notes: item.Notes,
+	Tenant_Code: item.Tenant_Code,
+	Roommate_code: item.Roommate_Code
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="roommate-ocr-upsert-batch-job" doc:id="a5c48568-192c-4994-80fc-149966ea796a" maxFailedRecords="-1" blockSize="1000">
+			<batch:process-records >
+				<batch:step name="ocr-upsert" doc:id="99e1b16e-b7bd-411f-979f-dfb434b10372" >
+					<ee:transform doc:name="payload contactid" doc:id="cd166ec2-7273-41c7-ac95-ae26763c7db9" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="oppContId" ><![CDATA[%dw 2.0
+output application/java
+---
+(payload.Tenant_Code ++ "_" ++ payload.Roommate_Code)]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<salesforce:query doc:name="Query OCR with contact Ext id" doc:id="82dbb21a-4301-44fc-a0a6-2fe1a1ed5d06" config-ref="Salesforce_Config" target="oppContactRoleId">
+								<salesforce:salesforce-query><![CDATA[SELECT Id FROM OpportunityContactRole WHERE OpportunityId = ':ProspectExtId' AND contact.SYS_ExternalPMSId__c = ':ContactId' ]]></salesforce:salesforce-query>
+								<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"ProspectExtId" : payload.Ext_Ref_Prospect_Id,
+	"ContactId" : vars.oppContactId
+}]]]></salesforce:parameters>
+							</salesforce:query>
+					<choice doc:name="Choice" doc:id="85865733-109e-4d25-a624-d8a04cee8ed3" >
+						<when expression="#[!isEmpty(vars.oppContactRoleId)]">
+							<ee:transform doc:name="roommate ocr update" doc:id="ed8c78d9-f744-4907-8175-a82cf0c6fc5d">
+								<ee:message>
+									<ee:set-payload><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+---
+[{
+	id: vars.oppContactRoleId[0].Id,
+	Role: contactRole(payload.RelationShip),
+	BTR_RoommateCode__c: payload.Roommate_Code	
+}]]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+							<salesforce:update doc:name="Update OCR" doc:id="aa2da094-b839-4aea-95d3-5d0d90052757" config-ref="Salesforce_Config" type="OpportunityContactRole"/>
+						</when>
+						<when expression="#[isEmpty(vars.oppContactRoleId)]">
+							<ee:transform doc:name="roommate ocr create" doc:id="36a35be4-6a23-4ad4-ba2c-e25d1881987c">
+								<ee:message>
+									<ee:set-payload><![CDATA[%dw 2.0
+import * from modules::functions
+output application/java
+---
+[{
+	OpportunityId: payload.Ext_Ref_Prospect_Id,
+	Role: contactRole(payload.RelationShip),
+	BTR_RoommateCode__c: payload.Roommate_Code,
+	(ContactId: payload.Notes) if(!isEmpty(payload.Notes)),
+	(ContactId: {
+		"type": "Contact",
+		SYS_ExternalPMSId__c: (payload.Tenant_Code ++ "_" ++ payload.Roommate_Code)
+	}) if(isEmpty(payload.Notes))
+}]]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+							<salesforce:create doc:name="Create ocr" doc:id="4621022e-5b55-4824-a9aa-70c0794a11b4" config-ref="Salesforce_Config" type="OpportunityContactRole"/>
+						</when>
+						<otherwise >
+							<logger level="INFO" doc:name="Logger" doc:id="4dbe437c-085e-49bd-90fb-03957bbdd585" message="#[payload]"/>
+						</otherwise>
+					</choice>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete >
+				<flow-ref doc:name="get-lease-from-ftp-sub-flow" doc:id="d651d44f-f60f-4e65-8b01-99e28507ee50" name="get-lease-from-ftp-sub-flow"/>
+			</batch:on-complete>
+		</batch:job>
+	</flow>
+
+</mule>

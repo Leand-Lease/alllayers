@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="get-features" doc:id="a0997a3f-7159-463d-8c2b-74826561381f" >
+		<logger level="INFO" doc:name="SFDC Product Request" doc:id="c2ace2d7-7100-4a24-833a-6bda22ede8e9" message='#[" correlationId:" ++ correlationId ++ " - Request to get product features of productId:" ++ (vars.productId default "")]' />
+		<logger level="INFO" doc:name="SFDC Product Request1" doc:id="959b449f-0d8f-4d54-b3a0-50c899f2628a" message="#[{}]" />
+		<salesforce:query-single doc:name="Query Product Features" doc:id="d2a50fa2-7058-4317-981b-16f5cd44e852" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query>SELECT PLM_Features__c 
+FROM PLM_MarketingCollateral__c 
+WHERE RecordType.name = 'Feature' AND PLM_Product__c = ':productId'</salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"productId" : vars.productId
+}]]]></salesforce:parameters>
+		</salesforce:query-single>
+		<choice doc:name="Choice" doc:id="88e83e16-efc6-4fc5-b76a-78345c60d044" >
+			<when expression="#[payload == null or sizeOf(payload) &lt; 1]">
+				<flow-ref doc:name="Get Project Id" doc:id="8eb226aa-697f-43fd-8f4e-f87a1eb9e8dc" name="get-project-id"/>
+				<logger level="INFO" doc:name="SFDC Project Request" doc:id="e66c5fac-82ef-4d9b-9310-adacbe88ff6b" message='#[" correlationId:" ++ correlationId ++ " - Request to get project features of productId:" ++ (vars.productId default "")]' />
+				<logger level="INFO" doc:name="SFDC Project Request1" doc:id="7c6a4bcb-9754-4be5-9d41-b974d62244ca" message="#[{}]" />
+				<salesforce:query-single doc:name="Query Project Features" doc:id="a4c26306-842e-4e1a-833d-ea71e19d11b1" config-ref="Salesforce_Config" >
+					<salesforce:salesforce-query >SELECT PLM_Features__c 
+FROM PLM_MarketingCollateral__c 
+WHERE RecordType.name = 'Feature' AND PLM_Product__c = null AND PLM_Project__c = ':projectId'</salesforce:salesforce-query>
+					<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"projectId" : vars.projectId
+}]]]></salesforce:parameters>
+				</salesforce:query-single>
+				<logger level="INFO" doc:name="SFDC Project Response" doc:id="d44af336-f08a-4659-b0cd-b0f84a61de9e" message='#[" correlationId:" ++ correlationId ++ " - Response to get project features of productId:" ++ (vars.productId default "")]' />
+				<logger level="INFO" doc:name="SFDC Project Response1" doc:id="6f9bfaf5-2f87-489d-8a36-aedba744dc10" message="#[output application/json&#10; ---&#10;{&#10; 	payload: payload&#10;}]" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="SFDC Response" doc:id="1f8028ac-0710-4a58-8ba9-67bf4ead3f17" message='#[" correlationId:" ++ correlationId ++ " - Response to get product features of productId:" ++ (vars.productId default "")]' />
+				<logger level="INFO" doc:name="SFDC Response" doc:id="fc3e6b6c-ce5d-455f-8b54-ede4e58f1bd3" message="#[output application/json &#10;---&#10;{&#10; 	payload: payload&#10;}]" />
+			
+</otherwise>
+		</choice>
+		<ee:transform doc:name="Features CDM" doc:id="dbc4374f-d95b-4cae-9c04-fad1542e3a75">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+if (sizeOf(payload.PLM_Features__c default "") > 0)
+	payload.PLM_Features__c default "" splitBy(';')
+else
+	[]
+ 
+ 
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	
+	
+</mule>

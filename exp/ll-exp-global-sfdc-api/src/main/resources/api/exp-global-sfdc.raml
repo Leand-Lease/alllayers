@@ -1,0 +1,27 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/03dfeb28-f45f-4e6b-8aff-e49420afbcab/ # 
+title: exp-global-sfdc
+description: To Accept an Application with related and relevant attributes and route to Yardi RENT Cafe accordingly via sys-yardi.
+version: 1.0.0
+
+traits:
+  common-error-responses: !include traits/common-error-responses.raml
+
+/Application:
+  is: [common-error-responses]
+  displayName: exp global sfdc
+  description: This API interacting with sys-yardi API and send SF details
+
+  post:
+    description: This method send data attributes(payload) to sys-yardi and returns a success/failure as a payload in the response.
+    body:
+      application/json:
+        type: !include types/CRM-application.raml
+        example: !include examples/CRM-application-example.raml
+
+    responses:
+      200:
+        body:
+          application/json:
+            type: !include types/CRM-application-response.raml
+            example: !include examples/CRM-application-response-example.raml  

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="main-unitsAvailability:\units-availability-sync-sub-flow" doc:id="2d568f2d-d80f-4c5c-8eea-416208bb2447" >
+		<json-logger:logger doc:name="Start Logger" doc:id="9aa80086-8465-44ff-b716-75a64b6260fc" message='#["correlationId:" ++ correlationId ++ " - start processing request to get sys_product related projects"]'>
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>
+		<json-logger:logger doc:name="Start Debug Logger" doc:id="ad6135a6-bf66-4f67-889f-8c610e5e21b9" priority="DEBUG" message='#["correlationId:" ++ correlationId ++ " - start processing request to get sys_product related projects"]'/>
+		<flow-ref doc:name="units-availability-get-projects-sub-flow" doc:id="c3f376d4-4e69-49ff-967e-b0b6bfc1ab72" name="units-availability-get-projects-sub-flow"/>
+		<json-logger:logger doc:name="Logger" doc:id="0762a6ed-e0d0-4402-9a24-d157ccc68b0a" message='#["correlationId:" ++ correlationId ++ " - custom log message"]' tracePoint="AFTER_TRANSFORM"/>
+		<json-logger:logger doc:name="End Debug Logger" doc:id="2bbc8f43-ca64-4aa1-b9ec-d9cbd3474312" priority="DEBUG" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get sys_product related projects"]'/>
+		<json-logger:logger doc:name="End Logger" doc:id="f39b50f8-e15e-490b-93a3-4c73e062701a" tracePoint="END" message='#["correlationId:" ++ correlationId ++ " - finish processing request to get sys_product related projects"]'>
+			<json-logger:content ><![CDATA[#[{}]]]></json-logger:content>
+		</json-logger:logger>	
+	
+</sub-flow>
+</mule>

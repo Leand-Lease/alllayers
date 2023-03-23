@@ -1,0 +1,11 @@
+[
+  {
+    "sfId": "123",
+    "phId": "acc123",
+    "listingSite": "test feed",
+    "listingStatus": "Pending Export | Exported | Pending Disable | Disabled",
+    "lastSent": "2019-11-11T11:11:000z",
+    "lastConfirmed": "2019-11-11T11:11:000z",
+    "lastStatus": "updated"
+  }
+]

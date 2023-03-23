@@ -1,0 +1,62 @@
+#%RAML 1.0 DataType
+description: Available fiels for the put/patch operations under product resource. Will not update project related fields and any of the PLM_SYS_* fields as per SFDC design. Also won't update status till reverse mapping to Dwelling_Status__c and PLM_ListingPublishStatus__c is finalized. 
+
+properties:
+  id: 
+    type: string 
+    required: false
+    description: salesforce recordId
+  externalId?:
+    type: string
+    required: false
+    description: ID of the collateral in the external publisher system (e.g. Property Hub)      
+# Dwelling_Status__c and PLM_ListingPublishStatus__c needs to be updated for status, issue is for PLM_ListingPublishStatus__c != Published we don't know the value of Dwelling_Status__c.
+#  status?:
+#    type: string
+#    description: List of statuses from Dwelling_Status__c 
+#    enum:
+#      - Pipeline
+#      - Released
+#      - Settled
+#      - Sold
+#      - Sold/Exchanged
+#      - Unreleased
+#      - Cancelled
+#      - Not For Sale
+  
+  headline?: string  
+  description?: string
+  
+  address?: !include  ../../exchange_modules/a6a6fe5a-a2c2-46ac-aa31-c390a0ddaa1d/cdm-library/2.2.30/types/common/address.raml
+  price?: integer
+  priceLimit?:
+    type: integer
+    description: it serves as price_to for property hub and in sfdc Product2 object
+  priceText?: string
+  displayPrice?: 
+    type: string
+    enum:
+      - None
+      - Price Text
+      - Dollar Price
+
+  soldDate?: string
+  soldPrice?: integer
+  showSoldPrice?: boolean
+  carportSpaces?: integer
+  garageSpaces?: integer
+  offStreetSpaces?: integer
+  bedrooms?: integer
+  halfBedrooms?: boolean
+  bathrooms?: integer
+  halfBathroom?: boolean
+  ensuites?: integer
+  landArea?: integer
+  landAreaMetric?: string
+  floorArea?: integer
+  floorAreaMetric?: string
+  landFrontage?: integer
+  landFrontageMetric?: string
+  numberOfFloors?: integer
+  lastSyncTime?: datetime
+  LastSyncStatus?: string

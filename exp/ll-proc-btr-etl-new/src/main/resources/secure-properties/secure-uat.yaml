@@ -1,0 +1,12 @@
+salesforce:
+  consumer:
+    key: "3MVG9rnryk9FxFMWWXhES5m5Z9IZyxKDMma8dshmOJNhDYV_IbaHQADqwezfA5Zek9Ma_dtat9L_sm47zM3_R"
+    secret: "054F0188BEB65CC27A72773EF513E3020C3325F76586AF0CAA52ACB8885DF276"
+  password: "4$hK3i2sFiYX12!"
+  security.token: "WU5fiSj4AsqJRgumsDuJaIDE"
+
+https:
+  key:
+    password: "Change!t"
+  keystore:
+    password: "Change!t"

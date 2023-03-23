@@ -1,0 +1,18 @@
+#%RAML 1.0 Trait
+
+# Client ID Enforcement
+
+usage: Apply this to all resource
+
+description: This trait is used to enforce Client ID & Secret based policy to the API resources.
+
+headers: 
+  client_id:
+    description: The Client ID assigned to the consuming application.
+    type: string
+    required: true 
+  client_secret:
+    description: The Client Secret assigned to the consuming application.
+    type: string
+    required: true
+    

@@ -1,0 +1,9 @@
+salesforce:
+  consumer.key: "![F/IS513IqtjENmchE5cH/9Pbq4VHa7+ocHhYTB2PbEGokI8Z7rLFkWuL5213zORo/dccTReSwd99279mW7XORBMHCFqvujsfaVsXIHg8xQCiT4YdrUbhBYC4VvWsbeC7]"
+  consumer.secret: "![e9RU+lZTqufb+NwDDKgRNwlHGY+5VxGTFhpkjCe+YTIwWQ4bbMka1b/oY4/Cg8PIeLhP0KF+SXlJpcfsz+6yK2siLk/QhYDZSzRiwIeit88=]"
+  security.token: "![9+V8a1W0oBc1nk71/X8IkGGXyDoTrBj946BybIRjHFU=]"
+  password: "![MDhnOG6YcXqd7RP/WVyVMw==]"
+    
+anypoint.mq:
+  client.id: "![YVs+rRayY55cVi0oqOmNTIa3ZKu71N59IpKgjzU0lkgf7lAtx0C1tl1O6b0B40Y9]"
+  client.secret: "![kB8nf4/9UN8Ij126wKduoBUlgrS0hKLwHOovhgDziwQIOrj74lWv3l2/5z8iA8Yg]"
